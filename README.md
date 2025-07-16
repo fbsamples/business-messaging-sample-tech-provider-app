@@ -2,7 +2,7 @@
 
 This repo contains sample tech provider app that will help you learn to build awesome experiences for Meta's Business Messaging across WhatsApp, Messenger and Instagram platforms.
 
-### New to the Platform?
+### New to the Business Messaging Platform?
 
 Have a look at the [Introduction section for WhatsApp platform ](https://developers.facebook.com/docs/whatsapp/) of the docs
 
