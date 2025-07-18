@@ -8,12 +8,15 @@ Have a look at the [Introduction section for WhatsApp platform ](https://develop
 
 Have a look at the [Introduction section for Messenger platform](https://developers.facebook.com/docs/messenger-platform/getting-started) of the docs
 
+Have a look at the [Introduction section for Instagram platform](https://developers.facebook.com/docs/instagram-platform/) of the docs
+
 ### Looking to get started?
 
 Check out the [Get Started section for WhatsApp](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) of the docs for a complete walkthrough of everything you need to know.
 
 Check out the [Get Started section for Messenger platform](https://developers.facebook.com/docs/messenger-platform/getting-started) of the docs for a complete walkthrough of everything you need to know.
 
+Check out the [Overview section for Instagram platform](https://developers.facebook.com/docs/instagram-platform/overview) of the docs for a complete walkthrough of everything you need to know.
 
 ## License
 Business Messaging Sample Tech Provider App  Samples are fully copyrighted as found in the [LICENSE](LICENSE) file.
