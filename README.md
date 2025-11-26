@@ -1,6 +1,6 @@
-# Meta Business Messaging Tech Provider Template
+# Meta business messaging tech provider template
 
-This is a Next.js template for Meta Business Messaging Tech Providers. It provides a foundation for building WhatsApp Business Platform integrations with features like:
+This is a Next.js template for Meta business messaging tech providers. It provides a foundation for building WhatsApp Business Platform integrations with features like:
 
 - WhatsApp Business Account (WABA) management
 - Phone number registration and management
@@ -155,7 +155,7 @@ CREATE UNIQUE INDEX user_app_waba_key on wabas (user_id, app_id, waba_id);
 
 ## Features
 - **Authentication**: Secure user authentication using Auth0
-- **WABA Management**: View and manage WhatsApp Business Accounts
+- **WABA Management**: View and manage WhatsApp Business accounts
 - **Phone Numbers**: Register and manage WhatsApp phone numbers
 - **Messaging**: Send and receive WhatsApp messages
 - **Webhooks**: Handle incoming webhooks from Meta
@@ -163,13 +163,13 @@ CREATE UNIQUE INDEX user_app_waba_key on wabas (user_id, app_id, waba_id);
 
 ## Configuration
 
-### Ably Setup
+### Ably setup
 
 Ably is used to handle sockets to live stream conversations and webhook data to the browser.
 
 1. Create an Ably account
 
-### Auth0 Setup
+### Auth0 setup
 
 Auth0 is used as the login library.
 
@@ -178,7 +178,7 @@ Auth0 is used as the login library.
 3. Configure callback URLs
 4. Add environment variables
 
-### Meta Setup
+### Meta setup
 
 You need a configured Meta app and business
 
