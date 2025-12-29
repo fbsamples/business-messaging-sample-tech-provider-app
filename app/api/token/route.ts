@@ -39,13 +39,7 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
                         .then(response => [{ fun, status, result: '***', error }, response]);
 
                 }),
-            // (es_option_sys) ? wrapFn(addUser(waba_id), "addUser") : skipProm('addUser'),
-            // (es_option_loc) ? wrapFn(shareLoc(waba_id), "shareLoc") : skipProm('shareLoc')
         ])
-
-        // console.log(JSON.stringify('******************************'));
-        // console.log(JSON.stringify(result, null, 2));
-
         response = new NextResponse(JSON.stringify(result, null, 2));
     } catch (e) {
         console.log("error", e);

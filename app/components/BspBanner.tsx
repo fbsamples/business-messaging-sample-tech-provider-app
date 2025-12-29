@@ -6,8 +6,6 @@
 
 'use client';
 
-// import { useState, useEffect } from 'react';
-
 export default function BspBanner({ children }: { children: React.ReactNode }) {
 
     const banner = (

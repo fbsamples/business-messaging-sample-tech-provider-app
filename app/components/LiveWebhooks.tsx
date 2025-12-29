@@ -8,8 +8,6 @@
 
 import Ably from 'ably';
 import { useState, useEffect } from 'react';
-// import { NextResponse, type NextRequest } from 'next/server'
-
 
 export default function LiveWebhooks() {
 
@@ -47,7 +45,6 @@ export default function LiveWebhooks() {
             const channel = ablyClient.channels.get("get-started")
             channel.subscribe("first", (message) => {
                 console.log("Message received: ");
-                // console.log(JSON.stringify(message.data, null, 2));
                 addWebhook(message.data);
             });
 

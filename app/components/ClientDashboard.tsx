@@ -124,8 +124,6 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
     }
 
     // The code is a temporary code that is used to exchange for an access token.
-    // The code
-
     // The returned code must be transmitted to your backend first and then
     // perform a server-to-server call from there to our servers for an access token.
 

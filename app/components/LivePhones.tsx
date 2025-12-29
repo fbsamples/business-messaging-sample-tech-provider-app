@@ -8,7 +8,6 @@
 
 import Ably from 'ably';
 import { useState, useEffect } from 'react';
-// import { NextResponse, type NextRequest } from 'next/server'
 import SendMessage from '@/app/components/SendMessage';
 
 export default function LivePhones({ phone_display, phone_number_id, wabaId, _phone_details }) {

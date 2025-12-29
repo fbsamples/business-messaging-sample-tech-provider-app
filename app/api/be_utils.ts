@@ -181,23 +181,6 @@ export async function send(phone_number_id: string, accessToken: string, dest_ph
         .catch(err => console.error(err));
 }
 
-// can't do this because it's a TP
-// export async function shareLoc(waba_id: string, suat: string, credit_id: string) {
-//     const suat = await privateConfig().suat;
-//     const currency = "USD";
-//     console.log('shareLoc:', 'waba_id', waba_id, 'suat', suat, 'credit_id', credit_id);
-//     const url = `https://graph.facebook.com/${graph_api_version}/${credit_id}/whatsapp_credit_sharing_and_attach?waba_id=${waba_id}&waba_currency=${currency}&access_token=${suat}`;
-//     return fetch(url, {
-//         method: 'POST'
-//     })
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('shareLocResponse', waba_id, suat, credit_id, data);
-//             if (data.error) throw data.error;
-//             return data;
-//         });
-// }
-
 //////////////////////////////////////////////////////////
 // WABA Details \/
 //////////////////////////////////////////////////////////
@@ -205,8 +188,8 @@ export async function send(phone_number_id: string, accessToken: string, dest_ph
 export async function getWabas(user_id: string) {
     // Get page IDs and access tokens from the database
     const { rows } = await sql`
-    SELECT DISTINCT waba_id, access_token, business_id 
-    FROM wabas 
+    SELECT DISTINCT waba_id, access_token, business_id
+    FROM wabas
     WHERE user_id = ${user_id}
     ORDER BY waba_id ASC
   `;
@@ -307,8 +290,6 @@ export async function getClientPhones(userId: string) {
                 return phone_deets;
             })
     }));
-    // console.log('deets');
-    // console.log(JSON.stringify(nested_phones, null, 2));
     return nested_phones.flat();
 };
 
@@ -366,8 +347,8 @@ interface Page {
 export async function getPages(user_id: string) {
     // Get page IDs and access tokens from the database
     const { rows } = await sql`
-    SELECT DISTINCT page_id, access_token, business_id 
-    FROM pages 
+    SELECT DISTINCT page_id, access_token, business_id
+    FROM pages
     WHERE user_id = ${user_id}
     ORDER BY page_id ASC
   `;
@@ -413,8 +394,8 @@ interface AdAccount {
 export async function getAdAccounts(user_id: string) {
     // Get ad account IDs and access tokens from the database
     const { rows } = await sql`
-    SELECT DISTINCT ad_account_id, access_token, business_id 
-    FROM ad_accounts 
+    SELECT DISTINCT ad_account_id, access_token, business_id
+    FROM ad_accounts
     WHERE user_id = ${user_id}
     ORDER BY ad_account_id ASC
   `;
@@ -533,37 +514,6 @@ export async function getAppDetails(app_id: string) {
 }
 
 //////////////////////////////////////////////////////////
-// Archive of SUAT based features
-//////////////////////////////////////////////////////////
-
-// export async function getTokenDetails(access_token: string, suat: string) {
-//     return fetch(`https://graph.facebook.com/${graph_api_version}/debug_token?input_token=${access_token}`, {
-//         method: 'GET',
-//         headers: {
-//             "Content-Type": "application/json",
-//             "Authorization": `Bearer ${suat}`
-//         },
-//     })
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('getTokenDetailsResponse', 'access_token', access_token, 'suat', suat, data);
-//             return data.data;
-//         });
-// }
-
-// export async function getLoCInfo(businessId: string) {
-//     const privateConfig = await getPrivateConfig();
-//     const { fb_suat } = privateConfig;
-//     console.log('getLoCInfo', 'business_id', businessId);
-//     const url = `/${businessId}/client_whatsapp_business_accounts?fields=account_review_status,purchase_order_number,audiences,name,ownership_type,subscribed_apps,business_verification_status,country,currency,timezone_id,on_behalf_of_business_info,schedules,is_enabled_for_insights,dcc_config,message_templates,phone_numbers`;
-//     return graphApiWrapperGet(url, fb_suat)
-//         .then(data => {
-//             console.log('getAllSharedWabasResponse', 'businessId', businessId, 'suat', fb_suat, 'data', JSON.stringify(data, null, 2));
-//             return data.data;
-//         });
-// };
-
-//////////////////////////////////////////////////////////
 // Datasets
 //////////////////////////////////////////////////////////
 
@@ -571,7 +521,7 @@ export async function getDatasets(user_id: string) {
     // Get dataset IDs and access tokens from the database
     const { rows } = await sql`
     SELECT DISTINCT dataset_id, access_token, business_id
-    FROM datasets 
+    FROM datasets
     WHERE user_id = ${user_id}
     ORDER BY dataset_id ASC
   `;
@@ -618,7 +568,7 @@ export async function getCatalogs(user_id: string) {
     // Get catalog IDs and access tokens from the database
     const { rows } = await sql`
     SELECT DISTINCT catalog_id, access_token, business_id
-    FROM catalogs 
+    FROM catalogs
     WHERE user_id = ${user_id}
     ORDER BY catalog_id ASC
   `;
@@ -660,7 +610,7 @@ export async function getInstagramAccounts(user_id: string) {
     // Get Instagram account IDs and access tokens from the database
     const { rows } = await sql`
     SELECT DISTINCT instagram_account_id, access_token, business_id
-    FROM instagram_accounts 
+    FROM instagram_accounts
     WHERE user_id = ${user_id}
     ORDER BY instagram_account_id ASC
   `;

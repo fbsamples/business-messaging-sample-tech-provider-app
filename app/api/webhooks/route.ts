@@ -34,18 +34,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 
     const data = await request.json();
-    // const mode = request.nextUrl.searchParams.get("hub.mode") || "";
-    // const verify_token = request.nextUrl.searchParams.get("hub.verify_token") || "";
-    // const challenge = request.nextUrl.searchParams.get("hub.challenge") || "";
-
     // Connect to Ably with your API key
     const ably_key = process.env.ABLY_KEY;
     const ably = new Ably.Realtime({ key: ably_key, clientId: "webhook_server" });
 
     await ably.connection.once('connected');
-    // // Create a channel called 'get-started' and register a listener to subscribe to all messages with the name 'first'
+    // Create a channel called 'get-started' and register a listener to subscribe to all messages with the name 'first'
     const channel = ably.channels.get("get-started")
-    // // Publish a message with the name 'first' and the contents 'Here is my first message!'
+    // Publish a message with the name 'first' and the contents 'Here is my first message!'
     await channel.publish("first", data);
     ably.connection.close(); // run synchronously
 

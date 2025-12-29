@@ -33,17 +33,6 @@ const requiredEnvVars = {
 
 checkEnvironmentVariables(requiredEnvVars);
 
-// input format: name1|tpconfigid1,name2|tpconfigid2,name3|tpconfigid3
-// output format: [
-//     {
-//         "name": "name1",
-//         "tpconfigid": "tpconfigid1"
-//     },
-//     {
-//         "name": "name2",
-//         "tpconfigid": "tpconfigid2"
-//     }
-// ]
 const input = process.env.FB_TP_CONFIG_IDS;
 const output = input.split(',').map(item => {
 
