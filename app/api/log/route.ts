@@ -1,3 +1,9 @@
+// Copyright (c) Meta Platforms, Inc. and affiliates.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
+
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { withAuth } from "../auth_wrapper";

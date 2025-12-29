@@ -1,3 +1,9 @@
+// Copyright (c) Meta Platforms, Inc. and affiliates.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
+
 import { NextResponse, type NextRequest } from 'next/server'
 import { getToken, saveTokens, registerNumber, subscribeWebhook } from "../be_utils"
 import { wrapFn, skipProm } from "../../errorformat";

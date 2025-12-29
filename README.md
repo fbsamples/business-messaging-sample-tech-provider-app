@@ -1,3 +1,10 @@
+<!--
+Copyright (c) Meta Platforms, Inc. and affiliates.
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
 # Meta business messaging tech provider template
 
 This is a Next.js template for Meta business messaging tech providers. It provides a foundation for building WhatsApp Business Platform integrations with features like:
@@ -11,17 +18,17 @@ This is a Next.js template for Meta business messaging tech providers. It provid
 
 ## Quick Start
 
-1. Deploy
+### 1. Deploy
 Deploy this template to a new Vercel project by clicking the button below
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%fbsamples%2Fbusiness_messaging_sample_tp_test_app&env=ABLY_KEY,APP_BASE_URL,AUTH0_CLIENT_ID,AUTH0_DOMAIN,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_BUSINESS_ID,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_TP_CONFIG_IDS,FB_VERIFY_TOKEN,FB_SUAT,TP_CONTACT_EMAIL&envDescription=Variables%20to%20configure%20the%20app&envLink=https%3A%2F%2Fgithub.com%fbsamples%2Fbusiness_messaging_sample_tp_test_app&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
 
-2. Create a fork
+### 2. Create a fork
 Within the flow started above, pick a fork name for the code base
 
-3. Connect database
+### 3. Connect database
 Within the flow above, connect the Neon DB
 
-4. Enter the environment variables
+### 4. Enter the environment variables
 Within the flow above enter all the environment variables
 
 ```env
@@ -49,7 +56,7 @@ FB_SUAT='your-facevook-system-user-access-token'
 TP_CONTACT_EMAIL='email-address'
 ```
 
-5. Configure database schema
+### 5. Configure database schema
 Once the project is finished deploying, go to the neon dashboard associated with the newly deployed Vercel project. Go into the SQL editor and paste the following commands to setup the right table schema.
 
 ```sql
@@ -189,8 +196,9 @@ You need a configured Meta app and business
 
 ## License
 
-MIT License - see LICENSE file for details
+Business messaging sample tech provider app is MIT licensed, as found in the LICENSE file.
 
-## Support
+See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
 
-For support, please open an issue in the GitHub repository.
+Terms of Use - https://opensource.facebook.com/legal/terms
+Privacy Policy - https://opensource.facebook.com/legal/privacy
