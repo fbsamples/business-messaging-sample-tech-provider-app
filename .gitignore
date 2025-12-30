@@ -133,3 +133,6 @@ dist
 **/.DS_Store
 
 .vercel
+
+# Next.js auto-generated TypeScript file
+next-env.d.ts
