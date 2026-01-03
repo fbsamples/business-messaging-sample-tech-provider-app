@@ -78,9 +78,9 @@ export default function InboxLayout({ phones }) {
                                     </p>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <PhoneStatus phone={selectedPhone} />
-                                    <AckBotStatus phone={selectedPhone} />
-                                    <PhoneType phone={selectedPhone} />
+                                    <PhoneStatus key={'phone-status-' + selectedPhone.id} phone={selectedPhone} />
+                                    <AckBotStatus key={'ack-bot-status-' + selectedPhone.id} phone={selectedPhone} />
+                                    <PhoneType key={'phone-type-' + selectedPhone.id} phone={selectedPhone} />
                                 </div>
                             </div>
                         </div>
@@ -88,6 +88,7 @@ export default function InboxLayout({ phones }) {
                         {/* Chat History */}
                         <div className="flex-1 p-6 overflow-y-auto">
                             <LivePhones
+                                key={'live-phones-' + selectedPhone.id}
                                 phone_number_id={phone_data.phone_id}
                                 phone_display={phone_data.phone_display}
                                 wabaId={phone_data.wabaId}

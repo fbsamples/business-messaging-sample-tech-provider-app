@@ -9,17 +9,7 @@ import { getWabas } from '@/app/api/be_utils';
 import LoggedOut from "@/app/components/LoggedOut";
 import AssetPage from '@/app/components/AssetPage';
 import AssetCard from '@/app/components/AssetCard';
-
-interface Waba {
-  id: string;
-  name?: string;
-  business_id: string;
-  status: string;
-  on_behalf_of_business_info?: {
-    id: string;
-  };
-  access_token?: string;
-}
+import type { WabaWithDetails } from '@/app/types/api';
 
 export default async function MyWabas() {
   // Fetch the user session
@@ -41,7 +31,7 @@ export default async function MyWabas() {
       isEmpty={wabas.length === 0}
       emptyMessage="No WhatsApp Business Accounts found. WABAs will appear here once they are connected to your account."
     >
-      {wabas.map((waba: Waba) => (
+      {wabas.map((waba: WabaWithDetails) => (
         <AssetCard
           key={waba.id}
           id={waba.id}

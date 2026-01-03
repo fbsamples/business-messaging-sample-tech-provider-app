@@ -9,10 +9,38 @@
 import getPrivateConfig from "../private_config";
 import publicConfig from "../public_config";
 import { sql } from '@vercel/postgres';
+import type {
+    SubscribeWebhookResponse,
+    SqlResult,
+    WabaDetails,
+    WabaRow,
+    WabaWithDetails,
+    PhoneNumber,
+    PhoneDetails,
+    ClientPhone,
+    RegisterNumberResponse,
+    DeregisterNumberResponse,
+    RequestCodeResponse,
+    VerifyCodeResponse,
+    SendMessageResponse,
+    PageRow,
+    PageWithDetails,
+    AdAccountRow,
+    AdAccountWithDetails,
+    DatasetRow,
+    DatasetWithDetails,
+    CatalogRow,
+    CatalogWithDetails,
+    InstagramAccountRow,
+    InstagramAccountWithDetails,
+    AppDetails,
+    SubscribedAppsResponse,
+    AssignedUsersResponse
+} from '../types/api';
 
 const { graph_api_version, redirect_uri } = publicConfig;
 
-export async function getToken(code: string, app_id: string) {
+export async function getToken(code: string, app_id: string): Promise<string> {
     const privateConfig = await getPrivateConfig();
     const { fb_app_secret: app_secret } = privateConfig;
     console.log('getToken:', 'code', code, 'app_id', app_id);
@@ -25,7 +53,7 @@ export async function getToken(code: string, app_id: string) {
         });
 }
 
-export async function subscribeWebhook({ access_token, waba_id }: { access_token: string; waba_id: string; }) {
+export async function subscribeWebhook(access_token: string, waba_id: string): Promise<SubscribeWebhookResponse> {
     console.log('subscribeWebhook:', 'access_token', access_token, 'waba_id', waba_id);
     const url = `/${waba_id}/subscribed_apps`;
     return graphApiWrapperPost(url, access_token)
@@ -36,7 +64,7 @@ export async function subscribeWebhook({ access_token, waba_id }: { access_token
         });
 }
 
-export async function saveWabaToken(access_token: string, waba_id: string, app_id: string, user_id: string, business_id: string) {
+export async function saveWabaToken(access_token: string, waba_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('saveWabaToken:', 'access_token', access_token, 'waba_id', waba_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -47,7 +75,7 @@ export async function saveWabaToken(access_token: string, waba_id: string, app_i
     `;
 }
 
-export async function savePageToken(access_token: string, page_id: string, app_id: string, user_id: string, business_id: string) {
+export async function savePageToken(access_token: string, page_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('savePageToken:', 'access_token', access_token, 'page_id', page_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -58,7 +86,7 @@ export async function savePageToken(access_token: string, page_id: string, app_i
     `;
 }
 
-export async function saveAdAccountToken(access_token: string, ad_account_id: string, app_id: string, user_id: string, business_id: string) {
+export async function saveAdAccountToken(access_token: string, ad_account_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('saveAdAccountToken:', 'access_token', access_token, 'ad_account_id', ad_account_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -69,7 +97,7 @@ export async function saveAdAccountToken(access_token: string, ad_account_id: st
     `;
 }
 
-export async function saveDatasetToken(access_token: string, dataset_id: string, app_id: string, user_id: string, business_id: string) {
+export async function saveDatasetToken(access_token: string, dataset_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('saveDatasetToken:', 'access_token', access_token, 'dataset_id', dataset_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -80,7 +108,7 @@ export async function saveDatasetToken(access_token: string, dataset_id: string,
     `;
 }
 
-export async function saveCatalogToken(access_token: string, catalog_id: string, app_id: string, user_id: string, business_id: string) {
+export async function saveCatalogToken(access_token: string, catalog_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('saveCatalogToken:', 'access_token', access_token, 'catalog_id', catalog_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -91,7 +119,7 @@ export async function saveCatalogToken(access_token: string, catalog_id: string,
     `;
 }
 
-export async function saveInstagramAccountToken(access_token: string, instagram_account_id: string, app_id: string, user_id: string, business_id: string) {
+export async function saveInstagramAccountToken(access_token: string, instagram_account_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
     console.log('saveInstagramAccountToken:', 'access_token', access_token, 'instagram_account_id', instagram_account_id, 'app_id', app_id, 'business_id', business_id);
 
     return await sql`
@@ -102,7 +130,7 @@ export async function saveInstagramAccountToken(access_token: string, instagram_
     `;
 }
 
-export async function saveBusinessToken(access_token: string, business_id: string, app_id: string, user_id: string) {
+export async function saveBusinessToken(access_token: string, business_id: string, app_id: string, user_id: string): Promise<SqlResult> {
     console.log('saveBusinessToken:', 'access_token', access_token, 'business_id', business_id, 'app_id', app_id);
 
     return await sql`
@@ -113,8 +141,8 @@ export async function saveBusinessToken(access_token: string, business_id: strin
     `;
 }
 
-export async function saveTokens(user_id: string, app_id: string, business_id: string, page_ids: [string], ad_account_ids: [string], waba_ids: [string], dataset_ids: [string], catalog_ids: [string], instagram_account_ids: [string], access_token: string) {
-    const promises = [];
+export async function saveTokens(user_id: string, app_id: string, business_id: string, page_ids: string[], ad_account_ids: string[], waba_ids: string[], dataset_ids: string[], catalog_ids: string[], instagram_account_ids: string[], access_token: string): Promise<SqlResult[]> {
+    const promises: Promise<SqlResult>[] = [];
     promises.push(saveBusinessToken(access_token, business_id, app_id, user_id));
     page_ids.forEach(page_id => {
         promises.push(savePageToken(access_token, page_id, app_id, user_id, business_id));
@@ -137,7 +165,7 @@ export async function saveTokens(user_id: string, app_id: string, business_id: s
     return Promise.all(promises);
 }
 
-export async function registerNumber(phoneId: string, accessToken: string) {
+export async function registerNumber(phoneId: string, accessToken: string): Promise<RegisterNumberResponse> {
     const privateConfig = await getPrivateConfig();
     const { fb_reg_pin } = privateConfig;
     console.log('registerNumber:', 'phoneId', phoneId, 'accessToken', accessToken);
@@ -153,7 +181,7 @@ export async function registerNumber(phoneId: string, accessToken: string) {
         })
 }
 
-export async function deregisterNumber(phoneId: string, accessToken: string) {
+export async function deregisterNumber(phoneId: string, accessToken: string): Promise<DeregisterNumberResponse> {
     console.log('deregisterNumber:', 'phoneId', phoneId, 'accessToken', accessToken);
     const url = `/${phoneId}/deregister`;
     return graphApiWrapperPost(url, accessToken)
@@ -164,7 +192,7 @@ export async function deregisterNumber(phoneId: string, accessToken: string) {
         })
 }
 
-export async function send(phone_number_id: string, accessToken: string, dest_phone: string, message_content: string) {
+export async function send(phone_number_id: string, accessToken: string, dest_phone: string, message_content: string): Promise<SendMessageResponse | void> {
     console.log('send', 'phone_number_id', phone_number_id, 'accessToken', accessToken, 'dest_phone', dest_phone, 'message_content', message_content);
     const url = `/${phone_number_id}/messages`;
     return graphApiWrapperPost(url, accessToken, {
@@ -185,9 +213,9 @@ export async function send(phone_number_id: string, accessToken: string, dest_ph
 // WABA Details \/
 //////////////////////////////////////////////////////////
 
-export async function getWabas(user_id: string) {
+export async function getWabas(user_id: string): Promise<WabaWithDetails[]> {
     // Get page IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: WabaRow[] } = await sql`
     SELECT DISTINCT waba_id, access_token, business_id
     FROM wabas
     WHERE user_id = ${user_id}
@@ -195,28 +223,39 @@ export async function getWabas(user_id: string) {
   `;
 
     // Fetch page names from Facebook Graph API
-    const wholeWabas = await Promise.all(
-        rows.map(async (waba) => {
+    const wholeWabas: WabaWithDetails[] = await Promise.all(
+        rows.map(async (waba: WabaRow) => {
             try {
-                const wholeWaba = await getWabaDetails(waba.waba_id, waba.access_token);
+                const wholeWaba: WabaDetails = await getWabaDetails(waba.waba_id, waba.access_token);
                 return {
                     ...wholeWaba,
                     business_id: waba.business_id,
                     access_token: waba.access_token
-                };
+                } as WabaWithDetails;
             } catch (error) {
                 console.error(`Error fetching name for page ${waba.waba_id}:`, error);
                 return {
-                    ...waba,
-                    name: 'Error Loading Name'
-                };
+                    id: waba.waba_id,
+                    name: 'Error Loading Name',
+                    account_review_status: 'unknown',
+                    ownership_type: 'unknown',
+                    subscribed_apps: { data: [] },
+                    business_verification_status: 'unknown',
+                    country: 'unknown',
+                    currency: 'unknown',
+                    timezone_id: 'unknown',
+                    is_enabled_for_insights: false,
+                    phone_numbers: { data: [] },
+                    business_id: waba.business_id,
+                    access_token: waba.access_token
+                } as WabaWithDetails;
             }
         })
     );
     return wholeWabas;
 }
 
-export async function getWabaDetails(wabaId: string, accessToken: string) {
+export async function getWabaDetails(wabaId: string, accessToken: string): Promise<WabaDetails> {
     console.log('getWabaDetails', 'wabaId', wabaId, 'accessToken', accessToken);
     const url = `/${wabaId}?fields=account_review_status,purchase_order_number,audiences,name,ownership_type,subscribed_apps,business_verification_status,country,currency,timezone_id,on_behalf_of_business_info,schedules,is_enabled_for_insights,message_templates,phone_numbers`;
     return graphApiWrapperGet(url, accessToken)
@@ -226,38 +265,38 @@ export async function getWabaDetails(wabaId: string, accessToken: string) {
         })
 };
 
-export async function getSubscribedApps(wabaId: string, accessToken: string) {
+export async function getSubscribedApps(wabaId: string, accessToken: string): Promise<SubscribedAppsResponse> {
     console.log('getSubscribedApps', 'wabaId', wabaId, 'access_token', accessToken);
     const url = `/${wabaId}/subscribed_apps`;
-    graphApiWrapperGet(url, accessToken)
+    return graphApiWrapperGet(url, accessToken)
         .then(data => {
             console.log('getSubscribedAppsResponse', 'wabaId', wabaId, 'access_token', accessToken, 'data', JSON.stringify(data, null, 2));
-            return data.data;
+            return data;
         });
 };
 
-export async function getAssignedUsers(wabaId: string, businessId: string, accessToken: string) {
+export async function getAssignedUsers(wabaId: string, businessId: string, accessToken: string): Promise<AssignedUsersResponse> {
     console.log('getAssignedUsers', 'wabaId', wabaId, 'accessToken', accessToken);
     const url = `/${wabaId}/assigned_users?business=${businessId}`;
     return graphApiWrapperGet(url, accessToken)
         .then(data => {
             console.log('getAssignedUsersResponse', 'wabaId', wabaId, 'accessToken', accessToken, 'data', JSON.stringify(data, null, 2));
-            return data.data;
+            return data;
         });
 };
 
-export async function getClientWabaIds(user_id: string) {
-    const { rows } = await sql`SELECT DISTINCT ON (waba_id) access_token, waba_id, business_id FROM wabas WHERE user_id = ${user_id}`;
+export async function getClientWabaIds(user_id: string): Promise<WabaRow[]> {
+    const { rows }: { rows: WabaRow[] } = await sql`SELECT DISTINCT ON (waba_id) access_token, waba_id, business_id FROM wabas WHERE user_id = ${user_id}`;
     return rows;
 }
 
-export async function getClientWabas(user_id: string) {
-    const rows = await getClientWabaIds(user_id);
-    const wabas = await Promise.all(rows.map((row, _key) => {
-        const waba_id = row.waba_id;
-        const access_token = row.access_token;
-        const business_id = row.business_id;
-        const wholeWaba = getWabaDetails(waba_id, access_token);
+export async function getClientWabas(user_id: string): Promise<WabaWithDetails[]> {
+    const rows: WabaRow[] = await getClientWabaIds(user_id);
+    const wabas: WabaWithDetails[] = await Promise.all(rows.map(async (row: WabaRow, _key: number) => {
+        const waba_id: string = row.waba_id;
+        const access_token: string = row.access_token;
+        const business_id: string = row.business_id;
+        const wholeWaba: WabaDetails = await getWabaDetails(waba_id, access_token);
         return {
             ...wholeWaba,
             business_id: business_id,
@@ -269,31 +308,27 @@ export async function getClientWabas(user_id: string) {
 }
 
 //////////////////////////////////////////////////////////
-// WABA Details /\
+// Phones
 //////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////
-// Phones \/
-//////////////////////////////////////////////////////////
-
-export async function getClientPhones(userId: string) {
-    const rows = await getClientWabaIds(userId);
-    const nested_phones = await Promise.all(rows.map((row, _key) => {
-        const wabaId = row.waba_id;
-        const accessToken = row.access_token;
-        return graphApiWrapperGet(`/${wabaId}?fields=phone_numbers`, accessToken)
-            .then(data => {
-                const phones = data?.phone_numbers?.data || [];
-                const phone_deets = Promise.all(phones.map((phone, _key) => {
-                    return getPhoneDetails(phone.id, accessToken, wabaId);
-                }));
-                return phone_deets;
-            })
+export async function getClientPhones(userId: string): Promise<ClientPhone[]> {
+    const rows: WabaRow[] = await getClientWabaIds(userId);
+    const nested_phones: PhoneDetails[][] = await Promise.all(rows.map(async (row: WabaRow, _key: number) => {
+        const wabaId: string = row.waba_id;
+        const accessToken: string = row.access_token;
+        const data = await graphApiWrapperGet(`/${wabaId}?fields=phone_numbers`, accessToken);
+        const phones: PhoneNumber[] = data?.phone_numbers?.data || [];
+        const phone_deets: PhoneDetails[] = await Promise.all(phones.map(async (phone: PhoneNumber, _key: number) => {
+            return await getPhoneDetails(phone.id, accessToken, wabaId);
+        }));
+        return phone_deets;
     }));
-    return nested_phones.flat();
+    // console.log('deets');
+    // console.log(JSON.stringify(nested_phones, null, 2));
+    return nested_phones.flat() as ClientPhone[];
 };
 
-export async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: string) {
+export async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: string): Promise<PhoneDetails> {
     return graphApiWrapperGet(`/${phoneId}?fields=status,account_mode,certificate,is_on_biz_app,display_phone_number,code_verification_status`, accessToken)
         .then(async data => {
             data.wabaId = wabaId;
@@ -302,13 +337,10 @@ export async function getPhoneDetails(phoneId: string, accessToken: string, waba
             return data;
         });
 };
-//////////////////////////////////////////////////////////
-// Phones /\
-//////////////////////////////////////////////////////////
 
-export async function getTokenForWaba(waba_id: string) {
+export async function getTokenForWaba(waba_id: string): Promise<string> {
     console.log('getTokenForWaba:', 'waba_id', waba_id);
-    const { rows } = await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id}`;
+    const { rows }: { rows: { access_token: string }[] } = await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id}`;
     return rows[0].access_token;
 }
 
@@ -316,37 +348,25 @@ export async function getTokenForWaba(waba_id: string) {
 // Verification Request \/
 //////////////////////////////////////////////////////////
 
-export async function requestCode(phoneId: string, accessToken: string) {
+export async function requestCode(phoneId: string, accessToken: string): Promise<RequestCodeResponse> {
     console.log('requestCode:', 'phoneId', phoneId, 'accessToken', accessToken);
     const url = `/${phoneId}/request_code?code_method=SMS&language=en`;
     return graphApiWrapperPost(url, accessToken);
 }
 
-export async function verifyCode(phoneId: string, accessToken: string, otpCode: string) {
+export async function verifyCode(phoneId: string, accessToken: string, otpCode: string): Promise<VerifyCodeResponse> {
     console.log('verifyCode:', 'phoneId', phoneId, 'accessToken', accessToken);
     const url = `/${phoneId}/verify_code?code=${otpCode}`;
     return graphApiWrapperPost(url, accessToken);
 }
 
 //////////////////////////////////////////////////////////
-// Verification Request /\
-//////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////
 // Pages
 //////////////////////////////////////////////////////////
 
-interface Page {
-    page_id: string;
-    name?: string;
-    access_token: string;
-}
-
-export async function getPages(user_id: string) {
+export async function getPages(user_id: string): Promise<PageWithDetails[]> {
     // Get page IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: PageRow[] } = await sql`
     SELECT DISTINCT page_id, access_token, business_id
     FROM pages
     WHERE user_id = ${user_id}
@@ -354,8 +374,8 @@ export async function getPages(user_id: string) {
   `;
 
     // Fetch page names from Facebook Graph API
-    const pagesWithNames = await Promise.all(
-        rows.map(async (page: Page) => {
+    const pagesWithNames: PageWithDetails[] = await Promise.all(
+        rows.map(async (page: PageRow) => {
             try {
                 const response = await fetch(
                     `https://graph.facebook.com/${graph_api_version}/${page.page_id}?fields=name,ad_campaign&access_token=${page.access_token}`
@@ -366,13 +386,14 @@ export async function getPages(user_id: string) {
                     ...page,
                     name: data.name || 'Unknown Page',
                     ad_campaign: data.ad_campaign || 'No Ad Campaign'
-                };
+                } as PageWithDetails;
             } catch (error) {
                 console.error(`Error fetching name for page ${page.page_id}:`, error);
                 return {
                     ...page,
-                    name: 'Error Loading Name'
-                };
+                    name: 'Error Loading Name',
+                    ad_campaign: 'No Ad Campaign'
+                } as PageWithDetails;
             }
         })
     );
@@ -384,16 +405,9 @@ export async function getPages(user_id: string) {
 // Ad accounts
 //////////////////////////////////////////////////////////
 
-interface AdAccount {
-    ad_account_id: string;
-    name?: string;
-    access_token: string;
-    business_id: string;
-}
-
-export async function getAdAccounts(user_id: string) {
+export async function getAdAccounts(user_id: string): Promise<AdAccountWithDetails[]> {
     // Get ad account IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: AdAccountRow[] } = await sql`
     SELECT DISTINCT ad_account_id, access_token, business_id
     FROM ad_accounts
     WHERE user_id = ${user_id}
@@ -401,8 +415,8 @@ export async function getAdAccounts(user_id: string) {
   `;
 
     // Fetch ad account names from Facebook Graph API
-    const adAccountsWithNames = await Promise.all(
-        rows.map(async (account: AdAccount) => {
+    const adAccountsWithNames: AdAccountWithDetails[] = await Promise.all(
+        rows.map(async (account: AdAccountRow) => {
             try {
                 const response = await fetch(
                     `https://graph.facebook.com/${graph_api_version}/act_${account.ad_account_id}?fields=name&access_token=${account.access_token}`
@@ -429,7 +443,7 @@ export async function getAdAccounts(user_id: string) {
 // Reqeust Wrappers
 //////////////////////////////////////////////////////////
 
-async function graphApiWrapperGet(url: string, accessToken?: string) {
+async function graphApiWrapperGet(url: string, accessToken?: string): Promise<any> {
     console.log('graphApiWrapperGet:', 'url', url);
     const headers = {
         "Content-Type": "application/json",
@@ -453,7 +467,7 @@ async function graphApiWrapperGet(url: string, accessToken?: string) {
         })
 }
 
-async function graphApiWrapperPost(url: string, accessToken: string, params = {}) {
+async function graphApiWrapperPost(url: string, accessToken: string, params = {}): Promise<any> {
     console.log('graphApiWrapperPost:', 'url', url, 'params', JSON.stringify(params, null, 2));
     const headers = {
         "Content-Type": "application/json",
@@ -485,12 +499,12 @@ async function graphApiWrapperPost(url: string, accessToken: string, params = {}
 //////////////////////////////////////////////////////////
 
 export async function getAckBotStatus(phoneId: string): Promise<boolean> {
-    const { rows } = await sql`SELECT is_ack_bot_enabled FROM phones WHERE phone_id = ${phoneId}`;
+    const { rows }: { rows: { is_ack_bot_enabled: string }[] } = await sql`SELECT is_ack_bot_enabled FROM phones WHERE phone_id = ${phoneId}`;
     const isAckBotEnabled = rows[0]?.is_ack_bot_enabled === 'true';
     return isAckBotEnabled;
 }
 
-export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean) {
+export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean): Promise<SqlResult> {
     console.log('isAckBotEnabled', isAckBotEnabled);
     return await sql`
         INSERT INTO phones (phone_id, is_ack_bot_enabled)
@@ -500,14 +514,17 @@ export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean)
     `;
 }
 
-export async function getAppDetails(app_id: string) {
+//////////////////////////////////////////////////////////
+// App Details
+//////////////////////////////////////////////////////////
+
+export async function getAppDetails(app_id: string): Promise<AppDetails> {
     const privateConfig = await getPrivateConfig();
-    const { fb_suat } = privateConfig;
     console.log('getBusinessIdForApp:', 'app_id', app_id);
-    const url = `/${app_id}?fields=client_config,name,logo_url,app_domains,app_type,company,link`;
-    return graphApiWrapperGet(url, fb_suat)
+    const url = `/${app_id}?fields=client_config,name,logo_url,app_domains,app_type,company,link,config_ids`;
+    return graphApiWrapperGet(url, `${publicConfig.app_id}|${privateConfig.fb_app_secret}`)
         .then(data => {
-            console.log('getAppDetailsResponse:', 'app_id', app_id, 'data', data);
+            // console.log('getAppDetailsResponse:', 'app_id', app_id, 'data', data);
             if (data.error) throw data.error;
             return data;
         });
@@ -517,9 +534,9 @@ export async function getAppDetails(app_id: string) {
 // Datasets
 //////////////////////////////////////////////////////////
 
-export async function getDatasets(user_id: string) {
+export async function getDatasets(user_id: string): Promise<DatasetWithDetails[]> {
     // Get dataset IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: DatasetRow[] } = await sql`
     SELECT DISTINCT dataset_id, access_token, business_id
     FROM datasets
     WHERE user_id = ${user_id}
@@ -527,8 +544,8 @@ export async function getDatasets(user_id: string) {
   `;
 
     // Fetch dataset details from Facebook Graph API
-    const datasetsWithDetails = await Promise.all(
-        rows.map(async (dataset: any) => {
+    const datasetsWithDetails: DatasetWithDetails[] = await Promise.all(
+        rows.map(async (dataset: DatasetRow) => {
             try {
                 const response = await fetch(
                     `https://graph.facebook.com/${graph_api_version}/${dataset.dataset_id}?fields=name,code,last_fired_time&access_token=${dataset.access_token}`
@@ -564,9 +581,9 @@ export async function getDatasets(user_id: string) {
 // Catalogs
 //////////////////////////////////////////////////////////
 
-export async function getCatalogs(user_id: string) {
+export async function getCatalogs(user_id: string): Promise<CatalogWithDetails[]> {
     // Get catalog IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: CatalogRow[] } = await sql`
     SELECT DISTINCT catalog_id, access_token, business_id
     FROM catalogs
     WHERE user_id = ${user_id}
@@ -574,8 +591,8 @@ export async function getCatalogs(user_id: string) {
   `;
 
     // Fetch catalog details from Facebook Graph API
-    const catalogsWithDetails = await Promise.all(
-        rows.map(async (catalog: any) => {
+    const catalogsWithDetails: CatalogWithDetails[] = await Promise.all(
+        rows.map(async (catalog: CatalogRow) => {
             try {
                 const response = await fetch(
                     `https://graph.facebook.com/${graph_api_version}/${catalog.catalog_id}?fields=name&access_token=${catalog.access_token}`
@@ -606,9 +623,9 @@ export async function getCatalogs(user_id: string) {
 // Instagram Accounts
 //////////////////////////////////////////////////////////
 
-export async function getInstagramAccounts(user_id: string) {
+export async function getInstagramAccounts(user_id: string): Promise<InstagramAccountWithDetails[]> {
     // Get Instagram account IDs and access tokens from the database
-    const { rows } = await sql`
+    const { rows }: { rows: InstagramAccountRow[] } = await sql`
     SELECT DISTINCT instagram_account_id, access_token, business_id
     FROM instagram_accounts
     WHERE user_id = ${user_id}
@@ -616,8 +633,8 @@ export async function getInstagramAccounts(user_id: string) {
   `;
 
     // Fetch Instagram account details from Facebook Graph API
-    const instagramAccountsWithDetails = await Promise.all(
-        rows.map(async (account: any) => {
+    const instagramAccountsWithDetails: InstagramAccountWithDetails[] = await Promise.all(
+        rows.map(async (account: InstagramAccountRow) => {
             try {
                 const response = await fetch(
                     `https://graph.facebook.com/${graph_api_version}/${account.instagram_account_id}?fields=ig_username&access_token=${account.access_token}`

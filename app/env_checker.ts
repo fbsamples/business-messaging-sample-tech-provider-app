@@ -5,51 +5,47 @@
 
 
 // Define the type for required environment variables
-type RequiredEnvVars = {
+export type RequiredEnvVars = {
     [key: string]: string | undefined;
 };
 
-function checkEnvironmentVariables(requiredEnvVars: RequiredEnvVars) {
-    // Check for missing environment variables
-    const missingEnvVars = Object.entries(requiredEnvVars)
-        .filter(([_key, value]) => !value)
-        .map(([key]) => key);
+export type MissingEnvVarInfo = {
+    name: string;
+    description: string;
+};
 
-    if (missingEnvVars.length > 0) {
-        const errorMessage = `Missing required environment variables: ${missingEnvVars.join(', ')}. Please check your .env.local file and ensure all required variables are set.`;
-        console.error('❌ Environment Configuration Error:', errorMessage);
+export const ENV_VAR_DESCRIPTIONS: { [key: string]: string } = {
+    // Facebook/Meta Configuration
+    'FB_APP_ID': 'Facebook App ID for the application',
+    'FB_APP_SECRET': 'Facebook App Secret (private)',
+    'FB_BUSINESS_ID': 'Facebook Business Manager ID',
+    'FB_GRAPH_API_VERSION': 'Facebook Graph API version to use',
+    'FB_REG_PIN': 'Facebook Registration PIN (private)',
+    'FB_VERIFY_TOKEN': 'Facebook Webhook Verify Token (private)',
 
-        // Provide detailed information about missing variables
-        console.error('\n📋 Missing Environment Variables:');
-        missingEnvVars.forEach(varName => {
-            const descriptions: { [key: string]: string } = {
-                'ABLY_KEY': 'Ably API key for real-time messaging',
-                'APP_BASE_URL': 'Base URL for Auth0 redirects',
-                'AUTH0_CLIENT_ID': 'Auth0 client ID',
-                'AUTH0_CLIENT_SECRET': 'Auth0 client secret',
-                'AUTH0_DOMAIN': 'Auth0 domain',
-                'AUTH0_SECRET': 'Auth0 secret for session encryption',
-                'FB_APP_ID': 'Facebook App ID for the application',
-                'FB_APP_SECRET': 'Facebook App Secret (private)',
-                'FB_BUSINESS_ID': 'Facebook Business Manager ID',
-                'FB_GRAPH_API_VERSION': 'Facebook Graph API version to use',
-                'FB_REG_PIN': 'Facebook Registration PIN (private)',
-                'FB_TP_CONFIG_IDS': 'Comma-separated list of TP config IDs in format "name|id,name2|id2"',
-                'FB_VERIFY_TOKEN': 'Facebook Webhook Verify Token (private)',
-                'POSTGRES_URL': 'PostgreSQL connection URL',
-                'TP_CONTACT_EMAIL': 'Contact email for the application'
-            };
-            console.error(`   ${varName}: ${descriptions[varName] || 'No description available'}`);
-        });
+    // Auth0 Configuration
+    'APP_BASE_URL': 'Base URL of the application (e.g., http://localhost:3000)',
+    'AUTH0_DOMAIN': 'Auth0 domain (e.g., your-tenant.auth0.com)',
+    'AUTH0_SECRET': 'Auth0 secret for session encryption',
+    'AUTH0_CLIENT_ID': 'Auth0 client ID',
+    'AUTH0_CLIENT_SECRET': 'Auth0 client secret',
 
-        console.error('\n💡 To fix this:');
-        console.error('   1. Create a .env.local file in your project root');
-        console.error('   2. Add the missing environment variables');
-        console.error('   3. Restart your development server');
+    // Database Configuration
+    // Auto configured if you use Vercel to connect your DB
+    'POSTGRES_URL': 'PostgreSQL connection URL',
 
-    } else {
-        console.log('✅ All required environment variables are present');
-    }
+    // Ably Configuration
+    'ABLY_KEY': 'Ably API key for real-time messaging',
+
+    // Contact Information
+    'TP_CONTACT_EMAIL': 'Contact email for the application'
+};
+
+export function getMissingEnvVars(): MissingEnvVarInfo[] {
+    return Object.entries(ENV_VAR_DESCRIPTIONS)
+        .filter(([key]) => !(key in process.env))
+        .map(([key]) => ({
+            name: key,
+            description: ENV_VAR_DESCRIPTIONS[key] || 'No description available'
+        }));
 }
-
-export default checkEnvironmentVariables;

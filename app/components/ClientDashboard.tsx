@@ -48,7 +48,7 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
         const esVersion = searchParams.get('esVersion') || public_es_versions[0];
         const esFeatureType = searchParams.get('esFeatureType') || '';
         const esFeatures = searchParams.get('esFeatures') ? searchParams.get('esFeatures').split(',') : [];
-        const tpConfig = searchParams.get('tpConfig') || tp_configs[0].tpconfigid;
+        const tpConfig = searchParams.get('tpConfig') || tp_configs[0].id;
 
         return { esVersion, esFeatureType, esFeatures, tpConfig };
     };
@@ -403,7 +403,7 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
                                 >
                                     {
                                         tp_configs.map((config) => (
-                                            <option key={config.tpconfigid} value={config.tpconfigid}>{config.name} ({config.tpconfigid})</option>
+                                            <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
                                         ))
                                     }
                                 </select>

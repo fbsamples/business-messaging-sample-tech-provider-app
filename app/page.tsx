@@ -11,7 +11,7 @@ import publicConfig from "@/app/public_config";
 import { getAppDetails } from "@/app/api/be_utils";
 import { auth0 } from "@/lib/auth0";
 
-const { app_id, business_id, tp_configs, public_es_feature_options, public_es_versions, public_es_feature_types, es_prefilled_setup } = publicConfig;
+const { app_id, business_id, public_es_feature_options, public_es_versions, public_es_feature_types, es_prefilled_setup } = publicConfig;
 
 export default async function Home() {
   // Fetch the user session
@@ -25,6 +25,7 @@ export default async function Home() {
   const userId = session.user.email;
   const appDetails = await getAppDetails(app_id);
   const app_name = appDetails.name;
+  const tp_configs = appDetails.config_ids;
 
   return (
     <div className="min-h-screen">

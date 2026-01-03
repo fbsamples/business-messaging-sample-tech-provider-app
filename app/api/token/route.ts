@@ -34,7 +34,7 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
                     return Promise.all([
                         wrapFn(saveTokens(user_id, app_id, business_id, page_ids, ad_account_ids, waba_ids, dataset_ids, catalog_ids, instagram_account_ids, access_token), "saveTokens"),
                         (es_option_reg && phone_number_id) ? wrapFn(registerNumber(phone_number_id, access_token), "registerNumber") : skipProm('registerNumber'),
-                        (es_option_sub) ? wrapFn(subscribeWebhook({ access_token: access_token, waba_id }), "subscribeWebhook") : skipProm('subscribeWebhook')
+                        (es_option_sub) ? wrapFn(subscribeWebhook(access_token, waba_id), "subscribeWebhook") : skipProm('subscribeWebhook')
                     ])
                         .then(response => [{ fun, status, result: '***', error }, response]);
 

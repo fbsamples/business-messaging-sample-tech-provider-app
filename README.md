@@ -48,9 +48,7 @@ FB_APP_SECRET='your-facebook-app-secret'
 FB_BUSINESS_ID='your-facebook-business-id'
 FB_GRAPH_API_VERSION='fb-graph-api-version'
 FB_REG_PIN='your-registration-pin'
-FB_TP_CONFIG_IDS='tp-config-ids-comma-separated'
 FB_VERIFY_TOKEN='your-webhook-verify-token'
-FB_SUAT='your-facevook-system-user-access-token'
 
 # Tech Provider Configuration
 TP_CONTACT_EMAIL='email-address'
