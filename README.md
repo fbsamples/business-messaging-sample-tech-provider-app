@@ -5,6 +5,8 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
+# 🚧 WORK IN PROGRESS 🚧
+
 # Meta business messaging tech provider template
 
 This is a Next.js template for Meta business messaging tech providers. It provides a foundation for building WhatsApp Business Platform integrations with features like:
@@ -15,20 +17,24 @@ This is a Next.js template for Meta business messaging tech providers. It provid
 - Webhook handling
 - User authentication via Auth0
 - Meta Business Manager integration
+- Messaging Inbox
 
 ## Quick Start
 
-### 1. Deploy
+### 1. Prerequisites
+
+Make sure you have an Ably accont/app, Auth0 account/app, and Meta Developer account/app set up (see [Configuration](#configuration) for more details). You will need some information from these accounts/apps to set the environment variables.
+### 2. Deploy
 Deploy this template to a new Vercel project by clicking the button below
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%fbsamples%2Fbusiness-messaging-sample-tech-provider-app&env=ABLY_KEY,APP_BASE_URL,AUTH0_CLIENT_ID,AUTH0_DOMAIN,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_BUSINESS_ID,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_TP_CONFIG_IDS,FB_VERIFY_TOKEN,FB_SUAT,TP_CONTACT_EMAIL&envDescription=Variables%20to%20configure%20the%20app&envLink=https%3A%2F%2Fgithub.com%fbsamples%2Fbusiness-messaging-sample-tech-provider-app&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
 
-### 2. Create a fork
+### 3. Create a fork
 Within the flow started above, pick a fork name for the code base
 
-### 3. Connect database
+### 4. Connect database
 Within the flow above, connect the Neon DB
 
-### 4. Enter the environment variables
+### 5. Enter the environment variables
 Within the flow above enter all the environment variables
 
 ```env
@@ -36,7 +42,7 @@ Within the flow above enter all the environment variables
 ABLY_KEY='your-ably-api-key'
 
 # Auth0 Configuration
-APP_BASE_URL='http://localhost:3000'
+APP_BASE_URL='your-deployment-url'
 AUTH0_DOMAIN='your-tenant.auth0.com'
 AUTH0_CLIENT_ID='your-auth0-client-id'
 AUTH0_CLIENT_SECRET='your-auth0-client-secret'
@@ -47,7 +53,7 @@ FB_APP_ID='your-facebook-app-id'
 FB_APP_SECRET='your-facebook-app-secret'
 FB_BUSINESS_ID='your-facebook-business-id'
 FB_GRAPH_API_VERSION='fb-graph-api-version'
-FB_REG_PIN='your-registration-pin'
+FB_REG_PIN='your-registration-pin' (any 6 digits)
 FB_VERIFY_TOKEN='your-webhook-verify-token'
 
 # Tech Provider Configuration
@@ -173,6 +179,9 @@ CREATE UNIQUE INDEX user_app_waba_key on wabas (user_id, app_id, waba_id);
 Ably is used to handle sockets to live stream conversations and webhook data to the browser.
 
 1. Create an Ably account
+2. Add Ably environment variables to Vercel deployment
+
+Go to [Ably](https://ably.com/) and create a new account. Then, create a new application. You can find more details on how to set up Ably in the [Ably documentation](https://ably.com/docs). The only thing you will needs an API key from the Ably dashboard.
 
 ### Auth0 setup
 
@@ -180,8 +189,14 @@ Auth0 is used as the login library.
 
 1. Create an Auth0 account
 2. Create a new application
-3. Configure callback URLs
-4. Add environment variables
+3. Configure allowed callback URLs and allowed logout URLs
+4. Add Auth0 environment variables to Vercel deployment
+
+Go to [Auth0](https://auth0.com/) and create a new account. Then, create a new application and configure the "Allowed Callback URLs" and "Allowed Logout URLs". You can find more details on how to set up Auth0 in the [Auth0 documentation](https://auth0.com/docs/quickstart/webapp/nextjs/01-login).
+
+The allowed callback URLs should include the URL of your Vercel deployment followed by `/auth/callback`. For example, if your Vercel deployment is at `https://business-messaging-sample-tech-provider-app.vercel.app`, the allowed callback URLs should be `https://business-messaging-sample-tech-provider-app.vercel.app/auth/callback`.
+
+The allowed logout URLs should be the URL of your Vercel deployment. For example, if your Vercel deployment is at `https://business-messaging-sample-tech-provider-app.vercel.app`, the allowed logout URLs should be `https://business-messaging-sample-tech-provider-app.vercel.app`.
 
 ### Meta setup
 
@@ -189,8 +204,12 @@ You need a configured Meta app and business
 
 1. Create a Meta Developer account
 2. Create a new app
-3. Create a new Business Portfolio and connect it to the app
-4. Add the Vercel deployment domain to the app's valid callback urls
+3. Add the WhatsApp Product
+4. Go through app review for the permissions you need (or add any other testers/developers to the app)
+5. Create a new Business Portfolio and connect it to the app
+6. Add the Vercel deployment domain to the app's valid callback urls
+7. Set the webhook callback URL to the Vercel deployment `domain/api/webhooks`
+8. Add Meta environment variables to Vercel deployment
 
 ## License
 
