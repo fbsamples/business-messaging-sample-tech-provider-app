@@ -207,7 +207,7 @@ You need a configured Meta app and business
 3. Add the WhatsApp Product
 4. Go through app review for the permissions you need (or add any other testers/developers to the app)
 5. Create a new Business Portfolio and connect it to the app
-6. Add the Vercel deployment domain to the app's valid callback urls
+6. Add the Vercel deployment domain to the App Domains field in your app settings
 7. Set the webhook callback URL to the Vercel deployment `domain/api/webhooks`
 8. Add Meta environment variables to Vercel deployment
 
