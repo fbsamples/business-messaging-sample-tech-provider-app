@@ -39,6 +39,7 @@ export default function PhoneStatus({ phone }) {
         })
             .then(() => {
                 setCodeVerificationStatus('VERIFIED');
+                setStatus('PENDING');
             });
     }
     else if (status === 'DISCONNECTED' && codeVerificationStatus === "VERIFIED") {

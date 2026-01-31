@@ -390,3 +390,21 @@ export type PhoneTableRow = {
     phone_id: string;
     is_ack_bot_enabled: boolean;
 };
+
+// ============================================================================
+// Embedded Signup Session Info
+// ============================================================================
+
+export type SessionInfo = {
+    data: {
+        waba_id: string;
+        page_ids: string[];
+        catalog_ids: string[];
+        dataset_ids: string[];
+        business_id: string;
+        instagram_account_ids: string[];
+        phone_number_id?: string;
+    };
+    type: string;
+    event: string;
+};
