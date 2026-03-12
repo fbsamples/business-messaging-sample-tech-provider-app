@@ -143,3 +143,4 @@ dist
 next-env.d.ts
 
 certificates
+.env*.local

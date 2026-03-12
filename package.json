@@ -20,7 +20,8 @@
     "axios": "1.13.2",
     "next": "15.5.9",
     "react": "19.1.2",
-    "react-dom": "19.1.2"
+    "react-dom": "19.1.2",
+    "vercel": "^50.29.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.13",

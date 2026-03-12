@@ -6,7 +6,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import TpButton from '@/app/components/Button';
 import { SessionInfo } from '@/app/types/api';
 
 declare const FB: any;
@@ -26,7 +25,7 @@ let code_outer: string | null = null;
 
 export default function FBL4BLauncher({
     app_id,
-    app_name,
+    app_name: _app_name,
     esConfig,
     onClickFbl4b,
     onBannerInfoChange,
@@ -82,9 +81,8 @@ export default function FBL4BLauncher({
                         }
                     }
                 }
-            } catch (err) {
-                // console.log('=== catch triggered ===', event, err);
-                // this is not an event that we are intereted in sincee JSON.parse(event.data) threw an exception
+            } catch (_err) {
+                // this is not an event that we are interested in since JSON.parse(event.data) threw an exception
             }
         };
 
@@ -96,11 +94,14 @@ export default function FBL4BLauncher({
     }, [app_id, onBannerInfoChange, onLastEventDataChange, onSaveToken]);
 
     return (
-            <TpButton
-                onClick={launchWhatsAppSignup}
-                title="Launch FBL4B"
-                subtitle={`Share your Meta assets with ${app_name}`}
-            />
-
+        <button
+            onClick={launchWhatsAppSignup}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1877F2] text-white text-sm font-medium rounded-lg hover:bg-[#166FE5] transition-colors"
+        >
+            Launch Embedded Signup
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+        </button>
     );
 }
