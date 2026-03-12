@@ -8,13 +8,22 @@
 import { useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { formatErrors } from '@/app/errorformat';
-import TpButton from '@/app/components/Button';
 import BspBanner from '@/app/components/BspBanner';
 import { feGraphApiPostWrapper } from '@/app/fe_utils';
 import FBL4BLauncher from '@/app/components/Fbl4bLauncher';
 import { SessionInfo } from '@/app/types/api';
 
-export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_configs, public_es_feature_options, public_es_versions, public_es_feature_types, es_prefilled_setup }) {
+// Info icon component for tooltips
+function InfoIcon() {
+    return (
+        <svg className="w-4 h-4 text-gray-400 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" strokeWidth={2} />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16v-4m0-4h.01" />
+        </svg>
+    );
+}
+
+export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_configs, public_es_feature_options: _public_es_feature_options, public_es_versions, public_es_feature_types, es_prefilled_setup }) {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -59,10 +68,9 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
 
     const computeEsConfig = (esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled) => {
         const esConfig: any = {
-            config_id: esOptionConfig, // configuration ID goes here
-            // auth_type: 'reauthenticate',
-            response_type: 'code', // must be set to 'code' for System User access token
-            override_default_response_type: true, // when true, any response types passed in the "response_type" will take precedence over the default types
+            config_id: esOptionConfig,
+            response_type: 'code',
+            override_default_response_type: true,
             extras: {
                 sessionInfoVersion: '3',
                 version: esOptionVersion,
@@ -79,7 +87,7 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
         return esConfig;
     }
 
-    const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+    const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     const [bannerInfo, setBannerInfo] = useState("");
     const [lastEventData, setLastEventData] = useState(null);
 
@@ -119,13 +127,13 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
         if (esOptionFeatureType === 'only_waba_sharing') setEs_option_reg(false);
         setEsOptionFeatureType(esOptionFeatureType);
         updateUrlParams({ esFeatureType: esOptionFeatureType });
-        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     }
 
     const setEsOptionConfigSetter = (esOptionConfig) => {
         setEsOptionConfig(esOptionConfig);
         updateUrlParams({ tpConfig: esOptionConfig });
-        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     }
 
     const setEs_option_regSetter = (es_option_regInner) => {
@@ -136,210 +144,187 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
     const setEsOptionVersionSetter = (esOptionVersion) => {
         setEsOptionVersion(esOptionVersion);
         updateUrlParams({ esVersion: esOptionVersion });
-        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     }
 
     const setEsOptionPrefilledSetter = (esOptionPrefilled) => {
         setEsOptionPrefilled(esOptionPrefilled);
-        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     }
 
-    const bannerChild = (lastEventData) ? (<pre>{bannerInfo + '\n' + '\n' + JSON.stringify(lastEventData, null, 2)}</pre>) : null;
+    const bannerChild = (lastEventData) ? (<pre className="text-xs whitespace-pre-wrap">{bannerInfo + '\n' + '\n' + JSON.stringify(lastEventData, null, 2)}</pre>) : null;
 
-    const handleOptionChange = (event) => {
-        const optionValue = [...event.target.selectedOptions];
-        const newESOptionFeatures = optionValue.map((value) => value.value);
-        setEsOptionFeatures(newESOptionFeatures);
-        updateUrlParams({ esFeatures: newESOptionFeatures });
-        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, newESOptionFeatures, esOptionVersion, esOptionPrefilled), null, 4));
+    const handleFeaturesChange = (e) => {
+        const newFeatures = e.target.value.split(',').map(f => f.trim()).filter(f => f);
+        setEsOptionFeatures(newFeatures);
+        updateUrlParams({ esFeatures: newFeatures });
+        setEsConfig(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, newFeatures, esOptionVersion, esOptionPrefilled), null, 2));
     };
 
-    const loggedInSection = (
-
-        <>
-            <div className="flex flex-row grow rounded-lg m-2 px-5 py-4 border-gray-300">
-
-                <div className="mr-5 mb-0 rounded-lg border border-transparent px-5 py-4 border-gray-300 bg-gray-100 text-xs">
-                    {/* My Assets Section */}
-                    <div className="mb-6">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">My Assets</h3>
-                        <div className="space-y-2">
-                            <TpButton href={`/my_wabas`} title="My WABAs" subtitle={"View all your WABAs"} />
-                            <TpButton href={`/my_pages`} title="My Pages" subtitle={"View all your Facebook Pages"} />
-                            <TpButton href={`/my_ad_accounts`} title="My Ad Accounts" subtitle={"View all your Facebook Ad Accounts"} />
-                            <TpButton href={`/my_datasets`} title="My Datasets" subtitle={"View all your Facebook Datasets"} />
-                            <TpButton href={`/my_catalogs`} title="My Catalogs" subtitle={"View all your Facebook Catalogs"} />
+    return (
+        <div className="flex gap-8 p-6">
+            {/* Main Configuration Panel */}
+            <div className="flex-1 min-w-0">
+                {/* App Information Section */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">App information</h2>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <span className="text-sm text-gray-600">App ID:</span>
+                            <a
+                                target="_blank"
+                                href={`https://developers.facebook.com/apps/${app_id}`}
+                                className="text-sm text-blue-600 hover:text-blue-800"
+                            >
+                                {app_id}
+                            </a>
                         </div>
-                    </div>
-
-                    {/* Developer Tools Section */}
-                    <div className="mb-6">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">Developer Tools</h3>
-                        <div className="space-y-2">
-                            <TpButton href={`/my_webhooks`} title="My Webhooks" subtitle={"Debug tool showing all your incoming webhooks"} />
-                        </div>
-                    </div>
-
-                    {/* Sample Products Section */}
-                    <div className="mb-6">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">Sample Products</h3>
-                        <div className="space-y-2">
-                            <TpButton href={`/my_inbox`} title="My Inbox" subtitle={"Send and receive messages across all your phone numbers"} />
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                            <span className="text-sm text-gray-600">BM ID:</span>
+                            <a
+                                target="_blank"
+                                href={`https://business.facebook.com/latest/settings/whatsapp_account?business_id=${bm_id}`}
+                                className="text-sm text-blue-600 hover:text-blue-800"
+                            >
+                                {bm_id}
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div className="mr-5 mb-0 rounded-lg border border-gray-200 px-6 py-6 bg-white shadow-xs text-sm min-w-[400px]">
-                    {/* App Information Section */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">App Information</h2>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="font-medium text-gray-700">App ID:</span>
-                                <a
-                                    target="_blank"
-                                    href={`https://developers.facebook.com/apps/${app_id}`}
-                                    className="text-blue-600 hover:text-blue-800 font-mono text-sm"
-                                >
-                                    {app_id}
-                                </a>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="font-medium text-gray-700">BM ID:</span>
-                                <a
-                                    target="_blank"
-                                    href={`https://business.facebook.com/latest/settings/whatsapp_account?business_id=${bm_id}`}
-                                    className="text-blue-600 hover:text-blue-800 font-mono text-sm"
-                                >
-                                    {bm_id}
-                                </a>
-                            </div>
+                {/* Server Options Section */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Server options</h2>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <span className="text-sm text-gray-700">Register number</span>
+                            <input
+                                type="checkbox"
+                                checked={es_option_reg}
+                                onChange={(e) => setEs_option_regSetter(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                            <span className="text-sm text-gray-700">Subscribe webhooks</span>
+                            <input
+                                type="checkbox"
+                                checked={es_option_sub}
+                                onChange={(e) => setEs_option_sub(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* Server Options Section */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Server Options</h2>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <label className="font-medium text-gray-700">Register Number</label>
-                                <input
-                                    type="checkbox"
-                                    checked={es_option_reg}
-                                    onChange={(e) => setEs_option_regSetter(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
-                                />
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <label className="font-medium text-gray-700">Subscribe Webhooks</label>
-                                <input
-                                    type="checkbox"
-                                    checked={es_option_sub}
-                                    onChange={(e) => setEs_option_sub(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
-                                />
-                            </div>
+                {/* Embedded Signup Specific Options Section */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Embedded Signup specific options</h2>
+                    <div className="space-y-4">
+                        {/* ES Version */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                ES version <InfoIcon />
+                            </label>
+                            <select
+                                value={esOptionVersion}
+                                onChange={(e) => setEsOptionVersionSetter(e.target.value)}
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                {public_es_versions.map((version) => (
+                                    <option key={version} value={version}>{version}</option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Use v2 for production, v3 for new integrations without legacy forks, or preview versions for testing.
+                            </p>
+                        </div>
+
+                        {/* ES Feature Type */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                ES feature type <InfoIcon />
+                            </label>
+                            <select
+                                value={esOptionFeatureType}
+                                onChange={(e) => setEsOptionFeatureTypeSetter(e.target.value)}
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">none</option>
+                                {public_es_feature_types[esOptionVersion].map((featureType) => (
+                                    <option key={featureType} value={featureType}>{featureType}</option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Choose whatsapp_business_app_onboarding for full WhatsApp onboarding or only_waba_sharing to restrict to WABA sharing only.
+                            </p>
+                        </div>
+
+                        {/* ES Features */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                ES features <InfoIcon />
+                            </label>
+                            <input
+                                type="text"
+                                value={esOptionFeatures.join(', ')}
+                                onChange={handleFeaturesChange}
+                                placeholder="marketing_messages_lite"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Enter feature flags to enable specific onboarding capabilities. Leave empty for default.
+                            </p>
+                        </div>
+
+                        {/* ES Pre-filled */}
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <span className="text-sm text-gray-700">
+                                ES pre-filled <InfoIcon />
+                            </span>
+                            <input
+                                type="checkbox"
+                                checked={esOptionPrefilled}
+                                onChange={(e) => setEsOptionPrefilledSetter(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
                         </div>
                     </div>
+                </div>
 
-                    {/* ES Specific Options Section */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">ES Specific Options</h2>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">ES Version</label>
-                                <select
-                                    value={esOptionVersion}
-                                    onChange={(e) => { console.log(e.target.value); setEsOptionVersionSetter(e.target.value) }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                    {public_es_versions.map((version) => (
-                                        <option key={version} value={version}>{version}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">ES Feature Type</label>
-                                <select
-                                    value={esOptionFeatureType}
-                                    onChange={(e) => { console.log(e.target.value); setEsOptionFeatureTypeSetter(e.target.value) }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                    {
-                                        public_es_feature_types[esOptionVersion].map((featureType) => (
-                                            <option key={featureType} value={featureType}>{featureType}</option>
-                                        ))
-                                    }
-                                    <option value="">none</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">ES Features</label>
-                                <select
-                                    multiple={true}
-                                    value={esOptionFeatures}
-                                    onChange={handleOptionChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-h-[80px]"
-                                >
-                                    {
-                                        public_es_feature_options[esOptionVersion].map((feature) => (
-                                            <option key={feature} value={feature}>{feature}</option>
-                                        ))
-                                    }
-                                </select>
-                            </div>
-
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <label className="font-medium text-gray-700">ES Pre-filled</label>
-                                <input
-                                    type="checkbox"
-                                    checked={esOptionPrefilled}
-                                    onChange={(e) => setEsOptionPrefilledSetter(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
-                                />
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* FBL4B Options Section */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">FBL4B Options</h2>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">TP Config</label>
-                                <select
-                                    value={esOptionConfig}
-                                    onChange={(e) => { console.log(e.target.value); setEsOptionConfigSetter(e.target.value) }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                    {
-                                        tp_configs.map((config) => (
-                                            <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
-                                        ))
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    {/* Resulting JSON Section */}
+                {/* Configuration Options Section */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Configuration options</h2>
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Resulting JSON</h2>
-                        <textarea
-                            value={esConfig}
-                            onChange={(e) => { setEsConfig(e.target.value) }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-mono text-xs resize-none"
-                            rows={12}
-                            placeholder="ES configuration will appear here..."
-                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">TP config</label>
+                        <select
+                            value={esOptionConfig}
+                            onChange={(e) => setEsOptionConfigSetter(e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {tp_configs.map((config) => (
+                                <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
-                <div className="mr-5 mb-0 rounded-lg border border-transparent px-5 py-4 border-gray-300 bg-gray-100 text-xs">
 
+                {/* Resulting JSON Section */}
+                <div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Resulting JSON</h2>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap overflow-auto">
+                            {esConfig}
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Panel - Test Integration */}
+            <div className="w-80">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Test Integration</h3>
+                    <p className="text-sm text-gray-600 mb-4">Share your Meta assets with {app_name}</p>
                     <FBL4BLauncher
                         app_id={app_id}
                         app_name={app_name}
@@ -354,7 +339,6 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
                     </BspBanner>
                 </div>
             </div>
-        </>
+        </div>
     );
-    return loggedInSection;
 }
