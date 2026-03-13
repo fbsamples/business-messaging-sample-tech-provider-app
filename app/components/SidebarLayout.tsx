@@ -255,8 +255,11 @@ export default function SidebarLayout({
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Top Header Bar */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <div className="font-semibold text-gray-900">{app_name}</div>
+      <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+        <div className="font-semibold text-gray-900">Sample App</div>
+        <div className="font-semibold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+          {app_name}
+        </div>
         <div className="flex items-center gap-6">
           <Link
             href="/privacy"
