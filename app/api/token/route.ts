@@ -20,7 +20,15 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
 
     console.log("/token", "incoming data", data);
 
-    const { code, waba_id, waba_ids, business_id, ad_account_ids, page_ids, dataset_ids, catalog_ids, instagram_account_ids, app_id, phone_number_id, es_option_reg, es_option_loc, es_option_sys, es_option_sub } = data;
+    const { code, waba_id, waba_ids: rawWabaIds, business_id, ad_account_ids: rawAdAccountIds, page_ids: rawPageIds, dataset_ids: rawDatasetIds, catalog_ids: rawCatalogIds, instagram_account_ids: rawInstagramAccountIds, app_id, phone_number_id, es_option_reg, es_option_loc, es_option_sys, es_option_sub } = data;
+
+    // Default arrays to [] and construct waba_ids from singular waba_id if needed
+    const waba_ids = rawWabaIds || (waba_id ? [waba_id] : []);
+    const page_ids = rawPageIds || [];
+    const ad_account_ids = rawAdAccountIds || [];
+    const dataset_ids = rawDatasetIds || [];
+    const catalog_ids = rawCatalogIds || [];
+    const instagram_account_ids = rawInstagramAccountIds || [];
 
     console.log("/token", "waba_ids", waba_ids, "app_id", app_id, "phone_number_id", phone_number_id, "es_option_reg", es_option_reg, "es_option_loc", es_option_loc, "es_option_sys", es_option_sys, "es_option_sub", es_option_sub);
 
