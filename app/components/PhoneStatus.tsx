@@ -9,103 +9,43 @@
 import { feGraphApiPostWrapper } from '@/app/fe_utils';
 import { useState } from 'react';
 
-export default function PhoneStatus({ phone }) {
+export default function PhoneStatus({ phone, onRegisterClick }: { phone: any; onRegisterClick?: () => void }) {
 
     const [status, setStatus] = useState(phone.status);
     const [isLoading, setIsLoading] = useState(false);
-    const [codeVerificationStatus, setCodeVerificationStatus] = useState(phone.code_verification_status);
-    const [otpCode, setOtpCode] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
     let tooltipMsg = null;
-    let onClickHandler = () => new Promise(() => { })
 
-    if (status === 'DISCONNECTED' && (codeVerificationStatus === "NOT_VERIFIED" || codeVerificationStatus === "EXPIRED")) {
-        tooltipMsg = "Click to request code";
-        onClickHandler = () => feGraphApiPostWrapper(`/api/request_code`, {
-            waba_id: phone.wabaId,
-            phone_number_id: phone.id,
-        })
-            .then(() => {
-                setStatus('SENT');
-            });
-    }
-    else if (status === 'SENT') {
-        tooltipMsg = "Hit enter to verify code";
-        onClickHandler = () => feGraphApiPostWrapper(`/api/verify_code`, {
-            wabaId: phone.wabaId,
-            phoneId: phone.id,
-            otpCode: otpCode,
-        })
-            .then(() => {
-                setCodeVerificationStatus('VERIFIED');
-                setStatus('PENDING');
-            });
-    }
-    else if (status === 'DISCONNECTED' && codeVerificationStatus === "VERIFIED") {
-        tooltipMsg = "Click to register";
-        onClickHandler = () => feGraphApiPostWrapper(`/api/register`, {
-            wabaId: phone.wabaId,
-            phoneId: phone.id,
-        }).then(() => {
-            setStatus('CONNECTED');
-        });
-    }
-    else if (status === 'PENDING' && codeVerificationStatus === "VERIFIED") {
-        tooltipMsg = "Click to register";
-        onClickHandler = () => feGraphApiPostWrapper(`/api/register`, {
-            wabaId: phone.wabaId,
-            phoneId: phone.id,
-        }).then(() => {
-            setStatus('CONNECTED');
-        });
-    }
-    else if (status === 'CONNECTED') {
+    if (status === 'CONNECTED') {
         tooltipMsg = "Click to disconnect";
-        onClickHandler = () => feGraphApiPostWrapper(`/api/deregister`, {
-            wabaId: phone.wabaId,
-            phoneId: phone.id,
-        }).then(() => {
-            setStatus('DISCONNECTED');
-        });
+    } else {
+        tooltipMsg = "Click to register";
     }
 
     const onClickHandlerWrapper = () => {
-        setIsLoading(true);
-        onClickHandler().then(() => {
-            setIsLoading(false);
-        });
-    }
-
-    const onChangeWrapper = (e) => {
-        setOtpCode(e.target.value);
-    };
-
-    const onKeyDownHandler = (e) => {
-        if (e.key === 'Enter') {
-            onClickHandlerWrapper();
+        if (status === 'CONNECTED') {
+            setIsLoading(true);
+            feGraphApiPostWrapper(`/api/deregister`, {
+                wabaId: phone.wabaId,
+                phoneId: phone.id,
+            }).then(() => {
+                setStatus('DISCONNECTED');
+            }).catch((error) => {
+                console.error('Failed to deregister phone:', error);
+            }).finally(() => {
+                setIsLoading(false);
+            });
+        } else {
+            onRegisterClick?.();
         }
     };
 
-    const otpInput = (
-        <input
-            type="text"
-            className='w-16 pl-1 bg-transparent border-b border-gray-300 focus:border-gray-500 focus:outline-hidden'
-            value={otpCode}
-            onChange={onChangeWrapper}
-            placeholder="Enter code"
-        />
-    )
-
-    let content = <>...</>;
-    if (!isLoading) {
-        content = (
-            <div className="flex items-center gap-1">
-                <span className="font-medium">{status}</span>
-                {status === 'SENT' && otpInput}
-            </div>
-        );
-    }
+    const content = isLoading ? <>...</> : (
+        <div className="flex items-center gap-1">
+            <span className="font-medium">{status}</span>
+        </div>
+    );
 
     const statusColor = status === 'CONNECTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
@@ -122,7 +62,6 @@ export default function PhoneStatus({ phone }) {
                     ${statusColor}
                     h-8`}
                     onClick={onClickHandlerWrapper}
-                    onKeyDown={onKeyDownHandler}
                     onMouseEnter={() => setShowTooltip(true)}
                     onMouseLeave={() => setShowTooltip(false)}
                     onFocus={() => setShowTooltip(true)}

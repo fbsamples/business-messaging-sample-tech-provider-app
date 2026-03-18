@@ -5,12 +5,13 @@
 
 
 import { auth0 } from "@/lib/auth0";
-import Header from "@/app/components/Header";
+import SidebarLayout from "@/app/components/SidebarLayout";
 import LoggedOut from "@/app/components/LoggedOut";
-import { getClientPhones } from '@/app/api/be_utils';
-import InboxLayout from '@/app/components/InboxLayout';
+import publicConfig from "@/app/public_config";
+import { getAppDetails, getClientPhones } from "@/app/api/be_utils";
+import InboxLayout from "@/app/components/InboxLayout";
 
-export default async function Home({ }) {
+export default async function Home() {
   // Fetch the user session
   const session = await auth0.getSession();
 
@@ -23,15 +24,13 @@ export default async function Home({ }) {
 
   const phones = await getClientPhones(userId);
 
-  return (
-    <>
-      <div className="flex flex-col min-h-screen">
-        <Header user_id={userId} />
-        <div className="flex-1 flex">
-          <InboxLayout phones={phones} />
-        </div>
-      </div>
-    </>
-  );
+  const appDetails = await getAppDetails(publicConfig.app_id);
+  const app_name = appDetails.name;
+  const logo_url = appDetails.logo_url;
 
+  return (
+    <SidebarLayout user_id={userId} logo_url={logo_url} app_name={app_name}>
+      <InboxLayout phones={phones} />
+    </SidebarLayout>
+  );
 }
