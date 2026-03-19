@@ -9,14 +9,41 @@
 import Ably from 'ably';
 import { useState, useEffect } from 'react';
 
+interface WebhookEntry {
+    field: string;
+    receivedAt: string;
+    status: number;
+    payload: unknown;
+}
+
+function extractField(data: unknown): string {
+    try {
+        const d = data as { entry?: { changes?: { field?: string }[] }[] };
+        return d?.entry?.[0]?.changes?.[0]?.field || 'Unknown';
+    } catch {
+        return 'Unknown';
+    }
+}
+
+function formatTimestamp(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 export default function LiveWebhooks() {
 
-    const [webhooks, setWebhooks] = useState([]);
+    const [webhooks, setWebhooks] = useState<WebhookEntry[]>([]);
     const [isMounted, setIsMounted] = useState(false);
 
-    function addWebhook(webhook) {
+    function addWebhook(data: unknown) {
+        const entry: WebhookEntry = {
+            field: extractField(data),
+            receivedAt: formatTimestamp(new Date()),
+            status: 200,
+            payload: data,
+        };
         setWebhooks((old_state) => {
-            return [webhook, ...old_state];
+            return [entry, ...old_state];
         });
     }
 
@@ -60,24 +87,36 @@ export default function LiveWebhooks() {
         return null;
     }
 
-    const rows = webhooks.map((webhook, index) => {
+    if (webhooks.length === 0) {
         return (
-            <div key={index}>
-                <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors border-gray-300 bg-gray-100 text-xs">
-                    <pre>
-                        {JSON.stringify(webhook, null, 2)}
-                    </pre>
-                </div>
-                <br />
-            </div>
-        )
-    })
+            <p className="text-sm text-gray-500">Listening for webhook events...</p>
+        );
+    }
 
     return (
-        <>
-            <div className="font-mono text-xs">
-                {rows}
-            </div>
-        </>
+        <div className="space-y-4">
+            {webhooks.map((webhook, index) => (
+                <div key={index} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                    <div className="px-5 py-3 border-b border-gray-200">
+                        <div className="text-sm font-semibold text-gray-900">
+                            Field: {webhook.field.charAt(0).toUpperCase() + webhook.field.slice(1)}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                            <span>{webhook.receivedAt}</span>
+                            <span>•</span>
+                            <span>Status: {webhook.status}</span>
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        <div className="text-sm font-semibold text-gray-900 mb-2">Payload:</div>
+                        <div className="bg-gray-100 rounded-md p-4 overflow-y-auto max-h-[200px]">
+                            <pre className="font-mono text-xs text-gray-800 whitespace-pre">
+                                {JSON.stringify(webhook.payload, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 }

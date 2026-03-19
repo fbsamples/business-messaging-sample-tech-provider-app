@@ -5,11 +5,15 @@
 
 
 import LiveWebhooks from "@/app/components/LiveWebhooks";
-import Header from "@/app/components/Header";
+import SidebarLayout from "@/app/components/SidebarLayout";
 import LoggedOut from "@/app/components/LoggedOut";
+import publicConfig from "@/app/public_config";
+import { getAppDetails } from "@/app/api/be_utils";
 import { auth0 } from "@/lib/auth0";
 
-export default async function Home({ }) {
+const { app_id } = publicConfig;
+
+export default async function Home() {
   // Fetch the user session
   const session = await auth0.getSession();
 
@@ -19,17 +23,19 @@ export default async function Home({ }) {
   }
 
   const userId = session.user.email;
-
+  const appDetails = await getAppDetails(app_id);
+  const app_name = appDetails.name;
+  const logo_url = appDetails.logo_url;
 
   return (
-    <>
-      <Header user_id={userId} />
-      <main className="flex min-h-screen flex-col items-center justify-between p-6">
-        <div>
-          Listening for webhook events...
+    <SidebarLayout user_id={userId} logo_url={logo_url} app_name={app_name}>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold text-gray-900">My Webhooks</h1>
+        <p className="text-sm text-gray-500 mt-1">Debug tool showing all your incoming webhooks.</p>
+        <div className="mt-6">
           <LiveWebhooks />
         </div>
-      </main >
-    </>
+      </div>
+    </SidebarLayout>
   );
 }
