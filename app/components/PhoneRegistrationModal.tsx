@@ -18,11 +18,12 @@ interface PhoneRegistrationModalProps {
     code_verification_status: string;
   };
   onClose: () => void;
+  onRegistrationComplete?: () => void;
 }
 
 type Step = 'request' | 'verify' | 'register' | 'done';
 
-export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistrationModalProps) {
+export default function PhoneRegistrationModal({ phone, onClose, onRegistrationComplete }: PhoneRegistrationModalProps) {
   const [step, setStep] = useState<Step>(() => {
     if (phone.status === 'CONNECTED') return 'done';
     if (phone.code_verification_status === 'VERIFIED') return 'register';
@@ -34,6 +35,8 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
   const [error, setError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(6);
   const [resendTimer, setResendTimer] = useState(0);
+  const [otpExpiry, setOtpExpiry] = useState(0);
+  const [otpExpired, setOtpExpired] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -41,6 +44,19 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
     const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendTimer]);
+
+  useEffect(() => {
+    if (otpExpiry <= 0) return;
+    const timer = setTimeout(() => {
+      const next = otpExpiry - 1;
+      setOtpExpiry(next);
+      if (next === 0) {
+        setOtpExpired(true);
+        setError('Code expired. Please request a new one.');
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [otpExpiry]);
 
   function handleDigitChange(index: number, value: string) {
     if (!/^\d*$/.test(value)) return;
@@ -68,6 +84,8 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
       });
       setStep('verify');
       setResendTimer(60);
+      setOtpExpiry(600);
+      setOtpExpired(false);
     } catch {
       setError('Failed to request verification code. Please try again.');
     } finally {
@@ -87,9 +105,16 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
         otpCode,
       });
       setStep('register');
-    } catch {
+    } catch (err: unknown) {
       setAttempts(prev => prev - 1);
-      setError('Invalid code. Please check and try again.');
+      const errMsg = (err as { message?: string; code?: string })?.message ?? (err as { code?: string })?.code ?? '';
+      if (/expired/i.test(errMsg)) {
+        setError('Your code has expired. Please request a new one.');
+      } else if (/rate|limit/i.test(errMsg)) {
+        setError('Too many requests. Please wait a moment and try again.');
+      } else {
+        setError('Invalid code. Please check and try again.');
+      }
       setDigits(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
@@ -106,8 +131,16 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
         phoneId: phone.id,
       });
       setStep('done');
-    } catch {
-      setError('Failed to register phone. Please try again.');
+      onRegistrationComplete?.();
+    } catch (err: unknown) {
+      const errMsg = (err as { message?: string; code?: string })?.message ?? (err as { code?: string })?.code ?? '';
+      if (/expired/i.test(errMsg)) {
+        setError('Your code has expired. Please request a new one.');
+      } else if (/rate|limit/i.test(errMsg)) {
+        setError('Too many requests. Please wait a moment and try again.');
+      } else {
+        setError('Failed to register phone. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,44 +184,68 @@ export default function PhoneRegistrationModal({ phone, onClose }: PhoneRegistra
               We sent a verification code to {phone.display_phone_number}. It may take a few moments to arrive. To verify your number, enter the 6-digit code.
             </p>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Verification code</label>
-              <div className="flex gap-2 justify-center">
-                {digits.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    className="w-11 h-12 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                    value={digit}
-                    onChange={(e) => handleDigitChange(i, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(i, e)}
-                    maxLength={1}
-                    autoFocus={i === 0}
-                  />
-                ))}
+            {otpExpired ? (
+              <div className="text-center space-y-3 py-2">
+                <p className="text-sm text-red-600 font-medium">Code expired</p>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                  onClick={handleRequestCode}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Sending...' : 'Resend code'}
+                </button>
               </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification code</label>
+                  <div className="flex gap-2 justify-center">
+                    {digits.map((digit, i) => (
+                      <input
+                        key={i}
+                        ref={(el) => { inputRefs.current[i] = el; }}
+                        type="text"
+                        inputMode="numeric"
+                        className="w-11 h-12 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                        value={digit}
+                        onChange={(e) => handleDigitChange(i, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(i, e)}
+                        maxLength={1}
+                        autoFocus={i === 0}
+                      />
+                    ))}
+                  </div>
+                </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <button
-                className={`text-blue-600 hover:text-blue-800 ${resendTimer > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={handleRequestCode}
-                disabled={resendTimer > 0 || isLoading}
-              >
-                Resend code {resendTimer > 0 ? `(0:${resendTimer.toString().padStart(2, '0')})` : ''}
-              </button>
-              <span className="text-gray-500">{attempts}/6 attempts left</span>
-            </div>
+                <div className="flex items-center justify-between text-sm">
+                  <button
+                    className={`text-blue-600 hover:text-blue-800 ${resendTimer > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleRequestCode}
+                    disabled={resendTimer > 0 || isLoading}
+                  >
+                    Resend code {resendTimer > 0 ? `(0:${resendTimer.toString().padStart(2, '0')})` : ''}
+                  </button>
+                  <span className="text-gray-500">
+                    Code expires in {Math.floor(otpExpiry / 60)}:{(otpExpiry % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
 
-            <button
-              className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
-              onClick={handleVerifyCode}
-              disabled={isLoading || digits.some(d => !d)}
-            >
-              {isLoading ? 'Verifying...' : 'Next'}
-            </button>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">{attempts}/6 attempts left</span>
+                  {attempts === 0 && (
+                    <span className="text-red-600">Too many attempts. Please request a new code.</span>
+                  )}
+                </div>
+
+                <button
+                  className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                  onClick={handleVerifyCode}
+                  disabled={isLoading || digits.some(d => !d) || attempts === 0}
+                >
+                  {isLoading ? 'Verifying...' : 'Next'}
+                </button>
+              </>
+            )}
           </div>
         )}
 

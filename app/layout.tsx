@@ -47,7 +47,7 @@ export default function RootLayout({
     <html lang="en">
       <Script
         src="https://connect.facebook.net/en_US/sdk.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
 
       <body className={inter.className}>

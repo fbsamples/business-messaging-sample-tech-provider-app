@@ -90,7 +90,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId, _ph
                 }
             });
 
-            ablyClient.connection.once("connected", () => {
+            ablyClient.connection.on("connected", () => {
                 console.log("Connected to Ably!")
             })
 

@@ -13,7 +13,7 @@ async function createTokenRequest(clientId: string) {
     const ably_key = process.env.ABLY_KEY;
     const ably = new Ably.Realtime(ably_key);
     const r = await ably.auth.createTokenRequest({
-        ttl: 5000,
+        ttl: 3600000,
         clientId: clientId
     }, {
         key: ably_key

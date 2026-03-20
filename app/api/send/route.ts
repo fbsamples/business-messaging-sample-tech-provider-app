@@ -15,6 +15,6 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, _se
     const phone_number_id = body.phone_number_id;
     const dest_phone = body.dest_phone;
     const message_content = body.message_content;
-    await send(phone_number_id, access_token, dest_phone, message_content); // TODO: need error handling
-    return new NextResponse('{"register":"ok"}');
+    await send(phone_number_id, access_token, dest_phone, message_content);
+    return new NextResponse('{"send":"ok"}');
 });

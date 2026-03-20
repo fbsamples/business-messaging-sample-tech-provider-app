@@ -11,14 +11,12 @@ interface PhoneListSidebarProps {
     phones: PhoneDetails[];
     selectedPhoneId: string | null;
     onSelectPhone: (phone: PhoneDetails) => void;
-    onRegisterPhone: (phone: PhoneDetails) => void;
 }
 
 export default function PhoneListSidebar({
     phones,
     selectedPhoneId,
     onSelectPhone,
-    onRegisterPhone,
 }: PhoneListSidebarProps) {
     return (
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">

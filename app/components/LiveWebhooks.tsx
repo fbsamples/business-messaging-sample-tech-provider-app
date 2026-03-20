@@ -64,7 +64,7 @@ export default function LiveWebhooks() {
                 }
             });
 
-            ablyClient.connection.once("connected", () => {
+            ablyClient.connection.on("connected", () => {
                 console.log("Connected to Ably!")
             })
 

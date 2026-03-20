@@ -40,18 +40,28 @@ export default function FBL4BLauncher({
             if (session_info_outer && code_outer) {
                 onSaveToken(code_outer, session_info_outer);
             }
+        } else {
+            onBannerInfoChange("");
+            onLastEventDataChange(null);
         }
     };
 
     const launchWhatsAppSignup = () => {
         onClickFbl4b();
+        if (typeof FB === 'undefined') {
+            onBannerInfoChange("Facebook SDK is still loading. Please try again in a moment.");
+            return;
+        }
         const esConfigJson = JSON.parse(esConfig);
         onBannerInfoChange("ES Started...");
+        onLastEventDataChange(null);
+        session_info_outer = null;
+        code_outer = null;
         FB.login(fbLoginCallback, esConfigJson);
     };
 
     useEffect(() => {
-        window.fbAsyncInit = function () {
+        const initFB = () => {
             FB.init({
                 appId: app_id,
                 autoLogAppEvents: true,
@@ -59,6 +69,14 @@ export default function FBL4BLauncher({
                 version: 'v24.0'
             });
         };
+
+        // If FB SDK is already loaded, init immediately
+        if (typeof FB !== 'undefined') {
+            initFB();
+        } else {
+            // Otherwise set the callback for when it loads
+            window.fbAsyncInit = initFB;
+        }
 
         const cb = (event: MessageEvent) => {
             if (!event.origin.endsWith('facebook.com')) return;

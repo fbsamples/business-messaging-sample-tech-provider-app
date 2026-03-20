@@ -504,8 +504,21 @@ export async function getAckBotStatus(phoneId: string): Promise<boolean> {
     return isAckBotEnabled;
 }
 
-export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean): Promise<SqlResult> {
-    console.log('isAckBotEnabled', isAckBotEnabled);
+export async function getAckBotMessage(phoneId: string): Promise<string> {
+    const { rows }: { rows: { ack_bot_message?: string }[] } = await sql`SELECT ack_bot_message FROM phones WHERE phone_id = ${phoneId}`;
+    return rows[0]?.ack_bot_message || '';
+}
+
+export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean, ackBotMessage?: string): Promise<SqlResult> {
+    console.log('isAckBotEnabled', isAckBotEnabled, 'ackBotMessage', ackBotMessage);
+    if (ackBotMessage !== undefined) {
+        return await sql`
+            INSERT INTO phones (phone_id, is_ack_bot_enabled, ack_bot_message)
+            VALUES (${phoneId}, ${isAckBotEnabled}, ${ackBotMessage})
+            ON CONFLICT (phone_id)
+            DO UPDATE SET is_ack_bot_enabled = EXCLUDED.is_ack_bot_enabled, ack_bot_message = EXCLUDED.ack_bot_message
+        `;
+    }
     return await sql`
         INSERT INTO phones (phone_id, is_ack_bot_enabled)
         VALUES (${phoneId}, ${isAckBotEnabled})
