@@ -18,7 +18,7 @@
     "@vercel/speed-insights": "1.2.0",
     "ably": "2.12.0",
     "axios": "1.13.2",
-    "next": "15.5.9",
+    "next": "15.5.14",
     "react": "19.1.2",
     "react-dom": "19.1.2",
     "vercel": "^50.29.0"
