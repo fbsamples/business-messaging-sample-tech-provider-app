@@ -399,6 +399,7 @@ export type SessionInfo = {
     data: {
         waba_id: string;
         page_ids: string[];
+        ad_account_ids: string[];
         catalog_ids: string[];
         dataset_ids: string[];
         business_id: string;

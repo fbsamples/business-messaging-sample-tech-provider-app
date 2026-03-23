@@ -109,11 +109,11 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
 
     const handleSaveToken = useCallback((code: string, session_info: SessionInfo) => {
         setBannerInfo('Setting up WABA...');
-        const { waba_id, business_id, phone_number_id, page_ids, catalog_ids, dataset_ids, instagram_account_ids } = session_info.data;
+        const { waba_id, business_id, phone_number_id, page_ids, ad_account_ids, catalog_ids, dataset_ids, instagram_account_ids } = session_info.data;
         feGraphApiPostWrapper('/api/token', {
             code, app_id, waba_id, waba_ids: waba_id ? [waba_id] : [],
             business_id, phone_number_id,
-            page_ids: page_ids || [], ad_account_ids: [],
+            page_ids: page_ids || [], ad_account_ids: ad_account_ids || [],
             dataset_ids: dataset_ids || [], catalog_ids: catalog_ids || [],
             instagram_account_ids: instagram_account_ids || [],
             es_option_reg, es_option_sub, user_id
