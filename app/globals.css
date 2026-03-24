@@ -1,3 +1,19 @@
+@layer base {
+  :root {
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  code, pre, kbd, samp {
+    font-family: var(--font-mono);
+  }
+}
+
 /* Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -39,18 +55,13 @@
 
 @layer utilities {
   :root {
-    --foreground-rgb: 0, 0, 0;
+    --foreground-rgb: 30, 32, 38;
     --background-start-rgb: 214, 219, 220;
     --background-end-rgb: 255, 255, 255;
   }
 
   body {
     color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgb(var(--background-end-rgb))
-      )
-      rgb(var(--background-start-rgb));
+    background: #f8f9fb;
   }
 }

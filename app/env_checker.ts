@@ -43,7 +43,7 @@ export const ENV_VAR_DESCRIPTIONS: { [key: string]: string } = {
 
 export function getMissingEnvVars(): MissingEnvVarInfo[] {
     return Object.entries(ENV_VAR_DESCRIPTIONS)
-        .filter(([key]) => !(key in process.env))
+        .filter(([key]) => !process.env[key]?.trim())
         .map(([key]) => ({
             name: key,
             description: ENV_VAR_DESCRIPTIONS[key] || 'No description available'

@@ -20,19 +20,6 @@ const arrow_down = " \u{21B3} ";   // Down arrow for parallel operations
 // UTILITY FUNCTIONS
 // ============================================================================
 
-/**
- * Creates a string of repeated characters for indentation
- * @param size - Number of characters to repeat
- * @param char - Character to repeat (defaults to space)
- * @returns String of repeated characters
- */
-function spacer(size: number, char: string = ' '): string {
-    let str = "";
-    for (let i = 0; i < size; i++) {
-        str += char;
-    }
-    return str;
-}
 
 // ============================================================================
 // CORE PARSING FUNCTIONS
@@ -80,7 +67,7 @@ function parseS(str: string, indent: string, serial: any[]): string {
             str += content;
 
             // Increase indentation for next level
-            indent += spacer(content.length + 3);
+            indent += ' '.repeat(content.length + 3);
 
             // Add newline at the end of a serial sequence
             if (i === serial.length - 1) {
@@ -121,35 +108,6 @@ function wrapFn(promise: Promise<any>, label: string): Promise<any[]> {
         });
 }
 
-/**
- * Creates a function that chains operations with previous results
- * @param promise - Promise function to execute
- * @param label - Label for the operation
- * @returns Function that can be chained with previous results
- */
-function w(promise: (arg?: any) => Promise<any>, label: string): (prev_result?: any[]) => Promise<any[]> {
-    return (prev_result) => {
-        let arg;
-        if (!prev_result) prev_result = [];
-
-        // Extract result from previous operation if available
-        if (prev_result[prev_result.length - 1]) {
-            arg = prev_result[prev_result.length - 1].result;
-            if (prev_result[prev_result.length - 1]) {
-                prev_result = [];
-            }
-        }
-
-        // Execute promise and return status object
-        return promise(arg)
-            .then(data => {
-                return [...prev_result, { fun: label, status: "completed", result: data, error: null }];
-            })
-            .catch(err => {
-                return [...prev_result, { fun: label, status: "failed", result: null, error: err }];
-            });
-    };
-}
 
 /**
  * Creates a skipped operation status (for operations that are intentionally not executed)
@@ -164,6 +122,5 @@ function skipProm(label: string): any[] {
 // EXPORTS
 // ============================================================================
 export { formatErrors };
-export { w };
 export { wrapFn };
 export { skipProm };

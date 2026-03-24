@@ -20,7 +20,7 @@ export const POST = withAuth(async function logs(request, _session) {
         }
 
         await sql`
-      INSERT INTO logs (user_id, action, timestamp)
+      INSERT INTO logs (user_id, action, ts)
       VALUES (${user_id}, ${action}, CURRENT_TIMESTAMP)
     `;
 

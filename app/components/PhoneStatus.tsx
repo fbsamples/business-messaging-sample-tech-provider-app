@@ -25,10 +25,15 @@ export default function PhoneStatus({
     if (externalStatus && externalStatus !== status) {
       setStatus(externalStatus);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalStatus]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // Map raw Meta status to display label
+  const displayStatus =
+    status === 'PENDING' || phone.code_verification_status === 'NOT_VERIFIED'
+      ? 'UNVERIFIED'
+      : status;
 
   let tooltipMsg = null;
 
@@ -36,8 +41,8 @@ export default function PhoneStatus({
     tooltipMsg = 'Click to disconnect';
   } else if (status === 'DISCONNECTED' && phone.code_verification_status === 'VERIFIED') {
     tooltipMsg = 'Click to reconnect';
-  } else if (status === 'DISCONNECTED') {
-    tooltipMsg = 'Click to register';
+  } else if (status === 'DISCONNECTED' || status === 'PENDING') {
+    tooltipMsg = 'Verify phone number to connect';
   } else {
     tooltipMsg = `Status: ${status}`;
   }
@@ -76,7 +81,7 @@ export default function PhoneStatus({
     </div>
   ) : (
     <div className="flex items-center gap-1">
-      <span className="font-medium">{status}</span>
+      <span className="font-medium">{displayStatus}</span>
     </div>
   );
 
@@ -87,19 +92,22 @@ export default function PhoneStatus({
 
   return (
     <>
-      <div className="relative">
+      {/* Wrap in group so tooltip shows on hover of the whole area */}
+      <div
+        className="relative"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         <div
-          className={`w-24 text-center rounded-md px-2 py-1 mr-1 text-xs
+          className={`whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold
                     cursor-pointer transition-all duration-200 ease-in-out
                     hover:shadow-md hover:scale-105 active:scale-95
                     border border-gray-200 hover:border-gray-300
                     flex items-center justify-center
                     ${isLoading ? 'opacity-70' : 'opacity-100'}
                     ${statusColor}
-                    h-8`}
+                    h-7`}
           onClick={onClickHandlerWrapper}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
           onFocus={() => setShowTooltip(true)}
           onBlur={() => setShowTooltip(false)}
           role="button"
@@ -108,11 +116,11 @@ export default function PhoneStatus({
         </div>
         {showTooltip && tooltipMsg && (
           <div
-            className="absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap
-                    -top-8 left-1/2 transform -translate-x-1/2
+            className="pointer-events-none absolute z-50 px-3 py-2 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-lg whitespace-nowrap
+                    -top-9 left-1/2 transform -translate-x-1/2
                     transition-opacity duration-75 ease-in-out">
             {tooltipMsg}
-            <div className="absolute w-2 h-2 bg-gray-900 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
+            <div className="absolute w-2 h-2 bg-white border-r border-b border-slate-200 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
           </div>
         )}
       </div>

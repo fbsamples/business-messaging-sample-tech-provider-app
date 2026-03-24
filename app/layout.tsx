@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -15,7 +15,19 @@ import ErrorBoundary from "@/app/components/ErrorBoundary";
 import MissingEnvVars from "@/app/components/MissingEnvVars";
 import { getMissingEnvVars, MissingEnvVarInfo } from "@/app/env_checker";
 
-const inter = Inter({ subsets: ["latin"] });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 // TODO: Add metadata to env vars
 export const metadata: Metadata = {
@@ -36,7 +48,7 @@ export default function RootLayout({
   if (missingEnvVars.length > 0) {
     return (
       <html lang="en">
-        <body className={inter.className}>
+        <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
           <MissingEnvVars missingVars={missingEnvVars} />
         </body>
       </html>
@@ -50,7 +62,7 @@ export default function RootLayout({
         strategy="afterInteractive"
       />
 
-      <body className={inter.className}>
+      <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ErrorBoundary>{children}</ErrorBoundary>
         <SpeedInsights />
         <Analytics />

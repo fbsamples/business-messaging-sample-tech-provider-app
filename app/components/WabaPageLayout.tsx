@@ -2,20 +2,22 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-
 "use client";
-
 import { ReactNode } from "react";
 import SidebarLayout from "@/app/components/SidebarLayout";
+import { cn } from "@/lib/utils";
 
 interface WabaPageLayoutProps {
   children: ReactNode;
   user_id: string;
-  logo_url: string;
+  logo_url?: string;
   app_name: string;
   title: string;
+  description?: string;
   isEmpty?: boolean;
   emptyMessage?: string;
+  emptyDescription?: string;
+  icon?: React.ReactNode;
 }
 
 export default function WabaPageLayout({
@@ -24,19 +26,27 @@ export default function WabaPageLayout({
   logo_url,
   app_name,
   title,
+  description,
   isEmpty = false,
   emptyMessage = "No items found.",
+  emptyDescription,
+  icon,
 }: WabaPageLayoutProps) {
   return (
     <SidebarLayout user_id={user_id} logo_url={logo_url} app_name={app_name}>
-      <div className="p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+          {description && <p className="text-[13px] text-gray-500 mt-0.5">{description}</p>}
+        </div>
         {isEmpty ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
-            <p className="text-gray-500">{emptyMessage}</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
+            {icon && <div className="mb-3 flex justify-center text-gray-300">{icon}</div>}
+            <p className="text-sm font-medium text-gray-600">{emptyMessage}</p>
+            {emptyDescription && <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">{emptyDescription}</p>}
           </div>
         ) : (
-          <div className="space-y-4">{children}</div>
+          <div className="space-y-3">{children}</div>
         )}
       </div>
     </SidebarLayout>

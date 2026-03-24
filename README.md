@@ -64,104 +64,105 @@ TP_CONTACT_EMAIL='email-address'
 Once the project is finished deploying, go to the neon dashboard associated with the newly deployed Vercel project. Go into the SQL editor and paste the following commands to setup the right table schema.
 
 ```sql
-CREATE TABLE ad_accounts (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  ad_account_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS ad_accounts (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  ad_account_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_ad_account_key on ad_accounts (user_id, app_id, ad_account_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_ad_account_key ON ad_accounts (user_id, app_id, ad_account_id);
 
-CREATE TABLE businesses (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  business_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS businesses (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  business_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_business_key on businesses (user_id, app_id, business_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_business_key ON businesses (user_id, app_id, business_id);
 
-CREATE TABLE logs (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+CREATE TABLE IF NOT EXISTS logs (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id VARCHAR,
   action VARCHAR,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE pages (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  page_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS pages (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  page_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_page_key on pages (user_id, app_id, page_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_page_key ON pages (user_id, app_id, page_id);
 
-CREATE TABLE phones (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  phone_id BIGINT,
-  is_ack_bot_enabled TEXT,
+CREATE TABLE IF NOT EXISTS phones (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  phone_id BIGINT NOT NULL,
+  is_ack_bot_enabled BOOLEAN DEFAULT FALSE,
+  ack_bot_message TEXT DEFAULT '',
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX phone_key on phones (phone_id);
+CREATE UNIQUE INDEX IF NOT EXISTS phone_key ON phones (phone_id);
 
-CREATE TABLE catalogs (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  catalog_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS catalogs (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  catalog_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_catalog_key on catalogs (user_id, app_id, catalog_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_catalog_key ON catalogs (user_id, app_id, catalog_id);
 
-CREATE TABLE instagram_accounts (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  instagram_account_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS instagram_accounts (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  instagram_account_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_instagram_account_key on instagram_accounts (user_id, app_id, instagram_account_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_instagram_account_key ON instagram_accounts (user_id, app_id, instagram_account_id);
 
-CREATE TABLE datasets (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  dataset_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS datasets (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  dataset_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_dataset_key on datasets (user_id, app_id, dataset_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_dataset_key ON datasets (user_id, app_id, dataset_id);
 
-CREATE TABLE wabas (
-  key BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  waba_id BIGINT,
-  user_id VARCHAR,
-  app_id BIGINT,
+CREATE TABLE IF NOT EXISTS wabas (
+  key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  waba_id BIGINT NOT NULL,
+  user_id VARCHAR NOT NULL,
+  app_id BIGINT NOT NULL,
   business_id BIGINT,
   access_token TEXT,
   last_updated TIMESTAMP,
   ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX user_app_waba_key on wabas (user_id, app_id, waba_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_app_waba_key ON wabas (user_id, app_id, waba_id);
 ```
 
 ## Features

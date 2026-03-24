@@ -6,7 +6,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import TpButtonInner from "@/app/components/Button";
 import publicConfig from "@/app/public_config";
 import { getAppDetails } from "@/app/api/be_utils";
 
@@ -39,7 +38,15 @@ export default async function Header({ user_id }) {
                     <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">
                         {user_id}
                     </div>
-                    <TpButtonInner title="Logout" href="/auth/logout" />
+                    <a
+                        href="/auth/logout"
+                        className="group rounded-lg border border-transparent px-4 py-1 transition-colors hover:border-gray-300 hover:bg-gray-100 text-base font-semibold"
+                    >
+                        Logout
+                        <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
+                            {" ->"}
+                        </span>
+                    </a>
                 </div>
             </div>
         </>

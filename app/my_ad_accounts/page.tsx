@@ -2,46 +2,36 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-
 import { auth0 } from "@/lib/auth0";
 import { getAdAccounts, getAppDetails } from "@/app/api/be_utils";
+import { AdAccountWithDetails } from "@/app/types/api";
 import LoggedOut from "@/app/components/LoggedOut";
 import WabaPageLayout from "@/app/components/WabaPageLayout";
 import AdAccountCard from "@/app/components/AdAccountCard";
 import publicConfig from "@/app/public_config";
-
-interface AdAccount {
-  ad_account_id: string;
-  name?: string;
-  access_token: string;
-  business_id: string;
-}
+import { Megaphone } from "lucide-react";
 
 export default async function MyAdAccounts() {
   const session = await auth0.getSession();
-
-  if (!session) {
-    return <LoggedOut />;
-  }
+  if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appId = publicConfig.app_id;
-  const appDetails = await getAppDetails(appId);
-  const app_name = appDetails.name;
-  const logo_url = appDetails.logo_url;
-
+  const appDetails = await getAppDetails(publicConfig.app_id);
   const adAccounts = await getAdAccounts(userId);
 
   return (
     <WabaPageLayout
       title="My Ad Accounts"
+      description="Facebook Ad Accounts connected to your app."
       user_id={userId}
-      logo_url={logo_url}
-      app_name={app_name}
+      logo_url={appDetails.logo_url}
+      app_name={appDetails.name}
       isEmpty={adAccounts.length === 0}
-      emptyMessage="No ad accounts found. Ad accounts will appear here once they are connected to your account."
+      emptyMessage="No ad accounts found."
+      emptyDescription="Ad accounts will appear here once they are connected through the Embedded Signup flow."
+      icon={<Megaphone className="w-10 h-10" />}
     >
-      {adAccounts.map((account: AdAccount) => (
+      {adAccounts.map((account: AdAccountWithDetails) => (
         <AdAccountCard
           key={account.ad_account_id}
           ad_account_id={account.ad_account_id}

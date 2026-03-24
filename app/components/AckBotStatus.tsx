@@ -14,7 +14,7 @@ export default function AckBotStatus({ phone }: { phone: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [ackMessage, setAckMessage] = useState('');
-    const [_savedMessage, setSavedMessage] = useState('');
+    const [savedMessage, setSavedMessage] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
     // Load saved message when modal opens
@@ -89,14 +89,14 @@ export default function AckBotStatus({ phone }: { phone: any }) {
         <>
             <div className="relative">
                 <div
-                    className={`w-24 text-center rounded-md px-2 py-1 mr-1 text-xs
+                    className={`whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold
                         cursor-pointer transition-all duration-200 ease-in-out
                         hover:shadow-md hover:scale-105 active:scale-95
                         border border-gray-200 hover:border-gray-300
                         flex items-center justify-center
                         ${isLoading ? 'opacity-70' : 'opacity-100'}
                         ${statusColor}
-                        h-8`}
+                        h-7`}
                     onClick={isAckBotEnabled ? handleEditMessage : handleToggle}
                     onContextMenu={(e) => { e.preventDefault(); handleToggle(); }}
                     onMouseEnter={() => setShowTooltip(true)}
@@ -107,9 +107,9 @@ export default function AckBotStatus({ phone }: { phone: any }) {
                     {isLoading ? '...' : isAckBotEnabled ? 'AckBot On' : 'AckBot Off'}
                 </div>
                 {showTooltip && (
-                    <div className="absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap -top-8 left-1/2 transform -translate-x-1/2">
+                    <div className="absolute z-50 px-3 py-2 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-lg whitespace-normal -top-10 left-1/2 transform -translate-x-1/2">
                         {isAckBotEnabled ? 'Click to edit message, right-click to disable' : 'Click to enable AckBot'}
-                        <div className="absolute w-2 h-2 bg-gray-900 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
+                        <div className="absolute w-2 h-2 bg-white border-r border-b border-slate-200 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
                     </div>
                 )}
             </div>

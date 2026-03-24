@@ -2,38 +2,34 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-
 import { auth0 } from "@/lib/auth0";
 import { getWabas, getAppDetails } from "@/app/api/be_utils";
+import { WabaWithDetails } from "@/app/types/api";
 import LoggedOut from "@/app/components/LoggedOut";
 import WabaPageLayout from "@/app/components/WabaPageLayout";
 import WabaCard from "@/app/components/WabaCard";
 import publicConfig from "@/app/public_config";
-import type { WabaWithDetails } from "@/app/types/api";
+import { Building2 } from "lucide-react";
 
 export default async function MyWabas() {
   const session = await auth0.getSession();
-
-  if (!session) {
-    return <LoggedOut />;
-  }
+  if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appId = publicConfig.app_id;
-  const appDetails = await getAppDetails(appId);
-  const app_name = appDetails.name;
-  const logo_url = appDetails.logo_url;
-
+  const appDetails = await getAppDetails(publicConfig.app_id);
   const wabas = await getWabas(userId);
 
   return (
     <WabaPageLayout
-      title="My WhatsApp Business Accounts"
+      title="My WABAs"
+      description="WhatsApp Business Accounts connected to your app."
       user_id={userId}
-      logo_url={logo_url}
-      app_name={app_name}
+      logo_url={appDetails.logo_url}
+      app_name={appDetails.name}
       isEmpty={wabas.length === 0}
-      emptyMessage="No WhatsApp Business Accounts found. WABAs will appear here once they are connected to your account."
+      emptyMessage="No WABAs found."
+      emptyDescription="WABAs will appear here once they are connected through the Embedded Signup flow."
+      icon={<Building2 className="w-10 h-10" />}
     >
       {wabas.map((waba: WabaWithDetails) => (
         <WabaCard
@@ -41,7 +37,7 @@ export default async function MyWabas() {
           id={waba.id}
           name={waba.name || "Unnamed WABA"}
           access_token={waba.access_token || ""}
-          business_id={waba.business_id}
+          business_id={waba.business_id || ""}
         />
       ))}
     </WabaPageLayout>
