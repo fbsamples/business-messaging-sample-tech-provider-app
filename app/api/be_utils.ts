@@ -34,8 +34,6 @@ import type {
     InstagramAccountRow,
     InstagramAccountWithDetails,
     AppDetails,
-    SubscribedAppsResponse,
-    AssignedUsersResponse
 } from '../types/api';
 
 const { graph_api_version, redirect_uri } = publicConfig;

@@ -11,7 +11,7 @@ interface PageCardProps {
   business_id: string;
 }
 
-export default function PageCard({ id, name, access_token, business_id }: PageCardProps) {
+export default function PageCard({ id, name, access_token, business_id: _business_id }: PageCardProps) {
   const pageUrl = `https://www.facebook.com/${id}`;
   const tokenDebugUrl = `https://developers.facebook.com/tools/debug/accesstoken/?access_token=${access_token}&version=v23.0`;
   const truncatedToken = access_token ? `${access_token.substring(0, 20)}...` : "No token";

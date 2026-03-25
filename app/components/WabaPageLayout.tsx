@@ -5,7 +5,7 @@
 "use client";
 import { ReactNode } from "react";
 import SidebarLayout from "@/app/components/SidebarLayout";
-import { cn } from "@/lib/utils";
+import { cn as _cn } from "@/lib/utils";
 
 interface WabaPageLayoutProps {
   children: ReactNode;

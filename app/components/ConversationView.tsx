@@ -24,10 +24,10 @@ interface ConversationViewProps {
 }
 
 export default function ConversationView({
-  chatId,
-  displayName,
-  messages,
-  onSendMessage,
+    chatId: _chatId,
+    displayName,
+    messages,
+    onSendMessage,
 }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

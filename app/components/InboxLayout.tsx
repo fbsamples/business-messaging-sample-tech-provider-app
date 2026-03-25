@@ -229,7 +229,7 @@ export default function InboxLayout({phones}: {phones: PhoneDetails[]}) {
     };
   }, [addMessage, addChat]);
 
-  const phoneType = (phone: PhoneDetails) =>
+  const _phoneType = (phone: PhoneDetails) =>
     phone.is_on_biz_app ? 'SMB app' : 'ENTERPRISE';
 
   return (

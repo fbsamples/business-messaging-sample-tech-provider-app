@@ -25,6 +25,7 @@ export default function PhoneStatus({
     if (externalStatus && externalStatus !== status) {
       setStatus(externalStatus);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalStatus]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);

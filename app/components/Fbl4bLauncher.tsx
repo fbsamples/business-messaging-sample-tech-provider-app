@@ -169,6 +169,7 @@ export default function FBL4BLauncher({
             window.removeEventListener('message', cb);
             stopPolling();
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [app_id, onBannerInfoChange, onLastEventDataChange, onSaveToken]);
 
     return (

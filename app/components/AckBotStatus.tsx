@@ -14,7 +14,7 @@ export default function AckBotStatus({ phone }: { phone: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [ackMessage, setAckMessage] = useState('');
-    const [savedMessage, setSavedMessage] = useState('');
+    const [_savedMessage, setSavedMessage] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
     // Load saved message when modal opens

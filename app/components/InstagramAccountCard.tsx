@@ -11,7 +11,7 @@ interface InstagramAccountCardProps {
   business_id: string;
 }
 
-export default function InstagramAccountCard({ id, name, access_token, business_id }: InstagramAccountCardProps) {
+export default function InstagramAccountCard({ id, name, access_token, business_id: _business_id }: InstagramAccountCardProps) {
   const igUrl = `https://www.instagram.com/${name}/`;
   const tokenDebugUrl = `https://developers.facebook.com/tools/debug/accesstoken/?access_token=${access_token}&version=v23.0`;
   const truncatedToken = access_token ? `${access_token.substring(0, 20)}...` : "No token";
