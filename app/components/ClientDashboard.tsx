@@ -28,8 +28,17 @@ function RichTip({ content, children }: { content: React.ReactNode; children: Re
   const anchorRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  // Timer used to delay closing so the mouse can travel from trigger → popover
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
+
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+  const cancelClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
 
   const reposition = useCallback(() => {
     if (!anchorRef.current) return;
@@ -62,7 +71,6 @@ function RichTip({ content, children }: { content: React.ReactNode; children: Re
         top: rect.bottom + 10,
         left: clampedLeft,
         zIndex: 9999,
-        pointerEvents: 'none',
         fontFamily: 'inherit',
       });
     } else {
@@ -72,13 +80,13 @@ function RichTip({ content, children }: { content: React.ReactNode; children: Re
         left: clampedLeft,
         transform: 'translateY(-100%)',
         zIndex: 9999,
-        pointerEvents: 'none',
         fontFamily: 'inherit',
       });
     }
   }, []);
 
   const handleMouseEnter = () => {
+    cancelClose();
     setOpen(true);
     // Reposition after the tooltip renders so we can measure its height
     requestAnimationFrame(() => reposition());
@@ -94,11 +102,16 @@ function RichTip({ content, children }: { content: React.ReactNode; children: Re
       ref={anchorRef}
       className="inline-flex items-center"
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => setOpen(false)}
+      onMouseLeave={scheduleClose}
     >
       {children}
       {open && mounted && createPortal(
-        <div ref={tooltipRef} style={style}>
+        <div
+          ref={tooltipRef}
+          style={style}
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
+        >
           <div style={{
             background: 'white',
             border: '1px solid #e5e7eb',
@@ -252,12 +265,33 @@ const PREFILLED_TIP = (
   />
 );
 
-const PROVIDER_CONFIG_TIP = (
-  <TipBody
-    title="Provider Config"
-    body="Your Tech Provider configuration token. Each config maps to a distinct app setup in Meta's system — controls which app_id and permissions are used."
-  />
-);
+function makeProviderConfigTip(app_id: string | number, bm_id: string | number) {
+  const devxUrl = `https://developers.facebook.com/apps/${app_id}/business-login/configurations/?business_id=${bm_id}`;
+  return (
+    <div>
+      <div className="px-4 pt-3.5 pb-2 border-b border-gray-100">
+        <p className="text-[13px] font-bold text-gray-900">Provider Config</p>
+      </div>
+      <div className="px-4 py-3">
+        <p className="text-[12px] text-gray-500 leading-relaxed">
+          Your Tech Provider configuration token. Each config maps to a distinct app setup in Meta&apos;s system — controls which app_id and permissions are used.
+        </p>
+      </div>
+      <div className="px-4 pb-3.5 border-t border-gray-100 pt-3">
+        <p className="text-[12px] font-bold text-gray-800 mb-1">Need a new config?</p>
+        <a
+          href={devxUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-[12px] text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+        >
+          Create one in DevX
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+  );
+}
 
 function Toggle({ checked, onChange, label, tip }: { checked: boolean; onChange: (v: boolean) => void; label: string; tip: React.ReactNode }) {
   return (
@@ -474,7 +508,7 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
         <div className="space-y-5">
           <SectionCard icon={<Settings2 className="w-4 h-4" />} title="Provider Config" subtitle="Select a configuration token to use">
             <div className="space-y-5">
-              <SelectField label="Provider Config" tip={PROVIDER_CONFIG_TIP} value={esOptionConfig} onChange={(e) => setCfg(e.target.value)}>
+              <SelectField label="Provider Config" tip={makeProviderConfigTip(app_id, bm_id)} value={esOptionConfig} onChange={(e) => setCfg(e.target.value)}>
                 {tp_configs.map((config) => (
                   <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
                 ))}

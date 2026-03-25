@@ -75,24 +75,36 @@ export default function SidebarLayout({
       {/* Top Header Bar */}
       <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-2.5">
-          {/* Chat bubble + lightning bolt logo — no background square */}
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-            {/* Chat bubble */}
-            <path d="M4 6C4 4.895 4.895 4 6 4H22C23.105 4 24 4.895 24 6V18C24 19.105 23.105 20 22 20H16L11 24V20H6C4.895 20 4 19.105 4 18V6Z" fill="url(#logo-grad)" />
-            {/* Lightning bolt */}
-            <path d="M15.5 8L11 15H14.5L12.5 20L18 13H14.5L15.5 8Z" fill="white" />
+          {/* Inline SVG logo — chat bubble + centered lightning bolt */}
+          <svg
+            width="27"
+            height="27"
+            viewBox="0 0 256 256"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-label={app_name}
+            className="flex-shrink-0"
+          >
             <defs>
-              <linearGradient id="logo-grad" x1="4" y1="4" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <linearGradient id="logo-grad" x1="37" y1="37" x2="219" y2="219" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#6366F1" />
                 <stop offset="1" stopColor="#7C3AED" />
               </linearGradient>
             </defs>
+            {/* Rounded-rect chat bubble */}
+            <path
+              d="M37 55C37 44.8 44.8 37 55 37H201C211.2 37 219 44.8 219 55V165C219 175.2 211.2 183 201 183H146L101 219V183H55C44.8 183 37 175.2 37 165V55Z"
+              fill="url(#logo-grad)"
+            />
+            {/* Lightning bolt — centered */}
+            <path d="M137 55L96 119H128L110 165L160 101H128L137 55Z" fill="white" />
           </svg>
           <span className="font-semibold text-slate-700 tracking-tight">{app_name}</span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
           <PrivacyPolicyModal app_name={app_name} />
           <span className="text-sm font-medium text-slate-600">{user_id}</span>
+
           <a
             href="/auth/logout"
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
@@ -130,11 +142,11 @@ export default function SidebarLayout({
                           <item.Icon className="w-4 h-4" />
                         </span>
                         <div>
-                          <span className="text-[13px] font-semibold text-slate-700 block leading-snug">
+                          <span className="text-[14px] font-semibold text-slate-700 block leading-snug">
                             {item.label}
                           </span>
                           {item.description && (
-                            <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                            <p className="text-[12px] text-gray-400 mt-0.5 leading-snug">
                               {item.description}
                             </p>
                           )}
