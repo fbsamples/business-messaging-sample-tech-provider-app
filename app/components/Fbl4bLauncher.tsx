@@ -26,7 +26,6 @@ let code_outer: string | null = null;
 
 export default function FBL4BLauncher({
     app_id,
-    app_name: _app_name,
     esConfig,
     onClickFbl4b,
     onBannerInfoChange,
@@ -158,7 +157,7 @@ export default function FBL4BLauncher({
                         }
                     }
                 }
-            } catch (_err) {
+            } catch {
                 // this is not an event that we are interested in since JSON.parse(event.data) threw an exception
             }
         };

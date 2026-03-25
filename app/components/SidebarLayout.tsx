@@ -65,7 +65,6 @@ const navSections = [
 export default function SidebarLayout({
   children,
   user_id,
-  logo_url: _logo_url,
   app_name,
 }: SidebarLayoutProps) {
   const pathname = usePathname();

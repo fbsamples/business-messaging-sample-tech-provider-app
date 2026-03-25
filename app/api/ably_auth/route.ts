@@ -5,7 +5,7 @@
 
 
 export const dynamic = 'force-dynamic'; // static by default, unless reading the request
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import Ably from 'ably';
 import { withAuth } from "../auth_wrapper";
 
@@ -22,7 +22,7 @@ async function createTokenRequest(clientId: string) {
     return r;
 }
 
-export const GET = withAuth(async function myApiRoute(_request: NextRequest, session) {
+export const GET = withAuth(async function myApiRoute(_, session) {
     console.log('session ably_auth');
     console.log(session);
     const user = session.user;

@@ -8,7 +8,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { getTokenForWaba, verifyCode } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest, _session) {
+export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest) {
     try {
         const body = await request.json();
         const { wabaId, phoneId, otpCode } = body;

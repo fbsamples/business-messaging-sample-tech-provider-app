@@ -11,7 +11,7 @@ interface AdAccountCardProps {
   business_id: string;
 }
 
-export default function AdAccountCard({ ad_account_id, name, access_token, business_id: _business_id }: AdAccountCardProps) {
+export default function AdAccountCard({ ad_account_id, name, access_token }: AdAccountCardProps) {
   const adsManagerUrl = `https://www.facebook.com/adsmanager/manage/campaigns?act=${ad_account_id}`;
   const tokenDebugUrl = `https://developers.facebook.com/tools/debug/accesstoken/?access_token=${access_token}&version=v23.0`;
   const truncatedToken = access_token ? `${access_token.substring(0, 20)}...` : "No token";

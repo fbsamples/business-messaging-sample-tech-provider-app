@@ -74,9 +74,6 @@ export async function POST(request: NextRequest) {
     const msg_body = data.entry[0].changes[0].value.messages[0].text.body; // extract the message text from the webhook payload
     const phone_number_id =
       data.entry[0].changes[0].value.metadata.phone_number_id; // extract the phone number id from the webhook payload
-    const _displayName =
-        data.entry[0].changes[0].value?.contacts?.[0]?.profile?.name;
-
     const isAckBotEnabled = await getAckBotStatus(phone_number_id);
     if (isAckBotEnabled) {
       // Get custom auto-reply message, fall back to echoing the received message

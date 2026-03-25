@@ -148,7 +148,7 @@ export default function InboxLayout({phones}: {phones: PhoneDetails[]}) {
   // Ably connection — single connection for ALL phones
   useEffect(() => {
     const ablyClient = new Ably.Realtime({
-      authCallback: async (_tokenParams, callback) => {
+      authCallback: async (_, callback) => {
         fetch('/api/ably_auth')
           .then(res => res.json())
           .then(tokenRequest => callback(null, tokenRequest))
@@ -228,9 +228,6 @@ export default function InboxLayout({phones}: {phones: PhoneDetails[]}) {
       ablyClient.close();
     };
   }, [addMessage, addChat]);
-
-  const _phoneType = (phone: PhoneDetails) =>
-    phone.is_on_biz_app ? 'SMB app' : 'ENTERPRISE';
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-gray-50">

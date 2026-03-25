@@ -10,9 +10,9 @@ import Ably from 'ably';
 import { useState, useEffect } from 'react';
 import SendMessage from '@/app/components/SendMessage';
 
-export default function LivePhones({ phone_display, phone_number_id, wabaId, _phone_details }) {
+export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
 
-    const [_webhooks, setWebhooks] = useState([]);
+    const [, setWebhooks] = useState([]);
     const [messages, setMessages] = useState({});
     const [chats, setChats] = useState({});
 
@@ -77,7 +77,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId, _ph
         () => {
             console.log('useEffect run');
             const ablyClient = new Ably.Realtime({
-                authCallback: async (_tokenParams, callback) => {
+                authCallback: async (_, callback) => {
                     // Make a network request to your server for tokenRequest
                     fetch("/api/ably_auth")
                         .then(response => { return response.json() })

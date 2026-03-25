@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function logs(request, _session) {
+export const POST = withAuth(async function logs(request) {
     try {
         const { user_id, action } = await request.json();
 

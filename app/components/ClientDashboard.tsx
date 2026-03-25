@@ -385,7 +385,7 @@ function SelectField({ label, tip, children, ...props }: React.SelectHTMLAttribu
   );
 }
 
-export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_configs, public_es_feature_options: _public_es_feature_options, public_es_versions, public_es_feature_types, es_prefilled_setup }) {
+export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_configs, public_es_versions, public_es_feature_types, es_prefilled_setup }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 

@@ -95,7 +95,7 @@ export default function LiveWebhooks() {
   useEffect(() => {
     setIsMounted(true);
     const ablyClient = new Ably.Realtime({
-      authCallback: async (_tokenParams, callback) => {
+      authCallback: async (_, callback) => {
         fetch('/api/ably_auth')
           .then((response) => response.json())
           .then((tokenRequest) => callback(null, tokenRequest))

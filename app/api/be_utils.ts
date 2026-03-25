@@ -269,12 +269,12 @@ async function getWabaRows(userId: string): Promise<WabaRow[]> {
 
 export async function getClientPhones(userId: string): Promise<ClientPhone[]> {
     const rows: WabaRow[] = await getWabaRows(userId);
-    const nested_phones: PhoneDetails[][] = await Promise.all(rows.map(async (row: WabaRow, _key: number) => {
+    const nested_phones: PhoneDetails[][] = await Promise.all(rows.map(async (row: WabaRow) => {
         const wabaId: string = row.waba_id;
         const accessToken: string = row.access_token;
         const data = await graphApiWrapperGet(`/${wabaId}?fields=phone_numbers`, accessToken);
         const phones: PhoneNumber[] = data?.phone_numbers?.data || [];
-        const phone_deets: PhoneDetails[] = await Promise.all(phones.map(async (phone: PhoneNumber, _key: number) => {
+        const phone_deets: PhoneDetails[] = await Promise.all(phones.map(async (phone: PhoneNumber) => {
             return await getPhoneDetails(phone.id, accessToken, wabaId);
         }));
         return phone_deets;

@@ -24,7 +24,6 @@ interface ConversationViewProps {
 }
 
 export default function ConversationView({
-    chatId: _chatId,
     displayName,
     messages,
     onSendMessage,

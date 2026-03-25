@@ -8,7 +8,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { deregisterNumber, getTokenForWaba } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
-async function handleDeregister(request: NextRequest, _user: any) {
+async function handleDeregister(request: NextRequest) {
     try {
         const body = await request.json();
         const { wabaId, phoneId } = body;

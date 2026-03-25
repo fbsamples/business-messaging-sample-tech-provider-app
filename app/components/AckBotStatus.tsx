@@ -14,7 +14,6 @@ export default function AckBotStatus({ phone }: { phone: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [ackMessage, setAckMessage] = useState('');
-    const [_savedMessage, setSavedMessage] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
     // Load saved message when modal opens
@@ -25,7 +24,6 @@ export default function AckBotStatus({ phone }: { phone: any }) {
                 .then(data => {
                     const msg = data.ackBotMessage || '';
                     setAckMessage(msg);
-                    setSavedMessage(msg);
                 })
                 .catch(() => {});
         }
@@ -55,9 +53,8 @@ export default function AckBotStatus({ phone }: { phone: any }) {
             phoneId: phone.id,
             ackBotMessage: ackMessage,
         })
-            .then(() => {
+              .then(() => {
                 setIsAckBotEnabled(true);
-                setSavedMessage(ackMessage);
                 setShowModal(false);
             })
             .catch(console.error)
@@ -76,7 +73,6 @@ export default function AckBotStatus({ phone }: { phone: any }) {
             ackBotMessage: ackMessage,
         })
             .then(() => {
-                setSavedMessage(ackMessage);
                 setShowModal(false);
             })
             .catch(console.error)
