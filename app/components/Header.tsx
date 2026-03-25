@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import publicConfig from "@/app/public_config";
 import { getAppDetails } from "@/app/api/be_utils";
+import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
 export default async function Header({ user_id }) {
 
@@ -33,7 +34,7 @@ export default async function Header({ user_id }) {
                 </div>
                 <div className="flex items-center">
                     <div className="mr-4">
-                        <a href="/privacy">Privacy Policy</a>
+                        <PrivacyPolicyModal app_name={app_name} contact_email={publicConfig.contact_email} />
                     </div>
                     <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">
                         {user_id}

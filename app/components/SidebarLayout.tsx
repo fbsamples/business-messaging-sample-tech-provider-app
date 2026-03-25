@@ -11,6 +11,7 @@ import {
   Settings, Webhook, MessageSquare, Building2, FileText,
   Megaphone, Database, BookOpen, Instagram,
 } from "lucide-react";
+import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
 interface SidebarLayoutProps {
   children: ReactNode;
@@ -90,9 +91,7 @@ export default function SidebarLayout({
           <span className="font-semibold text-slate-700 tracking-tight">{app_name}</span>
         </div>
         <div className="flex items-center gap-6">
-          <Link href="/privacy" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
-            Privacy Policy
-          </Link>
+          <PrivacyPolicyModal app_name={app_name} />
           <span className="text-sm font-medium text-slate-600">{user_id}</span>
           <a
             href="/auth/logout"
