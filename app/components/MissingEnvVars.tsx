@@ -17,7 +17,6 @@ const ENV_VAR_GROUPS: { label: string; color: string; textColor: string; keys: s
     keys: [
       "FB_APP_ID",
       "FB_APP_SECRET",
-      "FB_BUSINESS_ID",
       "FB_GRAPH_API_VERSION",
       "FB_REG_PIN",
       "FB_VERIFY_TOKEN",
@@ -47,7 +46,6 @@ const ENV_VAR_GROUPS: { label: string; color: string; textColor: string; keys: s
 const FRIENDLY_DESCRIPTIONS: { [key: string]: string } = {
   FB_APP_ID: "Facebook App ID for the application",
   FB_APP_SECRET: "Facebook App Secret — keep out of source control",
-  FB_BUSINESS_ID: "Facebook Business Manager ID",
   FB_GRAPH_API_VERSION: "Facebook Graph API version to use (e.g., v19.0)",
   FB_REG_PIN: "Facebook Registration PIN",
   FB_VERIFY_TOKEN: "Facebook Webhook Verify Token",

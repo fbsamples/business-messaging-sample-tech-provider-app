@@ -18,7 +18,6 @@ export const ENV_VAR_DESCRIPTIONS: { [key: string]: string } = {
     // Facebook/Meta Configuration
     'FB_APP_ID': 'Facebook App ID for the application',
     'FB_APP_SECRET': 'Facebook App Secret (private)',
-    'FB_BUSINESS_ID': 'Facebook Business Manager ID',
     'FB_GRAPH_API_VERSION': 'Facebook Graph API version to use',
     'FB_REG_PIN': 'Facebook Registration PIN (private)',
     'FB_VERIFY_TOKEN': 'Facebook Webhook Verify Token (private)',

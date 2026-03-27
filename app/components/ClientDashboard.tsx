@@ -12,7 +12,7 @@ import FBL4BLauncher from '@/app/components/Fbl4bLauncher';
 import { SessionInfo } from '@/app/types/api';
 import {
   Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info,
-  CheckCircle2, Circle,
+  CheckCircle2, Circle, Server,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -228,7 +228,7 @@ const VERSION_TIP = (
       { name: 'v3-public-preview', desc: 'Reveals Unified Onboarding UI for Cloud API onboarding.' },
       { name: 'v3-alpha-1', desc: 'Alpha release with expanded Unified Onboarding for select partners/products.' },
       { name: 'v4-public-preview (Testing only)', desc: 'Preview version of v4 for testing and feedback.' },
-      { name: 'v4 (Coming October 2025)', desc: 'Upcoming major release with enhanced features.' },
+      { name: 'v4', desc: 'Upcoming major release with enhanced features.' },
     ]}
   />
 );
@@ -254,23 +254,12 @@ const FEATURES_TIP = (
   />
 );
 
-const PREFILLED_TIP = (
-  <TipBody
-    title="ES Pre-filled Guide"
-    body="Indicates that fields (such as business info or phone numbers) are pre-populated within the onboarding flow to accelerate user completion."
-    sections={[{
-      heading: 'When enabled:',
-      text: 'Known business information and phone numbers will be automatically filled in during the onboarding process, reducing manual data entry and speeding up customer onboarding.',
-    }]}
-  />
-);
-
-function makeProviderConfigTip(app_id: string | number, bm_id: string | number) {
-  const devxUrl = `https://developers.facebook.com/apps/${app_id}/business-login/configurations/?business_id=${bm_id}`;
+function makePayloadBuilderTip(app_id: string | number) {
+  const devxUrl = `https://developers.facebook.com/apps/${app_id}/business-login/configurations/`;
   return (
     <div>
       <div className="px-4 pt-3.5 pb-2 border-b border-gray-100">
-        <p className="text-[13px] font-bold text-gray-900">Provider Config</p>
+        <p className="text-[13px] font-bold text-gray-900">Payload Builder</p>
       </div>
       <div className="px-4 py-3">
         <p className="text-[12px] text-gray-500 leading-relaxed">
@@ -283,7 +272,7 @@ function makeProviderConfigTip(app_id: string | number, bm_id: string | number) 
           href={devxUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[12px] text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+          className="inline-flex items-center gap-1 text-[12px] text-blue-600 hover:text-blue-800 font-medium transition-colors"
         >
           Create one in DevX
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -385,7 +374,7 @@ function SelectField({ label, tip, children, ...props }: React.SelectHTMLAttribu
   );
 }
 
-export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_configs, public_es_versions, public_es_feature_types, es_prefilled_setup }) {
+export default function ClientDashboard({ app_id, app_name, user_id, tp_configs, public_es_versions, public_es_feature_types }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -417,31 +406,35 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
   const [esOptionFeatures, setEsOptionFeatures] = useState(initialEsFeatures);
   const [esOptionConfig, setEsOptionConfig] = useState(initialTpConfig);
   const [esOptionVersion, setEsOptionVersion] = useState(initialEsVersion);
-  const [esOptionPrefilled, setEsOptionPrefilled] = useState(false);
   const [es_option_reg, setEs_option_reg] = useState(true);
   const [es_option_sub, setEs_option_sub] = useState(true);
   const [step, setStep] = useState<Step>(1);
-  const computeEsConfig = (ft, cfg, feats, ver, pf) => {
+
+  const computeEsConfig = (ft, cfg, feats, ver) => {
     const c: any = {
       config_id: cfg, response_type: 'code', override_default_response_type: true,
       extras: { sessionInfoVersion: '3', version: ver, featureType: ft,
         features: feats ? feats.map((f) => ({ name: f })) : null }
     };
     if (ft === '') delete c.extras.featureType;
-    if (pf) c.setup = es_prefilled_setup;
     return c;
   };
 
-  const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled), null, 2));
+  const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion), null, 2));
   const [bannerInfo, setBannerInfo] = useState<string>('');
   const [lastEventData, setLastEventData] = useState<any>(null);
 
-  const recomputeJson = (ft, cfg, feats, ver, pf) => {
-    setEsConfig(JSON.stringify(computeEsConfig(ft, cfg, feats, ver, pf), null, 2));
+  const recomputeJson = (ft, cfg, feats, ver) => {
+    setEsConfig(JSON.stringify(computeEsConfig(ft, cfg, feats, ver), null, 2));
     setStep(2);
   };
 
-  const handleBannerInfoChange = useCallback((info: string) => setBannerInfo(info), []);
+  // Only show bannerInfo when ES has actually finished (not intermediate "ES Started..." state)
+  const handleBannerInfoChange = useCallback((info: string) => {
+    // Suppress intermediate "ES Started..." message — only surface final outcomes
+    if (info === 'ES Started...') return;
+    setBannerInfo(info);
+  }, []);
   const handleLastEventDataChange = useCallback((data: any) => setLastEventData(data), []);
 
   const handleSaveToken = useCallback((code: string, session_info: SessionInfo) => {
@@ -464,12 +457,11 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
       body: JSON.stringify({ user_id, action: 'launch_fbl4b' }) });
   }, [user_id]);
 
-  const setFt = (v) => { if (v === 'only_waba_sharing') setEs_option_reg(false); setEsOptionFeatureType(v); updateUrlParams({ esFeatureType: v }); recomputeJson(v, esOptionConfig, esOptionFeatures, esOptionVersion, esOptionPrefilled); };
-  const setCfg = (v) => { setEsOptionConfig(v); updateUrlParams({ tpConfig: v }); recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion, esOptionPrefilled); };
+  const setFt = (v) => { if (v === 'only_waba_sharing') setEs_option_reg(false); setEsOptionFeatureType(v); updateUrlParams({ esFeatureType: v }); recomputeJson(v, esOptionConfig, esOptionFeatures, esOptionVersion); };
+  const setCfg = (v) => { setEsOptionConfig(v); updateUrlParams({ tpConfig: v }); recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion); };
   const setReg = (v) => { if (v && esOptionFeatureType === 'only_waba_sharing') setFt(''); setEs_option_reg(v); };
-  const setVer = (v) => { setEsOptionVersion(v); updateUrlParams({ esVersion: v }); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, v, esOptionPrefilled); };
-  const setPf = (v) => { setEsOptionPrefilled(v); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion, v); };
-  const setFeats = (e) => { const f = e.target.value.split(',').map(s => s.trim()).filter(Boolean); setEsOptionFeatures(f); updateUrlParams({ esFeatures: f }); recomputeJson(esOptionFeatureType, esOptionConfig, f, esOptionVersion, esOptionPrefilled); };
+  const setVer = (v) => { setEsOptionVersion(v); updateUrlParams({ esVersion: v }); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, v); };
+  const setFeats = (e) => { const f = e.target.value.split(',').map(s => s.trim()).filter(Boolean); setEsOptionFeatures(f); updateUrlParams({ esFeatures: f }); recomputeJson(esOptionFeatureType, esOptionConfig, f, esOptionVersion); };
 
   const highlightJson = (json: string) => {
     return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
@@ -488,15 +480,13 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
       <div className="flex items-center gap-1.5 text-[12px] text-gray-400 mb-4">
         <a target="_blank" href={`https://developers.facebook.com/apps/${app_id}`} className="hover:text-gray-700 transition-colors font-mono">App {app_id}</a>
         <ChevronRight className="w-3 h-3" />
-        <a target="_blank" href={`https://business.facebook.com/latest/settings/whatsapp_account?business_id=${bm_id}`} className="hover:text-gray-700 transition-colors font-mono">Business {bm_id}</a>
-        <ChevronRight className="w-3 h-3" />
         <span className="text-gray-600">Configuration</span>
       </div>
 
       {/* Page title */}
       <div className="mb-5">
-        <h1 className="text-xl font-bold text-slate-700">Configuration</h1>
-        <p className="text-[13px] text-gray-500 mt-0.5">Set up Embedded Signup parameters. The JSON payload updates live as you adjust options.</p>
+        <h1 className="text-xl font-bold text-slate-700">Payload Builder</h1>
+        <p className="text-[13px] text-gray-500 mt-0.5">Build your Embedded Signup payload. The JSON updates live as you adjust options.</p>
       </div>
 
       {/* Step indicator */}
@@ -506,9 +496,10 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
       <div className="grid grid-cols-[1fr_320px] gap-6">
         {/* Left column */}
         <div className="space-y-5">
-          <SectionCard icon={<Settings2 className="w-4 h-4" />} title="Provider Config" subtitle="Select a configuration token to use">
+          {/* Payload Builder card */}
+          <SectionCard icon={<Settings2 className="w-4 h-4" />} title="Payload Builder" subtitle="Select a configuration and set parameters">
             <div className="space-y-5">
-              <SelectField label="Provider Config" tip={makeProviderConfigTip(app_id, bm_id)} value={esOptionConfig} onChange={(e) => setCfg(e.target.value)}>
+              <SelectField label="Config" tip={makePayloadBuilderTip(app_id)} value={esOptionConfig} onChange={(e) => setCfg(e.target.value)}>
                 {tp_configs.map((config) => (
                   <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
                 ))}
@@ -540,30 +531,22 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
                   className="w-full h-9 px-3 bg-white border border-gray-200 rounded-lg text-[13px] text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors"
                 />
               </div>
-
-              <div className="pt-2 space-y-3 border-t border-gray-100">
-                <Toggle checked={esOptionPrefilled} onChange={setPf} label="Pre-fill info" tip={PREFILLED_TIP} />
-                <Toggle checked={es_option_reg} onChange={setReg} label="Register number" tip={
-                  <TipBody
-                    title="Register number"
-                    body="Calls the register phone number API automatically after a successful signup. Required before sending messages. Disable if you want to register manually."
-                  />
-                } />
-                <Toggle checked={es_option_sub} onChange={setEs_option_sub} label="Subscribe webhooks" tip={
-                  <TipBody
-                    title="Subscribe webhooks"
-                    body="Subscribes the WABA to your app’s webhooks automatically after signup. Disable if you manage webhook subscriptions separately."
-                  />
-                } />
-              </div>
             </div>
           </SectionCard>
 
+          {/* Generated Payload card */}
           <SectionCard icon={<Code2 className="w-4 h-4" />} title="Generated Payload" subtitle="Passed to FB.login(callback, payload) · updates live">
             <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
               <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">JSON</span>
-                <span className="text-[10px] text-gray-400 font-mono">FB.login(callback, payload)</span>
+                <a
+                  href="https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/implementation#step-3-add-embedded-signup-to-your-website"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-blue-600 transition-colors font-mono"
+                >
+                  FB.login(callback, payload) <ExternalLink className="w-2.5 h-2.5" />
+                </a>
               </div>
               <pre
                 className="text-[12px] font-mono p-4 overflow-auto max-h-72 leading-relaxed"
@@ -574,6 +557,24 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
               <Info className="w-3 h-3 flex-shrink-0" />
               This JSON is generated from the configuration above and updates live as you change options.
             </p>
+          </SectionCard>
+
+          {/* Server Actions After Signup — moved to bottom */}
+          <SectionCard icon={<Server className="w-4 h-4" />} title="Post-Signup Server Actions" subtitle="Automatic server-side calls triggered on a successful embedded signup">
+            <div className="space-y-3">
+              <Toggle checked={es_option_reg} onChange={setReg} label="Register number" tip={
+                <TipBody
+                  title="Register number"
+                  body="Calls the register phone number API automatically after a successful signup. Required before sending messages. Disable if you want to register manually."
+                />
+              } />
+              <Toggle checked={es_option_sub} onChange={setEs_option_sub} label="Subscribe webhooks" tip={
+                <TipBody
+                  title="Subscribe webhooks"
+                  body="Subscribes the WABA to your app's webhooks automatically after signup. Disable if you manage webhook subscriptions separately."
+                />
+              } />
+            </div>
           </SectionCard>
         </div>
 
@@ -608,26 +609,12 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
             </SectionCard>
 
             <SectionCard icon={<Code2 className="w-4 h-4" />} title="Response" subtitle="Results from the signup flow">
-              {bannerInfo || lastEventData ? (
-                <div className="space-y-3">
-                  {bannerInfo && (
-                    <div className={cn(
-                      'text-[12px] px-4 py-3 rounded-lg font-mono leading-relaxed',
-                      bannerInfo.includes('Finished') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                      bannerInfo.includes('Error') || bannerInfo.includes('Exited') ? 'bg-red-50 text-red-600 border border-red-200' :
-                      'bg-sky-50 text-sky-700 border border-sky-200'
-                    )}>
-                      <pre className="whitespace-pre-wrap">{bannerInfo}</pre>
-                    </div>
-                  )}
-                  {lastEventData && (
-                    <div>
-                      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Session Event</div>
-                      <div className="bg-gray-50 rounded-lg p-3 overflow-auto max-h-48 border border-gray-200">
-                        <pre className="text-[11px] text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">{JSON.stringify(lastEventData, null, 2)}</pre>
-                      </div>
-                    </div>
-                  )}
+              {lastEventData ? (
+                <div>
+                  <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Session Event</div>
+                  <div className="bg-gray-50 rounded-lg p-3 overflow-auto max-h-48 border border-gray-200">
+                    <pre className="text-[11px] text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">{JSON.stringify(lastEventData, null, 2)}</pre>
+                  </div>
                 </div>
               ) : (
                 <div className="border border-dashed border-gray-200 rounded-xl py-8 text-center">
@@ -636,12 +623,7 @@ export default function ClientDashboard({ app_id, app_name, bm_id, user_id, tp_c
                   <p className="text-[11px] text-gray-300 mt-0.5">Results appear here after launching</p>
                 </div>
               )}
-              <div className="flex gap-4 mt-4 pt-3 border-t border-gray-100">
-                <a href="https://developers.facebook.com/docs/whatsapp/embedded-signup/implementation#response-callback"
-                   target="_blank" rel="noopener noreferrer"
-                   className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-blue-600 transition-colors">
-                  <ExternalLink className="w-3 h-3" /> Response Callback
-                </a>
+              <div className="flex justify-end mt-4 pt-3 border-t border-gray-100">
                 <a href="https://developers.facebook.com/docs/whatsapp/embedded-signup/implementation#session-logging-message-event-listener"
                    target="_blank" rel="noopener noreferrer"
                    className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-blue-600 transition-colors">
