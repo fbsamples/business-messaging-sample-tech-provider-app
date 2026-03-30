@@ -64,6 +64,13 @@ export default function RootLayout({
 
       <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ErrorBoundary>{children}</ErrorBoundary>
+        <footer style={{ textAlign: 'center', padding: '12px 16px', fontSize: '12px', color: '#6b7280', borderTop: '1px solid #e5e7eb', marginTop: '24px' }}>
+          <span>Copyright &copy; {new Date().getFullYear()} Meta Platforms, Inc. All rights reserved.</span>
+          {' · '}
+          <a href="https://opensource.fb.com/legal/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', textDecoration: 'underline' }}>Terms of Use</a>
+          {' · '}
+          <a href="https://opensource.fb.com/legal/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', textDecoration: 'underline' }}>Privacy Policy</a>
+        </footer>
         <SpeedInsights />
         <Analytics />
       </body>
