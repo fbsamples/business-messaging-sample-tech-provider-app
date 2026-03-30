@@ -82,9 +82,9 @@ export default async function LoggedOut() {
         <p className="text-xs text-gray-500">
           This is a developer testing environment.<br />
           By continuing, you agree to the{" "}
-          <a href="#" className="text-blue-500 hover:underline">Terms of Service</a>
+          <a href="https://opensource.fb.com/legal/terms" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Terms of Service</a>
           {" "}and{" "}
-          <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>.
+          <a href="https://opensource.fb.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Privacy Policy</a>.
         </p>
         <p className="text-xs text-gray-400 flex items-center justify-center gap-1.5">
           <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
