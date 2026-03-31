@@ -42,6 +42,11 @@
     "@types/react-dom": "19.1.9",
     "js-yaml": "4.1.1",
     "srvx": ">=0.11.13",
-    "path-to-regexp": ">=8.4.0"
+    "path-to-regexp": ">=8.4.0",
+    "undici": ">=6.24.0",
+    "minimatch": ">=10.2.3",
+    "tar": ">=7.5.11",
+    "smol-toml": ">=1.6.1",
+    "@tootallnate/once": ">=3.0.1"
   }
 }
