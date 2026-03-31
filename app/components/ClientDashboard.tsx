@@ -421,7 +421,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
   };
 
   const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion), null, 2));
-  const [bannerInfo, setBannerInfo] = useState<string>('');
+  const [_bannerInfo, setBannerInfo] = useState<string>('');
   const [lastEventData, setLastEventData] = useState<any>(null);
 
   const recomputeJson = (ft, cfg, feats, ver) => {

@@ -4,6 +4,8 @@
 // LICENSE file in the root directory of this source tree.
 
 
+import Link from 'next/link';
+
 export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -23,9 +25,9 @@ export default function PrivacyPage() {
             Replace the content of <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">app/privacy/page.tsx</code> with your own Privacy Policy before deploying to production. This URL (<code className="bg-amber-100 px-1 rounded font-mono text-[11px]">/privacy</code>) can be referenced in your Meta app configuration and Embedded Signup setup.
           </p>
         </div>
-        <a href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white text-[13px] font-semibold rounded-full hover:bg-slate-700 transition-colors">
+        <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white text-[13px] font-semibold rounded-full hover:bg-slate-700 transition-colors">
           ← Back to app
-        </a>
+        </Link>
       </div>
     </main>
   );
