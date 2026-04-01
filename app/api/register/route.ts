@@ -8,21 +8,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { registerNumber, getTokenForWaba } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function phones(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { wabaId, phoneId } = body;
-        const acesssToken = await getTokenForWaba(wabaId);
-        await registerNumber(phoneId, acesssToken);
-        return new NextResponse(JSON.stringify({ response: 'ok' }));
-    } catch (err: any) {
-        console.error('register error:', err);
-        const { code, message, status } = mapGraphApiError(err);
-        return NextResponse.json(
-            { error: true, code, message },
-            { status },
-        );
-    }
+export const POST = withAuth(async function phones(request: NextRequest, session) {
+    const body = await request.json();
+    const { wabaId, phoneId } = body;
+    const accessToken = await getTokenForWaba(wabaId, session.user.email);
+    await registerNumber(phoneId, accessToken); // TODO: need error handling
+    return new NextResponse(JSON.stringify({ response: 'ok' }));
 });
 
 function mapGraphApiError(err: any): { code: string; message: string; status: number } {

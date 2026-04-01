@@ -23,8 +23,6 @@ async function createTokenRequest(clientId: string) {
 }
 
 export const GET = withAuth(async function myApiRoute(_, session) {
-    console.log('session ably_auth');
-    console.log(session);
     const user = session.user;
     const clientId = user.email;
     const tokenRequest_outer = await createTokenRequest(clientId);

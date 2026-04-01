@@ -41,22 +41,23 @@ const { graph_api_version, redirect_uri } = publicConfig;
 export async function getToken(code: string, app_id: string): Promise<string> {
     const privateConfig = await getPrivateConfig();
     const { fb_app_secret: app_secret } = privateConfig;
-    console.log('getToken:', 'code', code, 'app_id', app_id);
+    console.log('getToken:', 'appId', app_id);
+    // OAuth token exchange requires client_secret as a query parameter per Meta's API spec
     const url = `/oauth/access_token?client_id=${app_id}&redirect_uri=${redirect_uri}&client_secret=${app_secret}&code=${code}`;
     return graphApiWrapperGet(url)
         .then(data => {
-            console.log('getTokenResponse:', 'code', code, 'app_id', app_id, 'data', data);
+            console.log('getTokenResponse:', 'appId', app_id);
             if (data.error) throw data.error;
             return data.access_token;
         });
 }
 
 export async function subscribeWebhook(access_token: string, waba_id: string): Promise<SubscribeWebhookResponse> {
-    console.log('subscribeWebhook:', 'access_token', access_token, 'waba_id', waba_id);
+    console.log('subscribeWebhook:', 'wabaId', waba_id);
     const url = `/${waba_id}/subscribed_apps`;
     return graphApiWrapperPost(url, access_token)
         .then(data => {
-            console.log('subscribeWebhookResponse:', 'waba_id', waba_id, 'data', data);
+            console.log('subscribeWebhookResponse:', 'wabaId', waba_id);
             if (data.error) throw data.error;
             return data;
         });
@@ -166,32 +167,32 @@ export async function saveTokens(user_id: string, app_id: string, business_id: s
 export async function registerNumber(phoneId: string, accessToken: string): Promise<RegisterNumberResponse> {
     const privateConfig = await getPrivateConfig();
     const { fb_reg_pin } = privateConfig;
-    console.log('registerNumber:', 'phoneId', phoneId, 'accessToken', accessToken);
+    console.log('registerNumber:', 'phoneId', phoneId);
     const url = `/${phoneId}/register`;
     return graphApiWrapperPost(url, accessToken, {
         "messaging_product": "whatsapp",
         "pin": fb_reg_pin
     })
         .then(data => {
-            console.log('registerNumberReponse:', data);
+            console.log('registerNumberResponse:', 'phoneId', phoneId);
             if (data.error) throw data.error;
             return data;
         })
 }
 
 export async function deregisterNumber(phoneId: string, accessToken: string): Promise<DeregisterNumberResponse> {
-    console.log('deregisterNumber:', 'phoneId', phoneId, 'accessToken', accessToken);
+    console.log('deregisterNumber:', 'phoneId', phoneId);
     const url = `/${phoneId}/deregister`;
     return graphApiWrapperPost(url, accessToken)
         .then(data => {
-            console.log('deregisterNumberReponse:', data);
+            console.log('deregisterNumberResponse:', 'phoneId', phoneId);
             if (data.error) throw data.error;
             return data;
         })
 }
 
 export async function send(phone_number_id: string, accessToken: string, dest_phone: string, message_content: string): Promise<SendMessageResponse | void> {
-    console.log('send', 'phone_number_id', phone_number_id, 'accessToken', accessToken, 'dest_phone', dest_phone, 'message_content', message_content);
+    console.log('send:', 'phoneNumberId', phone_number_id);
     const url = `/${phone_number_id}/messages`;
     return graphApiWrapperPost(url, accessToken, {
         "messaging_product": "whatsapp",
@@ -292,9 +293,9 @@ async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: str
         });
 };
 
-export async function getTokenForWaba(waba_id: string): Promise<string> {
-    console.log('getTokenForWaba:', 'waba_id', waba_id);
-    const { rows }: { rows: { access_token: string }[] } = await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id}`;
+export async function getTokenForWaba(waba_id: string, user_id: string): Promise<string> {
+    console.log('getTokenForWaba:', 'wabaId', waba_id);
+    const { rows }: { rows: { access_token: string }[] } = await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id} AND user_id = ${user_id}`;
     return rows[0].access_token;
 }
 
@@ -303,13 +304,13 @@ export async function getTokenForWaba(waba_id: string): Promise<string> {
 //////////////////////////////////////////////////////////
 
 export async function requestCode(phoneId: string, accessToken: string): Promise<RequestCodeResponse> {
-    console.log('requestCode:', 'phoneId', phoneId, 'accessToken', accessToken);
+    console.log('requestCode:', 'phoneId', phoneId);
     const url = `/${phoneId}/request_code?code_method=SMS&language=en`;
     return graphApiWrapperPost(url, accessToken);
 }
 
 export async function verifyCode(phoneId: string, accessToken: string, otpCode: string): Promise<VerifyCodeResponse> {
-    console.log('verifyCode:', 'phoneId', phoneId, 'accessToken', accessToken);
+    console.log('verifyCode:', 'phoneId', phoneId);
     const url = `/${phoneId}/verify_code?code=${otpCode}`;
     return graphApiWrapperPost(url, accessToken);
 }
@@ -371,10 +372,7 @@ export async function getAdAccounts(user_id: string): Promise<AdAccountWithDetai
     const adAccountsWithNames: AdAccountWithDetails[] = await Promise.all(
         rows.map(async (account: AdAccountRow) => {
             try {
-                const response = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/act_${account.ad_account_id}?fields=name&access_token=${account.access_token}`
-                );
-                const data = await response.json();
+                const data = await graphApiWrapperGet(`/act_${account.ad_account_id}?fields=name`, account.access_token);
                 return {
                     ...account,
                     name: data.name || 'Unknown Account'
@@ -451,6 +449,7 @@ async function graphApiWrapperPost(url: string, accessToken: string, params = {}
 // SQL
 //////////////////////////////////////////////////////////
 
+// Note: phones table does not have a user_id column, so this query is not user-scoped
 export async function getAckBotStatus(phoneId: string): Promise<boolean> {
     const { rows }: { rows: { is_ack_bot_enabled: string }[] } = await sql`SELECT is_ack_bot_enabled FROM phones WHERE phone_id = ${phoneId}`;
     const isAckBotEnabled = rows[0]?.is_ack_bot_enabled === 'true';
@@ -486,7 +485,7 @@ export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean,
 
 export async function getAppDetails(app_id: string): Promise<AppDetails> {
     const privateConfig = await getPrivateConfig();
-    console.log('getBusinessIdForApp:', 'app_id', app_id);
+    console.log('getAppDetails:', 'appId', app_id);
     const url = `/${app_id}?fields=client_config,name,logo_url,app_domains,app_type,company,link,config_ids`;
     return graphApiWrapperGet(url, `${publicConfig.app_id}|${privateConfig.fb_app_secret}`)
         .then(data => {
@@ -512,10 +511,7 @@ export async function getDatasets(user_id: string): Promise<DatasetWithDetails[]
     const datasetsWithDetails: DatasetWithDetails[] = await Promise.all(
         rows.map(async (dataset: DatasetRow) => {
             try {
-                const response = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/${dataset.dataset_id}?fields=name,code,last_fired_time&access_token=${dataset.access_token}`
-                );
-                const data = await response.json();
+                const data = await graphApiWrapperGet(`/${dataset.dataset_id}?fields=name,code,last_fired_time`, dataset.access_token);
                 return {
                     id: dataset.dataset_id,
                     name: data.name || 'Unnamed Dataset',

@@ -11,14 +11,11 @@ import { withAuth } from "../auth_wrapper";
 
 export const POST = withAuth(async function myApiRoute(request: NextRequest, session) {
     const user = session.user;
-    console.log("this is the user', user", user.email);
 
     const user_id = user.email;
 
 
     const data = await request.json();
-
-    console.log("/token", "incoming data", data);
 
     const { code, waba_id, waba_ids: rawWabaIds, business_id, ad_account_ids: rawAdAccountIds, page_ids: rawPageIds, dataset_ids: rawDatasetIds, catalog_ids: rawCatalogIds, instagram_account_ids: rawInstagramAccountIds, app_id, phone_number_id, es_option_reg, es_option_loc, es_option_sys, es_option_sub } = data;
 
@@ -29,8 +26,6 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
     const dataset_ids = rawDatasetIds || [];
     const catalog_ids = rawCatalogIds || [];
     const instagram_account_ids = rawInstagramAccountIds || [];
-
-    console.log("/token", "waba_ids", waba_ids, "app_id", app_id, "phone_number_id", phone_number_id, "es_option_reg", es_option_reg, "es_option_loc", es_option_loc, "es_option_sys", es_option_sys, "es_option_sub", es_option_sub);
 
     let response = null;
 

@@ -8,24 +8,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { getTokenForWaba, verifyCode } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { wabaId, phoneId, otpCode } = body;
-        const accessToken = await getTokenForWaba(wabaId);
-        const data = await verifyCode(phoneId, accessToken, otpCode);
-        if (data.error) {
-            throw data.error;
-        }
-        return NextResponse.json({ response: 'ok' });
-    } catch (err: any) {
-        console.error('verify_code error:', err);
-        const { code, message, status } = mapGraphApiError(err);
-        return NextResponse.json(
-            { error: true, code, message },
-            { status },
-        );
-    }
+export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest, session) {
+    const body = await request.json();
+    const { wabaId, phoneId, otpCode } = body;
+    const accessToken = await getTokenForWaba(wabaId, session.user.email);
+    await verifyCode(phoneId, accessToken, otpCode);
+    return new NextResponse('{"register":"ok"}');
 });
 
 function mapGraphApiError(err: any): { code: string; message: string; status: number } {

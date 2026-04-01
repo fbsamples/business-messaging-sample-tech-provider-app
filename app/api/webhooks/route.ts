@@ -13,6 +13,8 @@ import {
   send,
 } from '@/app/api/be_utils';
 import privateConfig from '@/app/private_config';
+import publicConfig from '@/app/public_config';
+import { sql } from '@vercel/postgres';
 
 const {fb_verify_token} = await privateConfig();
 
