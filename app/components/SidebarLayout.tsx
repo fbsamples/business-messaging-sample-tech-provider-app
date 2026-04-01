@@ -18,7 +18,7 @@ import {
   Megaphone,
   Database,
   BookOpen,
-  Instagram,
+  Instagram, Mail,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -45,6 +45,12 @@ const navSections = [
         description: 'Debug tool showing all your incoming webhooks',
         href: '/my-webhooks',
         Icon: Webhook,
+      },
+      {
+        label: "Send Template Message",
+        description: "Send paid template messages via WhatsApp",
+        href: "/paid_messaging",
+        Icon: Mail,
       },
     ],
   },

@@ -11,10 +11,8 @@ import { getAppDetails, getClientPhones } from '@/app/api/beUtils';
 import InboxLayout from '@/app/components/InboxLayout';
 
 export default async function Home() {
-  // Fetch the user session
   const session = await auth0.getSession();
 
-  // If no session, show the logged out component
   if (!session) {
     return <LoggedOut />;
   }
