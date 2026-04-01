@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-import { ExternalLink, Building2 } from "lucide-react";
+import { ExternalLink, Building2 } from 'lucide-react';
 
 interface WabaCardProps {
   id: string;
@@ -22,19 +22,25 @@ export default function WabaCard({ id, name, business_id }: WabaCardProps) {
         </div>
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-gray-900 truncate">{name}</h3>
-          {name !== "Unnamed WABA" && (
-            <p className="text-xs text-gray-500 mt-0.5 font-mono">ID: {id}</p>
-          )}
+          {name !== 'Unnamed WABA' && <p className="text-xs text-gray-500 mt-0.5 font-mono">ID: {id}</p>}
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-        <a href={businessSettingsUrl} target="_blank" rel="noopener noreferrer"
-           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
+        <a
+          href={businessSettingsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+        >
           <ExternalLink className="w-3 h-3" />
           Business Settings
         </a>
-        <a href={whatsAppManagerUrl} target="_blank" rel="noopener noreferrer"
-           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1877F2] text-white text-xs font-medium rounded-lg hover:bg-[#1565C0] transition-colors">
+        <a
+          href={whatsAppManagerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1877F2] text-white text-xs font-medium rounded-lg hover:bg-[#1565C0] transition-colors"
+        >
           <ExternalLink className="w-3 h-3" />
           WA Manager
         </a>

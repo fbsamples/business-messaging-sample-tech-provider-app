@@ -3,9 +3,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-"use client";
+'use client';
 
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -27,7 +27,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
 
   public render() {
@@ -43,12 +43,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 {/* Icon */}
                 <div className="flex justify-center mb-5">
                   <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
-                    <svg
-                      className="w-7 h-7 text-red-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -61,12 +56,10 @@ export default class ErrorBoundary extends Component<Props, State> {
 
                 {/* Message */}
                 <div className="text-center mb-6">
-                  <h1 className="text-xl font-bold text-gray-900 mb-2">
-                    Something went wrong
-                  </h1>
+                  <h1 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h1>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    An unexpected error occurred. Try refreshing the page. If
-                    the problem persists, check the browser console for details.
+                    An unexpected error occurred. Try refreshing the page. If the problem persists, check the browser
+                    console for details.
                   </p>
                 </div>
 

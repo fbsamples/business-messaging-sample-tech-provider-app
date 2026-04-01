@@ -3,13 +3,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-
-import { auth0 } from "@/lib/auth0";
-import SidebarLayout from "@/app/components/SidebarLayout";
-import LoggedOut from "@/app/components/LoggedOut";
-import publicConfig from "@/app/publicConfig";
-import { getAppDetails, getClientPhones } from "@/app/api/beUtils";
-import InboxLayout from "@/app/components/InboxLayout";
+import { auth0 } from '@/lib/auth0';
+import SidebarLayout from '@/app/components/SidebarLayout';
+import LoggedOut from '@/app/components/LoggedOut';
+import publicConfig from '@/app/publicConfig';
+import { getAppDetails, getClientPhones } from '@/app/api/beUtils';
+import InboxLayout from '@/app/components/InboxLayout';
 
 export default async function Home() {
   // Fetch the user session

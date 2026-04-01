@@ -10,11 +10,11 @@
 // ============================================================================
 
 export type FacebookError = {
-    message: string;
-    type: string;
-    code: number;
-    error_subcode?: number;
-    fbtrace_id?: string;
+  message: string;
+  type: string;
+  code: number;
+  error_subcode?: number;
+  fbtrace_id?: string;
 };
 
 // ============================================================================
@@ -22,8 +22,8 @@ export type FacebookError = {
 // ============================================================================
 
 export type SubscribeWebhookResponse = {
-    success: boolean;
-    error?: FacebookError;
+  success: boolean;
+  error?: FacebookError;
 };
 
 // ============================================================================
@@ -31,10 +31,10 @@ export type SubscribeWebhookResponse = {
 // ============================================================================
 
 export type SqlResult = {
-    command: string;
-    rowCount: number;
-    oid: number;
-    rows: unknown[];
+  command: string;
+  rowCount: number;
+  oid: number;
+  rows: unknown[];
 };
 
 // ============================================================================
@@ -42,42 +42,42 @@ export type SqlResult = {
 // ============================================================================
 
 export type WabaDetails = {
-    id: string;
-    account_review_status: string;
-    purchase_order_number?: string;
-    audiences?: unknown[];
-    name: string;
-    ownership_type: string;
-    subscribed_apps: {
-        data: Array<{
-            id: string;
-            name: string;
-        }>;
-    };
-    business_verification_status: string;
-    country: string;
-    currency: string;
-    timezone_id: string;
-    on_behalf_of_business_info?: unknown;
-    schedules?: unknown[];
-    is_enabled_for_insights: boolean;
-    message_templates?: unknown;
-    phone_numbers: {
-        data: PhoneNumber[];
-    };
-    business_id?: string;
-    access_token?: string;
+  id: string;
+  account_review_status: string;
+  purchase_order_number?: string;
+  audiences?: unknown[];
+  name: string;
+  ownership_type: string;
+  subscribed_apps: {
+    data: Array<{
+      id: string;
+      name: string;
+    }>;
+  };
+  business_verification_status: string;
+  country: string;
+  currency: string;
+  timezone_id: string;
+  on_behalf_of_business_info?: unknown;
+  schedules?: unknown[];
+  is_enabled_for_insights: boolean;
+  message_templates?: unknown;
+  phone_numbers: {
+    data: PhoneNumber[];
+  };
+  business_id?: string;
+  access_token?: string;
 };
 
 export type WabaRow = {
-    waba_id: string;
-    access_token: string;
-    business_id: string;
+  waba_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type WabaWithDetails = WabaDetails & {
-    business_id: string;
-    access_token: string;
+  business_id: string;
+  access_token: string;
 };
 
 // ============================================================================
@@ -85,34 +85,34 @@ export type WabaWithDetails = WabaDetails & {
 // ============================================================================
 
 export type PhoneNumber = {
-    id: string;
-    display_phone_number: string;
-    verified_name: string;
-    quality_rating: string;
-    platform_type: string;
-    throughput: {
-        level: string;
-    };
-    last_onboarded_time: string;
-    wabaId?: string;
-    isAckBotEnabled?: boolean;
+  id: string;
+  display_phone_number: string;
+  verified_name: string;
+  quality_rating: string;
+  platform_type: string;
+  throughput: {
+    level: string;
+  };
+  last_onboarded_time: string;
+  wabaId?: string;
+  isAckBotEnabled?: boolean;
 };
 
 export type PhoneDetails = {
-    id: string;
-    status: string;
-    account_mode: string;
-    certificate: string;
-    is_on_biz_app: boolean;
-    display_phone_number: string;
-    code_verification_status: string;
-    wabaId: string;
-    isAckBotEnabled: boolean;
+  id: string;
+  status: string;
+  account_mode: string;
+  certificate: string;
+  is_on_biz_app: boolean;
+  display_phone_number: string;
+  code_verification_status: string;
+  wabaId: string;
+  isAckBotEnabled: boolean;
 };
 
 export type ClientPhone = PhoneDetails & {
-    wabaId: string;
-    isAckBotEnabled: boolean;
+  wabaId: string;
+  isAckBotEnabled: boolean;
 };
 
 // ============================================================================
@@ -120,23 +120,23 @@ export type ClientPhone = PhoneDetails & {
 // ============================================================================
 
 export type RegisterNumberResponse = {
-    success: boolean;
-    error?: FacebookError;
+  success: boolean;
+  error?: FacebookError;
 };
 
 export type DeregisterNumberResponse = {
-    success: boolean;
-    error?: FacebookError;
+  success: boolean;
+  error?: FacebookError;
 };
 
 export type RequestCodeResponse = {
-    success: boolean;
-    error?: FacebookError;
+  success: boolean;
+  error?: FacebookError;
 };
 
 export type VerifyCodeResponse = {
-    success: boolean;
-    error?: FacebookError;
+  success: boolean;
+  error?: FacebookError;
 };
 
 // ============================================================================
@@ -144,16 +144,16 @@ export type VerifyCodeResponse = {
 // ============================================================================
 
 export type SendMessageResponse = {
-    messaging_product: string;
-    contacts: Array<{
-        input: string;
-        wa_id: string;
-    }>;
-    messages: Array<{
-        id: string;
-        message_status: string;
-    }>;
-    error?: FacebookError;
+  messaging_product: string;
+  contacts: Array<{
+    input: string;
+    wa_id: string;
+  }>;
+  messages: Array<{
+    id: string;
+    message_status: string;
+  }>;
+  error?: FacebookError;
 };
 
 // ============================================================================
@@ -161,17 +161,17 @@ export type SendMessageResponse = {
 // ============================================================================
 
 export type PageRow = {
-    page_id: string;
-    access_token: string;
-    business_id: string;
+  page_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type PageWithDetails = {
-    page_id: string;
-    name: string;
-    access_token: string;
-    business_id: string;
-    ad_campaign: string;
+  page_id: string;
+  name: string;
+  access_token: string;
+  business_id: string;
+  ad_campaign: string;
 };
 
 // ============================================================================
@@ -179,16 +179,16 @@ export type PageWithDetails = {
 // ============================================================================
 
 export type AdAccountRow = {
-    ad_account_id: string;
-    access_token: string;
-    business_id: string;
+  ad_account_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type AdAccountWithDetails = {
-    ad_account_id: string;
-    name: string;
-    access_token: string;
-    business_id: string;
+  ad_account_id: string;
+  name: string;
+  access_token: string;
+  business_id: string;
 };
 
 // ============================================================================
@@ -196,19 +196,19 @@ export type AdAccountWithDetails = {
 // ============================================================================
 
 export type DatasetRow = {
-    dataset_id: string;
-    access_token: string;
-    business_id: string;
+  dataset_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type DatasetWithDetails = {
-    id: string;
-    name: string;
-    code: string;
-    status: string;
-    last_fired_time: string | null;
-    access_token: string;
-    business_id: string;
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+  last_fired_time: string | null;
+  access_token: string;
+  business_id: string;
 };
 
 // ============================================================================
@@ -216,16 +216,16 @@ export type DatasetWithDetails = {
 // ============================================================================
 
 export type CatalogRow = {
-    catalog_id: string;
-    access_token: string;
-    business_id: string;
+  catalog_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type CatalogWithDetails = {
-    id: string;
-    name: string;
-    access_token: string;
-    business_id: string;
+  id: string;
+  name: string;
+  access_token: string;
+  business_id: string;
 };
 
 // ============================================================================
@@ -233,16 +233,16 @@ export type CatalogWithDetails = {
 // ============================================================================
 
 export type InstagramAccountRow = {
-    instagram_account_id: string;
-    access_token: string;
-    business_id: string;
+  instagram_account_id: string;
+  access_token: string;
+  business_id: string;
 };
 
 export type InstagramAccountWithDetails = {
-    id: string;
-    username: string;
-    access_token: string;
-    business_id: string;
+  id: string;
+  username: string;
+  access_token: string;
+  business_id: string;
 };
 
 // ============================================================================
@@ -250,22 +250,22 @@ export type InstagramAccountWithDetails = {
 // ============================================================================
 
 export type AppDetails = {
+  id: string;
+  client_config: {
+    package_name?: string;
+    ios_bundle_id?: string;
+  };
+  name: string;
+  logo_url?: string;
+  app_domains: string[];
+  app_type: string;
+  company?: string;
+  link?: string;
+  error?: FacebookError;
+  config_ids: {
     id: string;
-    client_config: {
-        package_name?: string;
-        ios_bundle_id?: string;
-    };
     name: string;
-    logo_url?: string;
-    app_domains: string[];
-    app_type: string;
-    company?: string;
-    link?: string;
-    error?: FacebookError;
-    config_ids: {
-        id: string;
-        name: string;
-    }[];
+  }[];
 };
 
 // ============================================================================
@@ -273,13 +273,13 @@ export type AppDetails = {
 // ============================================================================
 
 export type SubscribedApp = {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 };
 
 export type SubscribedAppsResponse = {
-    data: SubscribedApp[];
-    error?: FacebookError;
+  data: SubscribedApp[];
+  error?: FacebookError;
 };
 
 // ============================================================================
@@ -287,14 +287,14 @@ export type SubscribedAppsResponse = {
 // ============================================================================
 
 export type AssignedUser = {
-    id: string;
-    name: string;
-    email?: string;
+  id: string;
+  name: string;
+  email?: string;
 };
 
 export type AssignedUsersResponse = {
-    data: AssignedUser[];
-    error?: FacebookError;
+  data: AssignedUser[];
+  error?: FacebookError;
 };
 
 // ============================================================================
@@ -302,7 +302,7 @@ export type AssignedUsersResponse = {
 // ============================================================================
 
 export type AckBotStatusResponse = {
-    is_ack_bot_enabled: boolean;
+  is_ack_bot_enabled: boolean;
 };
 
 // ============================================================================
@@ -310,85 +310,84 @@ export type AckBotStatusResponse = {
 // ============================================================================
 
 export type ApiResponse<T = unknown> = {
-    data?: T;
-    error?: FacebookError;
-    success?: boolean;
+  data?: T;
+  error?: FacebookError;
+  success?: boolean;
 };
 
 // ============================================================================
 // Function Parameter Types
 // ============================================================================
 
-
 // ============================================================================
 // Database Table Types
 // ============================================================================
 
 export type WabaTableRow = {
-    user_id: string;
-    app_id: string;
-    waba_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  waba_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type PageTableRow = {
-    user_id: string;
-    app_id: string;
-    page_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  page_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type AdAccountTableRow = {
-    user_id: string;
-    app_id: string;
-    ad_account_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  ad_account_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type DatasetTableRow = {
-    user_id: string;
-    app_id: string;
-    dataset_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  dataset_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type CatalogTableRow = {
-    user_id: string;
-    app_id: string;
-    catalog_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  catalog_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type InstagramAccountTableRow = {
-    user_id: string;
-    app_id: string;
-    instagram_account_id: string;
-    access_token: string;
-    business_id: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  instagram_account_id: string;
+  access_token: string;
+  business_id: string;
+  last_updated: Date;
 };
 
 export type BusinessTableRow = {
-    user_id: string;
-    app_id: string;
-    business_id: string;
-    access_token: string;
-    last_updated: Date;
+  user_id: string;
+  app_id: string;
+  business_id: string;
+  access_token: string;
+  last_updated: Date;
 };
 
 export type PhoneTableRow = {
-    phone_id: string;
-    is_ack_bot_enabled: boolean;
+  phone_id: string;
+  is_ack_bot_enabled: boolean;
 };
 
 // ============================================================================
@@ -396,16 +395,16 @@ export type PhoneTableRow = {
 // ============================================================================
 
 export type SessionInfo = {
-    data: {
-        waba_id: string;
-        page_ids: string[];
-        ad_account_ids: string[];
-        catalog_ids: string[];
-        dataset_ids: string[];
-        business_id: string;
-        instagram_account_ids: string[];
-        phone_number_id?: string;
-    };
-    type: string;
-    event: string;
+  data: {
+    waba_id: string;
+    page_ids: string[];
+    ad_account_ids: string[];
+    catalog_ids: string[];
+    dataset_ids: string[];
+    business_id: string;
+    instagram_account_ids: string[];
+    phone_number_id?: string;
+  };
+  type: string;
+  event: string;
 };

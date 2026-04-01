@@ -2,12 +2,12 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-import { auth0 } from "@/lib/auth0";
-import SidebarLayout from "@/app/components/SidebarLayout";
-import LoggedOut from "@/app/components/LoggedOut";
-import publicConfig from "@/app/publicConfig";
-import { getAppDetails } from "@/app/api/beUtils";
-import LiveWebhooks from "@/app/components/LiveWebhooks";
+import { auth0 } from '@/lib/auth0';
+import SidebarLayout from '@/app/components/SidebarLayout';
+import LoggedOut from '@/app/components/LoggedOut';
+import publicConfig from '@/app/publicConfig';
+import { getAppDetails } from '@/app/api/beUtils';
+import LiveWebhooks from '@/app/components/LiveWebhooks';
 
 export default async function MyWebhooks() {
   const session = await auth0.getSession();

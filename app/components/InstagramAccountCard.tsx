@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-import { ExternalLink, Instagram } from "lucide-react";
+import { ExternalLink, Instagram } from 'lucide-react';
 
 interface InstagramAccountCardProps {
   id: string;
@@ -25,8 +25,12 @@ export default function InstagramAccountCard({ id, name }: InstagramAccountCardP
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-        <a href={igUrl} target="_blank" rel="noopener noreferrer"
-           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-medium rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all">
+        <a
+          href={igUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-medium rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all"
+        >
           <ExternalLink className="w-3 h-3" />
           View Profile
         </a>

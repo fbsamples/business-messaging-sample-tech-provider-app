@@ -7,15 +7,13 @@
 
 const nextConfig = {
   reactStrictMode: false,
-  eslint: {
-
-  },
+  eslint: {},
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
-      }
+      },
     ],
   },
 };

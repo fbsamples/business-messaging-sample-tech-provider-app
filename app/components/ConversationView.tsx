@@ -2,14 +2,14 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-"use client";
-import { useEffect, useRef } from "react";
-import MessageBubble from "@/app/components/MessageBubble";
-import SendMessage from "@/app/components/SendMessage";
+'use client';
+import { useEffect, useRef } from 'react';
+import MessageBubble from '@/app/components/MessageBubble';
+import SendMessage from '@/app/components/SendMessage';
 
 export type Message = {
   text: string;
-  direction: "incoming" | "outgoing";
+  direction: 'incoming' | 'outgoing';
   timestamp: number;
 };
 
@@ -23,14 +23,10 @@ interface ConversationViewProps {
   onToggleAckBot: () => void;
 }
 
-export default function ConversationView({
-    displayName,
-    messages,
-    onSendMessage,
-}: ConversationViewProps) {
+export default function ConversationView({ displayName, messages, onSendMessage }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   return (
@@ -49,14 +45,18 @@ export default function ConversationView({
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto px-5 py-4 space-y-0.5"
-        style={{ background: "linear-gradient(180deg, #f8f9ff 0%, #f1f3f9 100%)" }}
+        style={{ background: 'linear-gradient(180deg, #f8f9ff 0%, #f1f3f9 100%)' }}
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-14 h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
               </svg>
             </div>
             <p className="text-sm font-medium text-gray-600">No messages yet</p>

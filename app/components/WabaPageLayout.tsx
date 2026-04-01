@@ -2,9 +2,9 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-"use client";
-import type { ReactNode } from "react";
-import SidebarLayout from "@/app/components/SidebarLayout";
+'use client';
+import type { ReactNode } from 'react';
+import SidebarLayout from '@/app/components/SidebarLayout';
 
 interface WabaPageLayoutProps {
   children: ReactNode;
@@ -27,7 +27,7 @@ export default function WabaPageLayout({
   title,
   description,
   isEmpty = false,
-  emptyMessage = "No items found.",
+  emptyMessage = 'No items found.',
   emptyDescription,
   icon,
 }: WabaPageLayoutProps) {

@@ -5,9 +5,9 @@
 
 'use client';
 
-import {feGraphApiPostWrapper} from '@/app/feUtils';
-import {useState, useEffect} from 'react';
-import type {PhoneDetails} from '@/app/types/api';
+import { feGraphApiPostWrapper } from '@/app/feUtils';
+import { useState, useEffect } from 'react';
+import type { PhoneDetails } from '@/app/types/api';
 
 export default function PhoneStatus({
   phone,
@@ -26,16 +26,14 @@ export default function PhoneStatus({
     if (externalStatus && externalStatus !== status) {
       setStatus(externalStatus);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalStatus]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
   // Map raw Meta status to display label
   const displayStatus =
-    status === 'PENDING' || phone.code_verification_status === 'NOT_VERIFIED'
-      ? 'UNVERIFIED'
-      : status;
+    status === 'PENDING' || phone.code_verification_status === 'NOT_VERIFIED' ? 'UNVERIFIED' : status;
 
   let tooltipMsg = null;
 
@@ -60,7 +58,7 @@ export default function PhoneStatus({
           setStatus('DISCONNECTED');
           onStatusChange?.('DISCONNECTED');
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Failed to deregister phone:', error);
         })
         .finally(() => {
@@ -77,9 +75,7 @@ export default function PhoneStatus({
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
       </svg>
-      <span className="font-medium">
-        {status === 'CONNECTED' ? 'Disconnecting' : 'Connecting'}
-      </span>
+      <span className="font-medium">{status === 'CONNECTED' ? 'Disconnecting' : 'Connecting'}</span>
     </div>
   ) : (
     <div className="flex items-center gap-1">
@@ -87,19 +83,12 @@ export default function PhoneStatus({
     </div>
   );
 
-  const statusColor =
-    status === 'CONNECTED'
-      ? 'bg-green-100 text-green-800'
-      : 'bg-red-100 text-red-800';
+  const statusColor = status === 'CONNECTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
   return (
     <>
       {/* Wrap in group so tooltip shows on hover of the whole area */}
-      <div
-        className="relative"
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
+      <div className="relative" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
         <div
           className={`whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold
                     cursor-pointer transition-all duration-200 ease-in-out
@@ -113,14 +102,16 @@ export default function PhoneStatus({
           onFocus={() => setShowTooltip(true)}
           onBlur={() => setShowTooltip(false)}
           role="button"
-          tabIndex={0}>
+          tabIndex={0}
+        >
           {content}
         </div>
         {showTooltip && tooltipMsg && (
           <div
             className="pointer-events-none absolute z-50 px-3 py-2 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-lg whitespace-nowrap
                     -top-9 left-1/2 transform -translate-x-1/2
-                    transition-opacity duration-75 ease-in-out">
+                    transition-opacity duration-75 ease-in-out"
+          >
             {tooltipMsg}
             <div className="absolute w-2 h-2 bg-white border-r border-b border-slate-200 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
           </div>

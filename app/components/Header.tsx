@@ -3,53 +3,42 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-
-import Image from "next/image";
-import Link from "next/link";
-import publicConfig from "@/app/publicConfig";
-import { getAppDetails } from "@/app/api/beUtils";
-import PrivacyPolicyModal from "@/app/components/PrivacyPolicyModal";
+import Image from 'next/image';
+import Link from 'next/link';
+import publicConfig from '@/app/publicConfig';
+import { getAppDetails } from '@/app/api/beUtils';
+import PrivacyPolicyModal from '@/app/components/PrivacyPolicyModal';
 
 export default async function Header({ user_id }: { user_id: string }) {
+  const appId = publicConfig.app_id;
+  const appDetails = await getAppDetails(appId);
+  const app_name = appDetails.name;
+  const logo_url = appDetails.logo_url;
 
-    const appId = publicConfig.app_id;
-    const appDetails = await getAppDetails(appId);
-    const app_name = appDetails.name;
-    const logo_url = appDetails.logo_url;
-
-    return (
-        <>
-            <div className="border-solid border-black border-0 m-2 rounded-md flex justify-between">
-                <div>
-                    <Link href='/' className="cursor-pointer">
-                        <Image
-                            className="relative"
-                            src={logo_url}
-                            alt={app_name}
-                            width={30}
-                            height={30}
-                            priority
-                        />
-                    </Link>
-                </div>
-                <div className="flex items-center">
-                    <div className="mr-4">
-                        <PrivacyPolicyModal app_name={app_name} contact_email={publicConfig.contact_email} />
-                    </div>
-                    <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">
-                        {user_id}
-                    </div>
-                    <a
-                        href="/auth/logout"
-                        className="group rounded-lg border border-transparent px-4 py-1 transition-colors hover:border-gray-300 hover:bg-gray-100 text-base font-semibold"
-                    >
-                        Logout
-                        <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                            {" ->"}
-                        </span>
-                    </a>
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <div className="border-solid border-black border-0 m-2 rounded-md flex justify-between">
+        <div>
+          <Link href="/" className="cursor-pointer">
+            <Image className="relative" src={logo_url} alt={app_name} width={30} height={30} priority />
+          </Link>
+        </div>
+        <div className="flex items-center">
+          <div className="mr-4">
+            <PrivacyPolicyModal app_name={app_name} contact_email={publicConfig.contact_email} />
+          </div>
+          <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">{user_id}</div>
+          <a
+            href="/auth/logout"
+            className="group rounded-lg border border-transparent px-4 py-1 transition-colors hover:border-gray-300 hover:bg-gray-100 text-base font-semibold"
+          >
+            Logout
+            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
+              {' ->'}
+            </span>
+          </a>
+        </div>
+      </div>
+    </>
+  );
 }
