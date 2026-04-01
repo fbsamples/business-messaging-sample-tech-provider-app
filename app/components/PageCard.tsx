@@ -7,7 +7,7 @@ import { ExternalLink, FileText } from 'lucide-react';
 interface PageCardProps {
   id: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
 export default function PageCard({ id, name }: PageCardProps) {

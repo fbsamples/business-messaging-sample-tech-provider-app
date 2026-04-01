@@ -7,11 +7,11 @@ import { ExternalLink, BookOpen } from 'lucide-react';
 interface CatalogCardProps {
   id: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
-export default function CatalogCard({ id, name, business_id }: CatalogCardProps) {
-  const catalogUrl = `https://business.facebook.com/commerce/catalogs/${id}/products?business_id=${business_id}`;
+export default function CatalogCard({ id, name, businessId }: CatalogCardProps) {
+  const catalogUrl = `https://business.facebook.com/commerce/catalogs/${id}/products?business_id=${businessId}`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">

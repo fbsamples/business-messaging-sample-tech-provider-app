@@ -8,14 +8,14 @@
 import type { ReactNode } from 'react';
 
 interface CopyableProps {
-  text_to_copy: string;
+  textToCopy: string;
   children: ReactNode;
 }
 
-export default function Copyable({ text_to_copy, children }: CopyableProps) {
+export default function Copyable({ textToCopy, children }: CopyableProps) {
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
-  return <div onClick={() => copy(text_to_copy)}>{children}</div>;
+  return <div onClick={() => copy(textToCopy)}>{children}</div>;
 }

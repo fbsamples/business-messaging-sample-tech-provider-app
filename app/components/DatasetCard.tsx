@@ -7,11 +7,11 @@ import { ExternalLink, Database } from 'lucide-react';
 interface DatasetCardProps {
   id: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
-export default function DatasetCard({ id, name, business_id }: DatasetCardProps) {
-  const eventsManagerUrl = `https://business.facebook.com/events_manager2/list/dataset/${id}?business_id=${business_id}`;
+export default function DatasetCard({ id, name, businessId }: DatasetCardProps) {
+  const eventsManagerUrl = `https://business.facebook.com/events_manager2/list/dataset/${id}?business_id=${businessId}`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">

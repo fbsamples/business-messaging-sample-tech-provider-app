@@ -5,13 +5,13 @@
 import { ExternalLink, Megaphone } from 'lucide-react';
 
 interface AdAccountCardProps {
-  ad_account_id: string;
+  adAccountId: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
-export default function AdAccountCard({ ad_account_id, name }: AdAccountCardProps) {
-  const adsManagerUrl = `https://www.facebook.com/adsmanager/manage/campaigns?act=${ad_account_id}`;
+export default function AdAccountCard({ adAccountId, name }: AdAccountCardProps) {
+  const adsManagerUrl = `https://www.facebook.com/adsmanager/manage/campaigns?act=${adAccountId}`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
@@ -21,7 +21,7 @@ export default function AdAccountCard({ ad_account_id, name }: AdAccountCardProp
         </div>
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-gray-900 truncate">{name}</h3>
-          <p className="text-xs text-gray-500 mt-0.5 font-mono">ID: {ad_account_id}</p>
+          <p className="text-xs text-gray-500 mt-0.5 font-mono">ID: {adAccountId}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 ml-4">

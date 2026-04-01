@@ -2,6 +2,8 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+import { Instagram } from 'lucide-react';
+
 import { auth0 } from '@/lib/auth0';
 import { getInstagramAccounts, getAppDetails } from '@/app/api/beUtils';
 import type { InstagramAccountWithDetails } from '@/app/types/api';
@@ -9,7 +11,6 @@ import LoggedOut from '@/app/components/LoggedOut';
 import WabaPageLayout from '@/app/components/WabaPageLayout';
 import InstagramAccountCard from '@/app/components/InstagramAccountCard';
 import publicConfig from '@/app/publicConfig';
-import { Instagram } from 'lucide-react';
 
 export default async function MyInstagramAccounts() {
   const session = await auth0.getSession();
@@ -36,7 +37,7 @@ export default async function MyInstagramAccounts() {
           key={account.id}
           id={account.id}
           name={account.username || 'Unnamed Account'}
-          business_id={account.business_id || ''}
+          businessId={account.business_id || ''}
         />
       ))}
     </WabaPageLayout>

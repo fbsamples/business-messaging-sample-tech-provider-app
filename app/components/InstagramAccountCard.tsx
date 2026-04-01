@@ -7,7 +7,7 @@ import { ExternalLink, Instagram } from 'lucide-react';
 interface InstagramAccountCardProps {
   id: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
 export default function InstagramAccountCard({ id, name }: InstagramAccountCardProps) {

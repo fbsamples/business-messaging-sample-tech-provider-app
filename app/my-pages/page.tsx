@@ -2,6 +2,8 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+import { FileText } from 'lucide-react';
+
 import { auth0 } from '@/lib/auth0';
 import { getPages, getAppDetails } from '@/app/api/beUtils';
 import type { PageWithDetails } from '@/app/types/api';
@@ -9,7 +11,6 @@ import LoggedOut from '@/app/components/LoggedOut';
 import WabaPageLayout from '@/app/components/WabaPageLayout';
 import PageCard from '@/app/components/PageCard';
 import publicConfig from '@/app/publicConfig';
-import { FileText } from 'lucide-react';
 
 export default async function MyPages() {
   const session = await auth0.getSession();
@@ -36,7 +37,7 @@ export default async function MyPages() {
           key={page.page_id}
           id={page.page_id}
           name={page.name || 'Unnamed Page'}
-          business_id={page.business_id || ''}
+          businessId={page.business_id || ''}
         />
       ))}
     </WabaPageLayout>

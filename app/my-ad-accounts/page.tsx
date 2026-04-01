@@ -2,6 +2,8 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+import { Megaphone } from 'lucide-react';
+
 import { auth0 } from '@/lib/auth0';
 import { getAdAccounts, getAppDetails } from '@/app/api/beUtils';
 import type { AdAccountWithDetails } from '@/app/types/api';
@@ -9,7 +11,6 @@ import LoggedOut from '@/app/components/LoggedOut';
 import WabaPageLayout from '@/app/components/WabaPageLayout';
 import AdAccountCard from '@/app/components/AdAccountCard';
 import publicConfig from '@/app/publicConfig';
-import { Megaphone } from 'lucide-react';
 
 export default async function MyAdAccounts() {
   const session = await auth0.getSession();
@@ -34,9 +35,9 @@ export default async function MyAdAccounts() {
       {adAccounts.map((account: AdAccountWithDetails) => (
         <AdAccountCard
           key={account.ad_account_id}
-          ad_account_id={account.ad_account_id}
+          adAccountId={account.ad_account_id}
           name={account.name || 'Unnamed Account'}
-          business_id={account.business_id || ''}
+          businessId={account.business_id || ''}
         />
       ))}
     </WabaPageLayout>

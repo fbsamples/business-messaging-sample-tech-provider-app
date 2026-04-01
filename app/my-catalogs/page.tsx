@@ -2,6 +2,8 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+import { BookOpen } from 'lucide-react';
+
 import { auth0 } from '@/lib/auth0';
 import { getCatalogs, getAppDetails } from '@/app/api/beUtils';
 import type { CatalogWithDetails } from '@/app/types/api';
@@ -9,7 +11,6 @@ import LoggedOut from '@/app/components/LoggedOut';
 import WabaPageLayout from '@/app/components/WabaPageLayout';
 import CatalogCard from '@/app/components/CatalogCard';
 import publicConfig from '@/app/publicConfig';
-import { BookOpen } from 'lucide-react';
 
 export default async function MyCatalogs() {
   const session = await auth0.getSession();
@@ -36,7 +37,7 @@ export default async function MyCatalogs() {
           key={catalog.id}
           id={catalog.id}
           name={catalog.name || 'Unnamed Catalog'}
-          business_id={catalog.business_id || ''}
+          businessId={catalog.business_id || ''}
         />
       ))}
     </WabaPageLayout>
