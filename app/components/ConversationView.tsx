@@ -46,8 +46,7 @@ export default function ConversationView({ displayName, messages, onSendMessage 
 
       {/* Messages */}
       <div
-        className="flex-1 overflow-y-auto px-5 py-4 space-y-0.5"
-        style={{ background: 'linear-gradient(180deg, #f8f9ff 0%, #f1f3f9 100%)' }}
+        className="flex-1 overflow-y-auto px-5 py-4 space-y-0.5 bg-gradient-to-b from-[#f8f9ff] to-[#f1f3f9]"
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
