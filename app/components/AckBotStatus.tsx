@@ -8,6 +8,7 @@
 import { feGraphApiPostWrapper } from '@/app/feUtils';
 import { useState, useEffect } from 'react';
 import type { PhoneDetails } from '@/app/types/api';
+import { cn } from '@/lib/utils';
 
 export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
   const [isAckBotEnabled, setIsAckBotEnabled] = useState(phone.isAckBotEnabled);
@@ -85,14 +86,16 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
     <>
       <div className="relative">
         <div
-          className={`whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold
-                        cursor-pointer transition-all duration-200 ease-in-out
-                        hover:shadow-md hover:scale-105 active:scale-95
-                        border border-gray-200 hover:border-gray-300
-                        flex items-center justify-center
-                        ${isLoading ? 'opacity-70' : 'opacity-100'}
-                        ${statusColor}
-                        h-7`}
+          className={cn(
+                        'whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold',
+                        'cursor-pointer transition-all duration-200 ease-in-out',
+                        'hover:shadow-md hover:scale-105 active:scale-95',
+                        'border border-gray-200 hover:border-gray-300',
+                        'flex items-center justify-center',
+                        isLoading ? 'opacity-70' : 'opacity-100',
+                        statusColor,
+                        'h-7',
+                      )}
           onClick={isAckBotEnabled ? handleEditMessage : handleToggle}
           onContextMenu={(e) => {
             e.preventDefault();

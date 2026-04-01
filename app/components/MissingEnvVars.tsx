@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { MissingEnvVarInfo } from '@/app/envChecker';
+import { cn } from '@/lib/utils';
 
 // Group definitions with label, color badge, and variable keys
 const ENV_VAR_GROUPS: { label: string; color: string; textColor: string; keys: string[] }[] = [
@@ -71,9 +72,10 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className={`inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 transition-colors flex-shrink-0 ${
-        copied ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'
-      }`}
+      className={cn(
+        'inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 transition-colors flex-shrink-0',
+        copied ? 'text-green-400' : 'text-gray-500 hover:text-gray-300',
+      )}
       title="Copy"
     >
       {copied ? (
@@ -113,7 +115,7 @@ function GroupRow({ group, missingKeys, missingVars, isOpen, onToggle }: GroupRo
       >
         <div className="flex items-center gap-3">
           <span
-            className={`w-7 h-7 rounded-lg ${group.color} ${group.textColor} flex items-center justify-center text-xs font-bold flex-shrink-0`}
+            className={cn('w-7 h-7 rounded-lg', group.color, group.textColor, 'flex items-center justify-center text-xs font-bold flex-shrink-0')}
           >
             {initial}
           </span>
@@ -124,7 +126,7 @@ function GroupRow({ group, missingKeys, missingVars, isOpen, onToggle }: GroupRo
             {missingKeys.length} variable{missingKeys.length !== 1 ? 's' : ''}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={cn('w-4 h-4 text-gray-400 transition-transform', isOpen && 'rotate-180')}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 'use client';
 import type { PhoneDetails } from '@/app/types/api';
+import { cn } from '@/lib/utils';
 
 interface PhoneListSidebarProps {
   phones: PhoneDetails[];
@@ -44,27 +45,30 @@ export default function PhoneListSidebar({ phones, selectedPhoneId, onSelectPhon
             <button
               key={phone.id}
               onClick={() => onSelectPhone(phone)}
-              className={`w-full text-left flex items-center gap-3 px-4 py-3 border-b border-gray-50 transition-colors ${
-                isSelected ? 'bg-indigo-50' : 'hover:bg-gray-50'
-              }`}
+              className={cn(
+                'w-full text-left flex items-center gap-3 px-4 py-3 border-b border-gray-50 transition-colors',
+                isSelected ? 'bg-indigo-50' : 'hover:bg-gray-50',
+              )}
             >
               {/* Avatar */}
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                  isSelected ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'
-                }`}
+                className={cn(
+                  'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold',
+                  isSelected ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500',
+                )}
               >
                 {phone.display_phone_number.replace(/\D/g, '').slice(-2)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-medium truncate ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}>
+                  <span className={cn('text-sm font-medium truncate', isSelected ? 'text-indigo-700' : 'text-gray-900')}>
                     {phone.display_phone_number}
                   </span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0 ${
-                      isSMB ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                    }`}
+                    className={cn(
+                      'text-[10px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0',
+                      isSMB ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700',
+                    )}
                   >
                     {isSMB ? 'SMB' : 'ENT'}
                   </span>
