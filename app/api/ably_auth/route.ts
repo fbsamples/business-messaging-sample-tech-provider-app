@@ -4,10 +4,11 @@
 // LICENSE file in the root directory of this source tree.
 
 
-export const dynamic = 'force-dynamic'; // static by default, unless reading the request
 import { NextResponse } from 'next/server'
 import Ably from 'ably';
 import { withAuth } from "../auth_wrapper";
+
+export const dynamic = 'force-dynamic';
 
 async function createTokenRequest(clientId: string) {
     const ably_key = process.env.ABLY_KEY;

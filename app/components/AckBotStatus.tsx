@@ -16,34 +16,14 @@ export default function AckBotStatus({ phone }: { phone: any }) {
     const [ackMessage, setAckMessage] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
-    // Load saved message when modal opens
-    useEffect(() => {
-        if (showModal) {
-            fetch(`/api/phones/${phone.id}?phoneId=${phone.id}`)
-                .then(res => res.json())
-                .then(data => {
-                    const msg = data.ackBotMessage || '';
-                    setAckMessage(msg);
-                })
-                .catch(() => {});
-        }
-    }, [showModal, phone.id]);
-
-    function handleToggle() {
-        if (isAckBotEnabled) {
-            // Disabling — just turn off, no modal needed
-            setIsLoading(true);
-            feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
-                isAckBotEnabled: false,
-                phoneId: phone.id,
+    function handleClick() {
+        return feGraphApiPostWrapper(`/api/phones/${phone.id}`, { isAckBotEnabled: !isAckBotEnabled, phoneId: phone.id })
+            .then(() => {
+                setIsAckBotEnabled(!isAckBotEnabled);
             })
-                .then(() => setIsAckBotEnabled(false))
-                .catch(console.error)
-                .finally(() => setIsLoading(false));
-        } else {
-            // Enabling — show modal to configure message
-            setShowModal(true);
-        }
+            .catch(error => {
+                console.error('Failed to update ack bot status:', error);
+            });
     }
 
     function handleSave() {

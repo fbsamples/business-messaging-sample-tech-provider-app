@@ -139,19 +139,14 @@ export default function FBL4BLauncher({
             try {
                 const data = JSON.parse(event.data);
                 onLastEventDataChange(data);
-                console.log("=== ES DATA ===");
-                console.log(data);
                 if (data.type === 'WA_EMBEDDED_SIGNUP') {
                     if (data.data.current_step) {
                         // User closed the popup mid-flow — clear the "ES Started..." banner
                         clearEsState();
                         onBannerInfoChange('');
-                        console.log('=== Exited Early ===');
-                        console.log(data.data);
                     } else {
                         const session_info: SessionInfo = data;
                         session_info_outer = session_info;
-                        console.log('=== message session version ===\n', 'code_outer: ', code_outer, '\nsession_info_outer:', session_info_outer);
                         if (session_info_outer && code_outer) {
                             onSaveToken(code_outer, session_info);
                         }

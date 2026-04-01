@@ -32,8 +32,6 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
                 chat_id,
                 displayName
             }
-            console.log('new_state');
-            console.log(new_state);
             return new_state
         });
     }
@@ -58,7 +56,9 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Success:', data);
+                    if (data.error) {
+                        console.error('Send message failed:', data.error);
+                    }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -75,7 +75,6 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
 
     useEffect(
         () => {
-            console.log('useEffect run');
             const ablyClient = new Ably.Realtime({
                 authCallback: async (_, callback) => {
                     // Make a network request to your server for tokenRequest
@@ -91,14 +90,11 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
             });
 
             ablyClient.connection.on("connected", () => {
-                console.log("Connected to Ably!")
             })
 
             // Create a channel called 'get-started' and register a listener to subscribe to all messages with the name 'first'
             const channel = ablyClient.channels.get("get-started")
             channel.subscribe("first", (message) => {
-                console.log("Message received: ");
-                console.log(JSON.stringify(message.data, null, 2));
                 const text = message.data.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.text?.body;
 
 
@@ -108,8 +104,6 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
                     const dest_phone_id = message.data.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
                     const consumer_phone_number = message.data.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.from;
                     const displayName = message.data.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.profile?.name;
-                    console.log('dest_phone_id');
-                    console.log(dest_phone_id);
                     if (dest_phone_id === phone_number_id) {
                         addWebhook(text);
                         addChat(consumer_phone_number, displayName);
@@ -119,7 +113,6 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
 
                 const echo = message.data.entry?.[0]?.changes?.[0]?.value?.message_echoes?.[0]?.text?.body;
                 const consumer_phone_num = message.data.entry?.[0]?.changes?.[0]?.value?.message_echoes?.[0]?.to;
-                // const smb_phone_num = message.data.entry?.[0]?.changes?.[0]?.value?.message_echoes?.[0]?.from;
                 if (echo) {
                     addWebhook(text);
                     addMessage(consumer_phone_num, '>> ' + echo + ' (echo)');
@@ -130,7 +123,6 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
             });
 
             return function cleanup() {
-                console.log('ably cleanup');
                 setMessages({});
                 setChats({});
                 setWebhooks([]);

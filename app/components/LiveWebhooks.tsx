@@ -33,64 +33,20 @@ function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }
   const [expanded, setExpanded] = useState(index === 0);
   const fieldLabel = webhook.field.charAt(0).toUpperCase() + webhook.field.slice(1);
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-      <button
-        className="w-full flex items-center gap-4 px-5 py-3.5 text-left hover:bg-gray-50 transition-colors"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-semibold text-gray-900">{fieldLabel}</span>
-            <span className={cn(
-              'text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
-              webhook.status === 200 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-            )}>
-              {webhook.status}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Clock className="w-3 h-3 text-gray-400" />
-            <span className="text-[11px] text-gray-400 font-mono">{webhook.receivedAt}</span>
-          </div>
-        </div>
-        {expanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        )}
-      </button>
-      {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4">
-          <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Payload</div>
-          <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-auto max-h-64">
-            <pre className="text-[11px] font-mono text-gray-700 p-4 whitespace-pre leading-relaxed">
-              {JSON.stringify(webhook.payload, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+            ablyClient.connection.once("connected", () => {
+            })
 
-export default function LiveWebhooks() {
-  const [webhooks, setWebhooks] = useState<WebhookEntry[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-  const [connected, setConnected] = useState(false);
+            // Create a channel called 'get-started' and register a listener to subscribe to all messages with the name 'first'
+            const channel = ablyClient.channels.get("get-started")
+            channel.subscribe("first", (message) => {
+                addWebhook(message.data);
+            });
 
-  function addWebhook(data: unknown) {
-    const entry: WebhookEntry = {
-      field: extractField(data),
-      receivedAt: formatTimestamp(new Date()),
-      status: 200,
-      payload: data,
-    };
-    setWebhooks((old_state) => [entry, ...old_state]);
-  }
+            return function cleanup() {
+                ablyClient.close();
+            }
+        },
+        []);
 
   useEffect(() => {
     setIsMounted(true);

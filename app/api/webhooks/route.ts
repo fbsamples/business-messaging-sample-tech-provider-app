@@ -3,7 +3,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export const dynamic = 'force-dynamic'; // static by default, unless reading the request
 import {NextResponse, type NextRequest} from 'next/server';
 import Ably from 'ably';
 import {
@@ -15,6 +14,8 @@ import {
 import privateConfig from '@/app/private_config';
 import publicConfig from '@/app/public_config';
 import { sql } from '@vercel/postgres';
+
+export const dynamic = 'force-dynamic';
 
 const {fb_verify_token} = await privateConfig();
 

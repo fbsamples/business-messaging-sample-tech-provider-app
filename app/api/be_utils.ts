@@ -334,10 +334,7 @@ export async function getPages(user_id: string): Promise<PageWithDetails[]> {
     const pagesWithNames: PageWithDetails[] = await Promise.all(
         rows.map(async (page: PageRow) => {
             try {
-                const response = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/${page.page_id}?fields=name,ad_campaign&access_token=${page.access_token}`
-                );
-                const data = await response.json();
+                const data = await graphApiWrapperGet(`/${page.page_id}?fields=name,ad_campaign`, page.access_token);
                 return {
                     ...page,
                     name: data.name || 'Unknown Page',
@@ -393,7 +390,7 @@ export async function getAdAccounts(user_id: string): Promise<AdAccountWithDetai
 
 
 //////////////////////////////////////////////////////////
-// Reqeust Wrappers
+// Request Wrappers
 //////////////////////////////////////////////////////////
 
 async function graphApiWrapperGet(url: string, accessToken?: string): Promise<any> {
@@ -557,10 +554,7 @@ export async function getCatalogs(user_id: string): Promise<CatalogWithDetails[]
     const catalogsWithDetails: CatalogWithDetails[] = await Promise.all(
         rows.map(async (catalog: CatalogRow) => {
             try {
-                const response = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/${catalog.catalog_id}?fields=name&access_token=${catalog.access_token}`
-                );
-                const data = await response.json();
+                const data = await graphApiWrapperGet(`/${catalog.catalog_id}?fields=name`, catalog.access_token);
                 return {
                     id: catalog.catalog_id,
                     name: data.name || 'Unnamed Catalog',
