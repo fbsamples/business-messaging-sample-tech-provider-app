@@ -404,3 +404,60 @@ export type SessionInfo = {
   type: string;
   event: string;
 };
+
+// ============================================================================
+// Paid Messaging / Template Types
+// ============================================================================
+
+export type WabaClientData = {
+    id: string;
+    name: string;
+    phone_numbers: {
+        data: PhoneNumber[];
+    };
+};
+
+export type TemplateComponent = {
+    type: 'HEADER' | 'BODY' | 'FOOTER' | 'BUTTONS';
+    format?: 'TEXT' | 'IMAGE' | 'VIDEO' | 'DOCUMENT';
+    text?: string;
+    buttons?: Array<{ type: string; text: string; url?: string }>;
+};
+
+export type MessageTemplate = {
+    id: string;
+    name: string;
+    language: string;
+    status: string;
+    category: string;
+    components: TemplateComponent[];
+};
+
+export type TemplateMediaParam =
+    | { type: 'text'; text: string }
+    | { type: 'image'; image: { link: string } }
+    | { type: 'video'; video: { link: string } }
+    | { type: 'document'; document: { link: string; filename?: string } };
+
+export type TemplateComponentParam = {
+    type: 'header' | 'body' | 'button';
+    parameters: TemplateMediaParam[];
+    sub_type?: string;
+    index?: string;
+};
+
+export type SendTemplateRequest = {
+    waba_id: string;
+    phone_number_id: string;
+    template_name: string;
+    template_language: string;
+    recipient: string;
+    component_params: TemplateComponentParam[];
+};
+
+export type SendTemplateResponse = SendMessageResponse;
+
+export type TemplateGatingData = {
+    hasApprovedTemplates: boolean;
+    hasPaymentMethod: boolean;
+};
