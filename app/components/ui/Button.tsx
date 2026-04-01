@@ -2,8 +2,10 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-import { cn } from '@/lib/utils';
+
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
+
+import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';

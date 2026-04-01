@@ -384,8 +384,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                     />
                   ) : (
                     <div
-                      className="flex-1 flex flex-col items-center justify-center text-left px-6"
-                      style={{ background: 'linear-gradient(180deg, #f8f9ff 0%, #f1f3f9 100%)' }}
+                      className="flex-1 flex flex-col items-center justify-center text-left px-6 bg-gradient-to-b from-[#f8f9ff] to-[#f1f3f9]"
                     >
                       <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -409,8 +408,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
             </>
           ) : (
             <div
-              className="flex-1 flex flex-col items-center justify-center text-left px-6"
-              style={{ background: 'linear-gradient(180deg, #f8f9ff 0%, #f1f3f9 100%)' }}
+              className="flex-1 flex flex-col items-center justify-center text-left px-6 bg-gradient-to-b from-[#f8f9ff] to-[#f1f3f9]"
             >
               <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

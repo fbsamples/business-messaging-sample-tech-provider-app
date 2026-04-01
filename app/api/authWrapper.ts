@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import { NextRequest, NextResponse } from 'next/server';
+
 import { auth0 } from '@/lib/auth0';
 
 export interface AuthSession {

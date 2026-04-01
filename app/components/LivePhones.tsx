@@ -83,7 +83,6 @@ export default function LivePhones({ phoneDisplay, phoneNumberId, wabaId, _phone
   useEffect(() => {
     const ablyClient = new Ably.Realtime({
       authCallback: async (_, callback) => {
-        // Make a network request to your server for tokenRequest
         fetch('/api/ably-auth')
           .then((response) => {
             return response.json();

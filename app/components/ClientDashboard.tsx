@@ -2,11 +2,11 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-
 import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info, CheckCircle2, Circle, Server } from 'lucide-react';
@@ -710,28 +710,28 @@ export default function ClientDashboard({
     (code: string, sessionInfo: SessionInfo) => {
       setBannerInfo('Setting up WABA...');
       const {
-        waba_id,
-        business_id,
-        phone_number_id,
-        page_ids,
-        ad_account_ids,
-        catalog_ids,
-        dataset_ids,
-        instagram_account_ids,
+        waba_id: wabaId,
+        business_id: businessId,
+        phone_number_id: phoneNumberId,
+        page_ids: pageIds,
+        ad_account_ids: adAccountIds,
+        catalog_ids: catalogIds,
+        dataset_ids: datasetIds,
+        instagram_account_ids: instagramAccountIds,
       } = sessionInfo.data;
       const filterIds = (ids: string[] | undefined) => (ids || []).filter((id) => id && id.trim() !== '');
       feGraphApiPostWrapper('/api/token', {
         code,
         app_id: appId,
-        waba_id,
-        waba_ids: waba_id ? [waba_id] : [],
-        business_id,
-        phone_number_id,
-        page_ids: page_ids || [],
-        ad_account_ids: ad_account_ids || [],
-        dataset_ids: filterIds(dataset_ids),
-        catalog_ids: filterIds(catalog_ids),
-        instagram_account_ids: filterIds(instagram_account_ids),
+        waba_id: wabaId,
+        waba_ids: wabaId ? [wabaId] : [],
+        business_id: businessId,
+        phone_number_id: phoneNumberId,
+        page_ids: pageIds || [],
+        ad_account_ids: adAccountIds || [],
+        dataset_ids: filterIds(datasetIds),
+        catalog_ids: filterIds(catalogIds),
+        instagram_account_ids: filterIds(instagramAccountIds),
         es_option_reg: esOptionReg,
         es_option_sub: esOptionSub,
         user_id: userId,

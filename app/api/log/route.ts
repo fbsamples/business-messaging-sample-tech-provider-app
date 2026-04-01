@@ -4,15 +4,17 @@
 // LICENSE file in the root directory of this source tree.
 
 import { NextResponse, type NextRequest } from 'next/server';
+
 import { sql } from '@vercel/postgres';
 
 import { withAuth } from '@/app/api/authWrapper';
 
-export const POST = withAuth(async function logs(request: NextRequest) {
+export const POST = withAuth(async function logs(request: NextRequest, session) {
   try {
-    const { user_id: userId, action } = await request.json();
+    const { action } = await request.json();
+    const userId = session.user.email;
 
-    if (!userId || !action) {
+    if (!action) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 

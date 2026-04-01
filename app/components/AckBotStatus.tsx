@@ -5,8 +5,9 @@
 
 'use client';
 
-import { feGraphApiPostWrapper } from '@/app/feUtils';
 import { useState, useEffect } from 'react';
+
+import { feGraphApiPostWrapper } from '@/app/feUtils';
 import type { PhoneDetails } from '@/app/types/api';
 import { cn } from '@/lib/utils';
 
