@@ -23,6 +23,9 @@ import type {
   RequestCodeResponse,
   VerifyCodeResponse,
   SendMessageResponse,
+  MessageTemplate,
+  TemplateComponentParam,
+  TemplateGatingData,
   PageRow,
   PageWithDetails,
   AdAccountRow,
@@ -365,6 +368,15 @@ export async function getTokenForWaba(wabaId: string, userId: string): Promise<s
   return rows[0].access_token;
 }
 
+export async function getTokenForWabaByUser(waba_id: string, user_id: string, app_id: string): Promise<string | null> {
+    console.log('getTokenForWabaByUser:', 'waba_id', waba_id, 'user_id', user_id, 'app_id', app_id);
+    const { rows }: { rows: { access_token: string }[] } = await sql`
+        SELECT access_token FROM wabas
+        WHERE waba_id = ${waba_id} AND user_id = ${user_id} AND app_id = ${app_id}
+    `;
+    return rows[0]?.access_token || null;
+}
+
 //////////////////////////////////////////////////////////
 // Verification Request \/
 //////////////////////////////////////////////////////////
@@ -379,6 +391,97 @@ export async function verifyCode(phoneId: string, accessToken: string, otpCode: 
   console.log('verifyCode:', 'phoneId', phoneId);
   const url = `/${phoneId}/verify_code?code=${otpCode}`;
   return graphApiWrapperPost(url, accessToken);
+}
+
+//////////////////////////////////////////////////////////
+// Paid Messaging (Templates)
+//////////////////////////////////////////////////////////
+
+export async function getMessageTemplates(waba_id: string, access_token: string): Promise<MessageTemplate[]> {
+    console.log('getMessageTemplates:', 'waba_id', waba_id);
+    const url = `/${waba_id}/message_templates?fields=name,language,status,components,category&limit=1000`;
+    const data = await graphApiWrapperGet(url, access_token);
+    if (data.error) {
+        console.error('getMessageTemplates error:', JSON.stringify(data.error, null, 2));
+        throw new Error(data.error.message || 'Failed to fetch message templates');
+    }
+    const templates: MessageTemplate[] = data.data || [];
+    const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
+    return templates.filter((t: MessageTemplate) => sendableStatuses.includes(t.status));
+}
+
+export async function sendTemplateMessage(
+    phone_number_id: string,
+    access_token: string,
+    to: string,
+    template_name: string,
+    template_language: string,
+    components: TemplateComponentParam[]
+): Promise<SendMessageResponse> {
+    console.log('sendTemplateMessage:', 'phone_number_id', phone_number_id, 'to', to, 'template_name', template_name);
+    const url = `/${phone_number_id}/messages`;
+    const data = await graphApiWrapperPost(url, access_token, {
+        messaging_product: "whatsapp",
+        to,
+        type: "template",
+        template: {
+            name: template_name,
+            language: { code: template_language },
+            components,
+        },
+    });
+
+    // graphApiWrapperPost does NOT throw on Graph API errors — it returns
+    // the error object as data. We must explicitly check and throw.
+    if (data.error) {
+        const err = new Error(data.error.message || 'Graph API error') as any;
+        err.status = 400;
+        err.graphApiError = data.error;
+        throw err;
+    }
+
+    return data;
+}
+
+export async function getTemplateGatingData(
+    waba_id: string,
+    access_token: string
+): Promise<TemplateGatingData> {
+    let hasPaymentMethod = false;
+    let hasApprovedTemplates = false;
+
+    try {
+        const [fundingData, templateData] = await Promise.all([
+            graphApiWrapperGet(`/${waba_id}?fields=primary_funding_id`, access_token)
+                .catch((): null => null),
+            graphApiWrapperGet(
+                `/${waba_id}/message_templates?fields=name,status&limit=100`,
+                access_token
+            ).catch((): null => null),
+        ]);
+
+        console.log('getTemplateGatingData:', 'waba_id', waba_id,
+            'fundingData', JSON.stringify(fundingData),
+            'templateData', JSON.stringify(templateData));
+
+        if (fundingData && !fundingData.error) {
+            hasPaymentMethod = !!fundingData.primary_funding_id;
+        }
+
+        if (templateData && !templateData.error) {
+            const templates: any[] = templateData.data || [];
+            const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
+            hasApprovedTemplates = templates.some((t: any) => sendableStatuses.includes(t.status));
+        }
+
+        console.log('getTemplateGatingData result:', 'waba_id', waba_id,
+            'hasPaymentMethod', hasPaymentMethod,
+            'hasApprovedTemplates', hasApprovedTemplates);
+    } catch (err) {
+        console.error('getTemplateGatingData error:', 'waba_id', waba_id, err);
+    }
+
+    return { hasPaymentMethod, hasApprovedTemplates };
 }
 
 //////////////////////////////////////////////////////////
