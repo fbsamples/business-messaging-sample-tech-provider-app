@@ -3,12 +3,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 import { auth0 } from "@/lib/auth0";
-import { getAdAccounts, getAppDetails } from "@/app/api/be_utils";
-import { AdAccountWithDetails } from "@/app/types/api";
+import { getAdAccounts, getAppDetails } from "@/app/api/beUtils";
+import type { AdAccountWithDetails } from "@/app/types/api";
 import LoggedOut from "@/app/components/LoggedOut";
 import WabaPageLayout from "@/app/components/WabaPageLayout";
 import AdAccountCard from "@/app/components/AdAccountCard";
-import publicConfig from "@/app/public_config";
+import publicConfig from "@/app/publicConfig";
 import { Megaphone } from "lucide-react";
 
 export default async function MyAdAccounts() {
@@ -36,7 +36,6 @@ export default async function MyAdAccounts() {
           key={account.ad_account_id}
           ad_account_id={account.ad_account_id}
           name={account.name || "Unnamed Account"}
-          access_token={account.access_token || ""}
           business_id={account.business_id || ""}
         />
       ))}

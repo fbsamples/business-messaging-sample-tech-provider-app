@@ -6,8 +6,8 @@
 
 'use server';
 
-import getPrivateConfig from "../private_config";
-import publicConfig from "../public_config";
+import getPrivateConfig from "@/app/privateConfig";
+import publicConfig from "@/app/publicConfig";
 import { sql } from '@vercel/postgres';
 import type {
     SubscribeWebhookResponse,
@@ -34,7 +34,7 @@ import type {
     InstagramAccountRow,
     InstagramAccountWithDetails,
     AppDetails,
-} from '../types/api';
+} from '@/app/types/api';
 
 const { graph_api_version, redirect_uri } = publicConfig;
 
@@ -64,7 +64,7 @@ export async function subscribeWebhook(access_token: string, waba_id: string): P
 }
 
 async function saveWabaToken(access_token: string, waba_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('saveWabaToken:', 'access_token', access_token, 'waba_id', waba_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('saveWabaToken:', 'wabaId', waba_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO wabas (user_id, app_id, waba_id, access_token, business_id, last_updated)
@@ -75,7 +75,7 @@ async function saveWabaToken(access_token: string, waba_id: string, app_id: stri
 }
 
 async function savePageToken(access_token: string, page_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('savePageToken:', 'access_token', access_token, 'page_id', page_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('savePageToken:', 'pageId', page_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO pages (user_id, app_id, page_id, access_token, business_id, last_updated)
@@ -86,7 +86,7 @@ async function savePageToken(access_token: string, page_id: string, app_id: stri
 }
 
 async function saveAdAccountToken(access_token: string, ad_account_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('saveAdAccountToken:', 'access_token', access_token, 'ad_account_id', ad_account_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('saveAdAccountToken:', 'adAccountId', ad_account_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO ad_accounts (user_id, app_id, ad_account_id, access_token, business_id, last_updated)
@@ -97,7 +97,7 @@ async function saveAdAccountToken(access_token: string, ad_account_id: string, a
 }
 
 async function saveDatasetToken(access_token: string, dataset_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('saveDatasetToken:', 'access_token', access_token, 'dataset_id', dataset_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('saveDatasetToken:', 'datasetId', dataset_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO datasets (user_id, app_id, dataset_id, access_token, business_id, last_updated)
@@ -108,7 +108,7 @@ async function saveDatasetToken(access_token: string, dataset_id: string, app_id
 }
 
 async function saveCatalogToken(access_token: string, catalog_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('saveCatalogToken:', 'access_token', access_token, 'catalog_id', catalog_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('saveCatalogToken:', 'catalogId', catalog_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO catalogs (user_id, app_id, catalog_id, access_token, business_id, last_updated)
@@ -119,7 +119,7 @@ async function saveCatalogToken(access_token: string, catalog_id: string, app_id
 }
 
 async function saveInstagramAccountToken(access_token: string, instagram_account_id: string, app_id: string, user_id: string, business_id: string): Promise<SqlResult> {
-    console.log('saveInstagramAccountToken:', 'access_token', access_token, 'instagram_account_id', instagram_account_id, 'app_id', app_id, 'business_id', business_id);
+    console.log('saveInstagramAccountToken:', 'instagramAccountId', instagram_account_id, 'appId', app_id, 'businessId', business_id);
 
     return await sql`
         INSERT INTO instagram_accounts (user_id, app_id, instagram_account_id, access_token, business_id, last_updated)
@@ -130,7 +130,7 @@ async function saveInstagramAccountToken(access_token: string, instagram_account
 }
 
 async function saveBusinessToken(access_token: string, business_id: string, app_id: string, user_id: string): Promise<SqlResult> {
-    console.log('saveBusinessToken:', 'access_token', access_token, 'business_id', business_id, 'app_id', app_id);
+    console.log('saveBusinessToken:', 'businessId', business_id, 'appId', app_id);
 
     return await sql`
         INSERT INTO businesses (user_id, app_id, business_id, access_token, last_updated)
@@ -298,6 +298,9 @@ async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: str
 export async function getTokenForWaba(waba_id: string, user_id: string): Promise<string> {
     console.log('getTokenForWaba:', 'wabaId', waba_id);
     const { rows }: { rows: { access_token: string }[] } = await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id} AND user_id = ${user_id}`;
+    if (rows.length === 0) {
+        throw new Error(`No access token found for WABA ${waba_id}`);
+    }
     return rows[0].access_token;
 }
 
@@ -393,9 +396,10 @@ export async function getAdAccounts(user_id: string): Promise<AdAccountWithDetai
 // Request Wrappers
 //////////////////////////////////////////////////////////
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function graphApiWrapperGet(url: string, accessToken?: string): Promise<any> {
-    console.log('graphApiWrapperGet:', 'url', url);
-    const headers = {
+    console.log('graphApiWrapperGet:', 'path', url.split('?')[0]);
+    const headers: Record<string, string> = {
         "Content-Type": "application/json",
     };
     if (accessToken) {
@@ -409,17 +413,18 @@ async function graphApiWrapperGet(url: string, accessToken?: string): Promise<an
         .then(response => response.json())
         .then(response => {
             if (response.error) {
-                console.log('graphApiWrapperGetResponse:', 'url', url, 'error', JSON.stringify(response.error, null, 2));
+                console.log('graphApiWrapperGetResponse:', 'path', url.split('?')[0], 'error', JSON.stringify(response.error, null, 2));
             } else {
-                console.log('graphApiWrapperGetResponse:', 'url', url, 'response');
+                console.log('graphApiWrapperGetResponse:', 'path', url.split('?')[0]);
             }
             return response;
         })
 }
 
-async function graphApiWrapperPost(url: string, accessToken: string, params = {}): Promise<any> {
-    console.log('graphApiWrapperPost:', 'url', url, 'params', JSON.stringify(params, null, 2));
-    const headers = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function graphApiWrapperPost(url: string, accessToken: string, params: Record<string, unknown> = {}): Promise<any> {
+    console.log('graphApiWrapperPost:', 'path', url.split('?')[0]);
+    const headers: Record<string, string> = {
         "Content-Type": "application/json",
     };
     if (accessToken) {
@@ -436,9 +441,9 @@ async function graphApiWrapperPost(url: string, accessToken: string, params = {}
         })
         .then(data => {
             if (data.error) {
-                console.log('graphApiWrapperPostError:', 'url', url, 'error', JSON.stringify(data.error, null, 2));
+                console.log('graphApiWrapperPostError:', 'path', url.split('?')[0], 'error', JSON.stringify(data.error, null, 2));
             } else {
-                console.log('graphApiWrapperPostResponse:', 'url', url, 'response', JSON.stringify(data.error, null, 2));
+                console.log('graphApiWrapperPostResponse:', 'path', url.split('?')[0]);
             }
             return data;
         })
@@ -461,7 +466,6 @@ export async function getAckBotMessage(phoneId: string): Promise<string> {
 }
 
 export async function setAckBotStatus(phoneId: string, isAckBotEnabled: boolean, ackBotMessage?: string): Promise<SqlResult> {
-    console.log('isAckBotEnabled', isAckBotEnabled, 'ackBotMessage', ackBotMessage);
     if (ackBotMessage !== undefined) {
         return await sql`
             INSERT INTO phones (phone_id, is_ack_bot_enabled, ack_bot_message)
@@ -604,10 +608,10 @@ export async function getInstagramAccounts(user_id: string): Promise<InstagramAc
     await Promise.all(
         pageRows.map(async (page) => {
             try {
-                const res = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/${page.page_id}?fields=instagram_business_account{id,username,name}&access_token=${page.access_token}`
+                const data = await graphApiWrapperGet(
+                    `/${page.page_id}?fields=instagram_business_account{id,username,name}`,
+                    page.access_token
                 );
-                const data = await res.json();
                 const iga = data?.instagram_business_account;
                 if (iga?.id) {
                     igUsernameMap[iga.id] = iga.username || iga.name || '';
@@ -633,10 +637,10 @@ export async function getInstagramAccounts(user_id: string): Promise<InstagramAc
             }
             // Fallback: query the IG ID directly (works if token has instagram_basic scope)
             try {
-                const response = await fetch(
-                    `https://graph.facebook.com/${graph_api_version}/${account.instagram_account_id}?fields=username,name&access_token=${account.access_token}`
+                const data = await graphApiWrapperGet(
+                    `/${account.instagram_account_id}?fields=username,name`,
+                    account.access_token
                 );
-                const data = await response.json();
                 if (data.username || data.name) {
                     return {
                         id: account.instagram_account_id,
@@ -645,7 +649,7 @@ export async function getInstagramAccounts(user_id: string): Promise<InstagramAc
                         business_id: account.business_id
                     };
                 }
-                console.warn(`Instagram ${account.instagram_account_id} Graph API response:`, JSON.stringify(data));
+                console.warn(`Instagram ${account.instagram_account_id}: no username or name found`);
             } catch (error) {
                 console.error(`Error fetching details for Instagram account ${account.instagram_account_id}:`, error);
             }

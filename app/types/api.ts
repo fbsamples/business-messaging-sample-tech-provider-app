@@ -262,10 +262,10 @@ export type AppDetails = {
     company?: string;
     link?: string;
     error?: FacebookError;
-    config_ids: [{
+    config_ids: {
+        id: string;
         name: string;
-        tpconfigid: string;
-    }];
+    }[];
 };
 
 // ============================================================================

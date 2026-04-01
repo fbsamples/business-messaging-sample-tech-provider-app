@@ -6,7 +6,7 @@
 "use client";
 
 import { useState } from "react";
-import { MissingEnvVarInfo } from "../env_checker";
+import type { MissingEnvVarInfo } from "@/app/envChecker";
 
 // Group definitions with label, color badge, and variable keys
 const ENV_VAR_GROUPS: { label: string; color: string; textColor: string; keys: string[] }[] = [

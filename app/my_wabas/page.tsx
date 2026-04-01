@@ -3,12 +3,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 import { auth0 } from "@/lib/auth0";
-import { getWabas, getAppDetails } from "@/app/api/be_utils";
-import { WabaWithDetails } from "@/app/types/api";
+import { getWabas, getAppDetails } from "@/app/api/beUtils";
+import type { WabaWithDetails } from "@/app/types/api";
 import LoggedOut from "@/app/components/LoggedOut";
 import WabaPageLayout from "@/app/components/WabaPageLayout";
 import WabaCard from "@/app/components/WabaCard";
-import publicConfig from "@/app/public_config";
+import publicConfig from "@/app/publicConfig";
 import { Building2 } from "lucide-react";
 
 export default async function MyWabas() {
@@ -31,12 +31,11 @@ export default async function MyWabas() {
       emptyDescription="WABAs will appear here once they are connected through the Embedded Signup flow."
       icon={<Building2 className="w-10 h-10" />}
     >
-      {wabas.map((waba: WabaWithDetails) => (
+      {wabas.map((waba: WabaWithDetails, i: number) => (
         <WabaCard
-          key={waba.id}
+          key={`${waba.id}-${i}`}
           id={waba.id}
           name={waba.name || "Unnamed WABA"}
-          access_token={waba.access_token || ""}
           business_id={waba.business_id || ""}
         />
       ))}

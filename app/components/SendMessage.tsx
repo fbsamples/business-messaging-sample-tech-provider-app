@@ -18,8 +18,11 @@ export default function SendMessage({ sendHandler }: SendMessageProps) {
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            setCurrentMessageText('');
-            sendHandler((event.target as HTMLInputElement).value);
+            const value = (event.target as HTMLInputElement).value.trim();
+            if (value) {
+                setCurrentMessageText('');
+                sendHandler(value);
+            }
         }
     };
 

@@ -6,8 +6,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { SessionInfo } from '@/app/types/api';
+import type { SessionInfo } from '@/app/types/api';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- FB SDK global has no published type declarations
 declare const FB: any;
 
 interface FBL4BLauncherProps {
@@ -152,7 +153,7 @@ export default function FBL4BLauncher({
                         }
                     }
                 }
-            } catch (err) {
+            } catch (_err) {
                 // Non-ES message events from Facebook iframes are expected and can be ignored
             }
         };

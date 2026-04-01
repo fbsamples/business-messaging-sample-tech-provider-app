@@ -7,35 +7,226 @@
 
 import {useState, useEffect, useCallback, useRef} from 'react';
 import Ably from 'ably';
-import PhoneListSidebar from './PhoneListSidebar';
-import ConversationView, {type Message} from './ConversationView';
-import PhoneRegistrationModal from './PhoneRegistrationModal';
-import PhoneStatus from './PhoneStatus';
-import AckBotStatus from './AckBotStatus';
-import {type PhoneDetails} from '@/app/types/api';
-
-import { useState } from 'react';
-import LivePhones from '@/app/components/LivePhones';
+import PhoneListSidebar from '@/app/components/PhoneListSidebar';
+import ConversationView, {type Message} from '@/app/components/ConversationView';
+import PhoneRegistrationModal from '@/app/components/PhoneRegistrationModal';
 import PhoneStatus from '@/app/components/PhoneStatus';
 import AckBotStatus from '@/app/components/AckBotStatus';
-import PhoneType from '@/app/components/PhoneType';
-import type { ClientPhone } from '@/app/types/api';
+import type { PhoneDetails } from '@/app/types/api';
 
-interface InboxLayoutProps {
-    phones: ClientPhone[];
-}
+type ChatMeta = {
+  displayName: string;
+  lastMessage?: string;
+  lastTimestamp?: number;
+};
 
-export default function InboxLayout({ phones }: InboxLayoutProps) {
-    const [selectedPhone, setSelectedPhone] = useState<ClientPhone | null>(phones.length > 0 ? phones[0] : null);
+type ChannelTab = 'whatsapp' | 'messenger' | 'instagram';
 
-    const handlePhoneSelect = (phone: ClientPhone) => {
-        setSelectedPhone(phone);
+export default function InboxLayout({phones}: {phones: PhoneDetails[]}) {
+  const [selectedPhone, setSelectedPhone] = useState<PhoneDetails | null>(
+    phones[0] ?? null,
+  );
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [activeChannel, setActiveChannel] = useState<ChannelTab>('whatsapp');
+
+  // Global message state: { [phone_number_id]: { [chat_id]: Message[] } }
+  const [allMessages, setAllMessages] = useState<
+    Record<string, Record<string, Message[]>>
+  >({});
+
+  // Global chat metadata: { [phone_number_id]: { [chat_id]: ChatMeta } }
+  const [allChats, setAllChats] = useState<
+    Record<string, Record<string, ChatMeta>>
+  >({});
+
+  // OTP modal state
+  const [otpModalPhone, setOtpModalPhone] = useState<PhoneDetails | null>(null);
+
+  // Ably connection status: 'connecting' | 'connected' | 'disconnected' | 'failed'
+  const [ablyState, setAblyState] = useState<string>('connecting');
+
+  // Phone status tracking
+  const [phoneStatuses, setPhoneStatuses] = useState<Record<string, string>>(
+    () => {
+      const initial: Record<string, string> = {};
+      phones.forEach(p => {
+        initial[p.id] = p.status;
+      });
+      return initial;
+    },
+  );
+
+  const handlePhoneStatusChange = useCallback(
+    (phoneId: string, newStatus: string) => {
+      setPhoneStatuses(prev => ({...prev, [phoneId]: newStatus}));
+    },
+    [],
+  );
+
+  // Refs for Ably callback access to latest state without re-subscribing
+  const selectedPhoneRef = useRef(selectedPhone);
+  const selectedChatIdRef = useRef(selectedChatId);
+  const phoneStatusesRef = useRef(phoneStatuses);
+  useEffect(() => {
+    selectedPhoneRef.current = selectedPhone;
+  }, [selectedPhone]);
+  useEffect(() => {
+    phoneStatusesRef.current = phoneStatuses;
+  }, [phoneStatuses]);
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChatId;
+  }, [selectedChatId]);
+
+  // State management functions
+  const addMessage = useCallback(
+    (phoneId: string, chatId: string, message: Message) => {
+      setAllMessages(prev => {
+        const phoneMsgs = prev[phoneId] ?? {};
+        const chatMsgs = phoneMsgs[chatId] ?? [];
+        return {
+          ...prev,
+          [phoneId]: {
+            ...phoneMsgs,
+            [chatId]: [...chatMsgs, message],
+          },
+        };
+      });
+    },
+    [],
+  );
+
+  const addChat = useCallback(
+    (
+      phoneId: string,
+      chatId: string,
+      displayName: string,
+      lastMessage?: string,
+    ) => {
+      setAllChats(prev => {
+        const phoneChats = prev[phoneId] ?? {};
+        return {
+          ...prev,
+          [phoneId]: {
+            ...phoneChats,
+            [chatId]: {displayName, lastMessage, lastTimestamp: Date.now()},
+          },
+        };
+      });
+    },
+    [],
+  );
+
+  // Send message handler
+  const handleSendMessage = useCallback(
+    (phone: PhoneDetails, chatId: string, text: string) => {
+      addMessage(phone.id, chatId, {
+        text,
+        direction: 'outgoing',
+        timestamp: Date.now(),
+      });
+      addChat(
+        phone.id,
+        chatId,
+        allChats[phone.id]?.[chatId]?.displayName ?? chatId,
+        text,
+      );
+
+      fetch('/api/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          waba_id: phone.wabaId,
+          phone_number_id: phone.id,
+          dest_phone: chatId,
+          message_content: text,
+        }),
+      }).catch(console.error);
+    },
+    [addMessage, addChat, allChats],
+  );
+
+  // Ably connection — single connection for ALL phones
+  useEffect(() => {
+    const ablyClient = new Ably.Realtime({
+      authCallback: async (_, callback) => {
+        fetch('/api/ably_auth')
+          .then(res => res.json())
+          .then(tokenRequest => callback(null, tokenRequest))
+          .catch(error => callback(error, null));
+      },
+    });
+
+    ablyClient.connection.on('connected', () => {
+      setAblyState('connected');
+    });
+
+    ablyClient.connection.on('connecting', () => {
+      setAblyState('connecting');
+    });
+
+    ablyClient.connection.on('disconnected', () => {
+      setAblyState('disconnected');
+    });
+
+    ablyClient.connection.on('suspended', () => {
+      setAblyState('failed');
+    });
+
+    ablyClient.connection.on('failed', () => {
+      setAblyState('failed');
+    });
+
+    const channel = ablyClient.channels.get('get-started');
+    channel.subscribe('first', message => {
+      // Handle incoming and ackbot messages
+      const msgData = message.data.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+      const text = msgData?.text?.body;
+      if (text) {
+        const phoneId =
+          message.data.entry?.[0]?.changes?.[0]?.value?.metadata
+            ?.phone_number_id;
+
+        // Drop messages for disconnected phones
+        if (phoneId && phoneStatusesRef.current[phoneId] !== 'CONNECTED') {
+          return;
+        }
+
+        const fromField = msgData?.from;
+        const isAckBot = fromField === '_ackbot_';
+        const consumerPhone = isAckBot ? msgData?._ackbot_recipient : fromField;
+        const displayName =
+          message.data.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.profile
+            ?.name;
+        const msgTimestamp = msgData?.timestamp;
+
+        addMessage(phoneId, consumerPhone, {
+          text,
+          direction: isAckBot ? 'outgoing' : 'incoming',
+          timestamp: msgTimestamp ? msgTimestamp * 1000 : Date.now(),
+        });
+
+        if (!isAckBot) {
+          addChat(phoneId, consumerPhone, displayName ?? consumerPhone, text);
+        }
+
+        // Auto-select first incoming chat if no chat is selected
+        if (
+          phoneId === selectedPhoneRef.current?.id &&
+          !selectedChatIdRef.current
+        ) {
+          setSelectedChatId(consumerPhone);
+        }
+      }
+    });
+
+    return () => {
+      ablyClient.close();
     };
   }, [addMessage, addChat]);
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-gray-50">
-      {/* ── Channel Tab Bar ── */}
+      {/* Channel Tab Bar */}
       <div className="bg-white border-b border-gray-100 px-6 flex items-center gap-1 h-12 flex-shrink-0">
         {/* WhatsApp — active */}
         <button
@@ -82,7 +273,7 @@ export default function InboxLayout({ phones }: InboxLayoutProps) {
         </div>
       </div>
 
-      {/* ── Main 2-panel layout ── */}
+      {/* Main 2-panel layout */}
       <div className="flex flex-1 min-h-0">
         {/* Left: Phone list */}
         <PhoneListSidebar

@@ -61,8 +61,9 @@ function parseP(str: string, indent: string, parallel: (OperationStatus | Operat
  * @param serial - Array of serial operations
  * @returns Formatted string with serial operations
  */
-function parseS(str: string, indent: string, serial: (OperationStatus | OperationStatus[])[]): string {
-    serial.forEach(function (serialItem, i) {
+function parseS(str: string, indent: string, serial: OperationStatus | OperationStatus[] | (OperationStatus | OperationStatus[])[]): string {
+    const items = Array.isArray(serial) ? serial : [serial];
+    items.forEach(function (serialItem: OperationStatus | OperationStatus[], i: number) {
         if (Array.isArray(serialItem)) {
             // If item is an array, it contains parallel operations
             str += parseP("", indent, serialItem);
@@ -77,7 +78,7 @@ function parseS(str: string, indent: string, serial: (OperationStatus | Operatio
             indent += ' '.repeat(content.length + 3);
 
             // Add newline at the end of a serial sequence
-            if (i === serial.length - 1) {
+            if (i === items.length - 1) {
                 str += "\n";
             }
         }
@@ -107,42 +108,12 @@ function formatErrors(data: (OperationStatus | OperationStatus[])[]): string {
 function wrapFn(promise: Promise<unknown>, label: string): Promise<OperationStatus[]> {
     return promise
         .then(data => {
-            return [{ fun: label, status: "completed", result: data, error: null }];
+            return [{ fun: label, status: "completed", result: data, error: null as unknown }];
         })
-        .catch(err => {
+        .catch((err: unknown) => {
             console.error(err);
-            return [{ fun: label, status: "failed", result: null, error: err }];
+            return [{ fun: label, status: "failed", result: null as unknown, error: err }];
         });
-}
-
-/**
- * Creates a function that chains operations with previous results
- * @param promise - Promise function to execute
- * @param label - Label for the operation
- * @returns Function that can be chained with previous results
- */
-function w(promise: (arg?: unknown) => Promise<unknown>, label: string): (prev_result?: OperationStatus[]) => Promise<OperationStatus[]> {
-    return (prev_result) => {
-        let arg: unknown;
-        if (!prev_result) prev_result = [];
-
-        // Extract result from previous operation if available
-        if (prev_result[prev_result.length - 1]) {
-            arg = prev_result[prev_result.length - 1].result;
-            if (prev_result[prev_result.length - 1]) {
-                prev_result = [];
-            }
-        }
-
-        // Execute promise and return status object
-        return promise(arg)
-            .then(data => {
-                return [...prev_result, { fun: label, status: "completed", result: data, error: null }];
-            })
-            .catch(err => {
-                return [...prev_result, { fun: label, status: "failed", result: null, error: err }];
-            });
-    };
 }
 
 /**

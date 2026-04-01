@@ -5,8 +5,8 @@
 
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { registerNumber, getTokenForWaba } from "../be_utils"
-import { withAuth } from "../auth_wrapper";
+import { registerNumber, getTokenForWaba } from "@/app/api/beUtils"
+import { withAuth } from "@/app/api/authWrapper";
 
 export const POST = withAuth(async function registerPhone(request: NextRequest, session) {
     try {
@@ -23,18 +23,20 @@ export const POST = withAuth(async function registerPhone(request: NextRequest, 
         const accessToken = await getTokenForWaba(wabaId, session.user.email);
         await registerNumber(phoneId, accessToken);
         return NextResponse.json({ status: 'ok' });
-    } catch (error) {
-        console.error('Failed to register phone number:', error);
+    } catch (err: unknown) {
+        console.error('register error:', err);
+        const { code, message, status } = mapGraphApiError(err);
         return NextResponse.json(
-            { error: 'Failed to register phone number' },
-            { status: 500 }
+            { error: true, code, message },
+            { status },
         );
     }
 });
 
-function mapGraphApiError(err: any): { code: string; message: string; status: number } {
-    const apiCode = err?.code;
-    const apiSubcode = err?.error_subcode;
+function mapGraphApiError(err: unknown): { code: string; message: string; status: number } {
+    const e = err as Record<string, unknown>;
+    const apiCode = e?.code;
+    const apiSubcode = e?.error_subcode;
 
     if (apiCode === 100) {
         return { code: 'INVALID_PARAMS', message: 'Invalid parameters provided.', status: 400 };

@@ -4,7 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {

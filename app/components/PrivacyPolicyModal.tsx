@@ -23,7 +23,7 @@ export default function PrivacyPolicyModal({
   const close = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };

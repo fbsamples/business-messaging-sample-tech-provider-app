@@ -5,8 +5,8 @@
 import { auth0 } from "@/lib/auth0";
 import SidebarLayout from "@/app/components/SidebarLayout";
 import LoggedOut from "@/app/components/LoggedOut";
-import publicConfig from "@/app/public_config";
-import { getAppDetails } from "@/app/api/be_utils";
+import publicConfig from "@/app/publicConfig";
+import { getAppDetails } from "@/app/api/beUtils";
 import LiveWebhooks from "@/app/components/LiveWebhooks";
 
 export default async function MyWebhooks() {

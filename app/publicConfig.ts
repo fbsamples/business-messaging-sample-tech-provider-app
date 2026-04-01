@@ -5,7 +5,7 @@
 
 const es_prefilled_setup = {
     "business": {
-        "id": null,
+        "id": null as string | null,
         "name": "Prefilled Business Name",
         "email": "prefilled_email@gmail.com",
         "phone": {
@@ -28,12 +28,11 @@ const es_prefilled_setup = {
         "description": ""
     },
     "preVerifiedPhone": {
-        "ids": [
-        ]
+        "ids": [] as string[]
     },
-    "solutionID": null,
+    "solutionID": null as string | null,
     "whatsAppBusinessAccount": {
-        "ids": null
+        "ids": null as string[] | null
     }
 };
 

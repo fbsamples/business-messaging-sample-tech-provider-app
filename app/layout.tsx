@@ -12,7 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "@/app/components/ErrorBoundary";
 import MissingEnvVars from "@/app/components/MissingEnvVars";
-import { getMissingEnvVars, MissingEnvVarInfo } from "@/app/env_checker";
+import { getMissingEnvVars, type MissingEnvVarInfo } from "@/app/envChecker";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -28,7 +28,6 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-// TODO: Add metadata to env vars
 export const metadata: Metadata = {
   title: "Sample Tech Provider",
   description:

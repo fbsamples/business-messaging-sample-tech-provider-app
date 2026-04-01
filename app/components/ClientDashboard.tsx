@@ -7,9 +7,9 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { formatErrors } from '@/app/errorformat';
-import { feGraphApiPostWrapper } from '@/app/fe_utils';
+import { feGraphApiPostWrapper } from '@/app/feUtils';
 import FBL4BLauncher from '@/app/components/Fbl4bLauncher';
-import { SessionInfo } from '@/app/types/api';
+import type { SessionInfo } from '@/app/types/api';
 import {
   Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info,
   CheckCircle2, Circle, Server,
@@ -236,11 +236,13 @@ const VERSION_TIP = (
   <TipSection
     title="ES Version Guide"
     items={[
-      { name: 'v4 (Latest)', desc: 'Latest major release with enhanced features.' },
-      { name: 'v3-public-preview', desc: 'Reveals Unified Onboarding UI for Cloud API onboarding.' },
-      { name: 'v3', desc: 'Similar to v2 without forks. Adds app-only feature flag and removes proxy sharing.' },
+      { name: 'v2', desc: 'Classic ES with multiple forks and legacy features support.' },
       { name: 'v2-public-preview', desc: 'Mirrors v2 but uses Unified Onboarding UI for non-forked flows.' },
-      { name: 'v2 (Recommended for production)', desc: 'Classic ES with multiple forks and legacy features support.' },
+      { name: 'v3', desc: 'Similar to v2 without forks. Adds app-only feature flag and removes proxy sharing.' },
+      { name: 'v3-public-preview', desc: 'Reveals Unified Onboarding UI for Cloud API onboarding.' },
+      { name: 'v3-alpha-1', desc: 'Alpha release with expanded Unified Onboarding for select partners/products.' },
+      { name: 'v4-public-preview (Testing only)', desc: 'Preview version of v4 for testing and feedback.' },
+      { name: 'v4 (Recommended for production)', desc: 'Latest major release with enhanced features.' },
     ]}
     docLink={{ href: 'https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/versions', label: 'View version documentation' }}
   />
@@ -495,11 +497,21 @@ function SelectField({ label, tip, children, ...props }: React.SelectHTMLAttribu
   );
 }
 
-export default function ClientDashboard({ app_id, app_name, user_id, tp_configs, public_es_versions, public_es_feature_types, public_es_feature_options }) {
+interface ClientDashboardProps {
+  app_id: string;
+  app_name: string;
+  user_id: string;
+  tp_configs: { id: string; name: string }[];
+  public_es_versions: string[];
+  public_es_feature_types: Record<string, string[]>;
+  public_es_feature_options: Record<string, string[]>;
+}
+
+export default function ClientDashboard({ app_id, app_name, user_id, tp_configs, public_es_versions, public_es_feature_types, public_es_feature_options }: ClientDashboardProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const updateUrlParams = (updates) => {
+  const updateUrlParams = (updates: Record<string, string | string[] | null | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {
       if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
@@ -514,7 +526,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
   };
 
   const parseUrlParams = () => {
-    const esVersion = searchParams.get('esVersion') || public_es_versions[0];
+    const esVersion = searchParams.get('esVersion') || public_es_versions[public_es_versions.length - 1];
     const esFeatureType = searchParams.get('esFeatureType') || '';
     const esFeatures = searchParams.get('esFeatures') ? searchParams.get('esFeatures')!.split(',') : [];
     const tpConfig = searchParams.get('tpConfig') || tp_configs[0]?.id || '';
@@ -531,21 +543,21 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
   const [es_option_sub, setEs_option_sub] = useState(true);
   const [step, setStep] = useState<Step>(1);
 
-  const computeEsConfig = (ft, cfg, feats, ver) => {
-    const c: any = {
+  const computeEsConfig = (ft: string, cfg: string, feats: string[], ver: string) => {
+    const c: Record<string, unknown> = {
       config_id: cfg, response_type: 'code', override_default_response_type: true,
       extras: { sessionInfoVersion: '3', version: ver, featureType: ft,
-        features: feats ? feats.map((f) => ({ name: f })) : null }
+        features: feats ? feats.map((f: string) => ({ name: f })) : null }
     };
-    if (ft === '') delete c.extras.featureType;
+    if (ft === '') delete (c.extras as Record<string, unknown>).featureType;
     return c;
   };
 
   const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion), null, 2));
-  const [bannerInfo, setBannerInfo] = useState<string>('');
-  const [lastEventData, setLastEventData] = useState<any>(null);
+  const [_bannerInfo, setBannerInfo] = useState<string>('');
+  const [lastEventData, setLastEventData] = useState<unknown>(null);
 
-  const recomputeJson = (ft, cfg, feats, ver) => {
+  const recomputeJson = (ft: string, cfg: string, feats: string[], ver: string) => {
     setEsConfig(JSON.stringify(computeEsConfig(ft, cfg, feats, ver), null, 2));
     setStep(2);
   };
@@ -556,7 +568,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
     if (info === 'ES Started...') return;
     setBannerInfo(info);
   }, []);
-  const handleLastEventDataChange = useCallback((data: any) => setLastEventData(data), []);
+  const handleLastEventDataChange = useCallback((data: unknown) => setLastEventData(data), []);
 
   const handleSaveToken = useCallback((code: string, session_info: SessionInfo) => {
     setBannerInfo('Setting up WABA...');
@@ -578,10 +590,10 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
       body: JSON.stringify({ user_id, action: 'launch_fbl4b' }) });
   }, [user_id]);
 
-  const setFt = (v) => { if (v === 'only_waba_sharing') setEs_option_reg(false); setEsOptionFeatureType(v); updateUrlParams({ esFeatureType: v }); recomputeJson(v, esOptionConfig, esOptionFeatures, esOptionVersion); };
-  const setCfg = (v) => { setEsOptionConfig(v); updateUrlParams({ tpConfig: v }); recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion); };
-  const setReg = (v) => { if (v && esOptionFeatureType === 'only_waba_sharing') setFt(''); setEs_option_reg(v); };
-  const setVer = (v) => { setEsOptionVersion(v); updateUrlParams({ esVersion: v }); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, v); };
+  const setFt = (v: string) => { if (v === 'only_waba_sharing') setEs_option_reg(false); setEsOptionFeatureType(v); updateUrlParams({ esFeatureType: v }); recomputeJson(v, esOptionConfig, esOptionFeatures, esOptionVersion); };
+  const setCfg = (v: string) => { setEsOptionConfig(v); updateUrlParams({ tpConfig: v }); recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion); };
+  const setReg = (v: boolean) => { if (v && esOptionFeatureType === 'only_waba_sharing') setFt(''); setEs_option_reg(v); };
+  const setVer = (v: string) => { setEsOptionVersion(v); updateUrlParams({ esVersion: v }); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, v); };
   const setFeats = (f: string[]) => { setEsOptionFeatures(f); updateUrlParams({ esFeatures: f }); recomputeJson(esOptionFeatureType, esOptionConfig, f, esOptionVersion); };
 
   const highlightJson = (json: string) => {
@@ -621,20 +633,20 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
           <SectionCard icon={<Settings2 className="w-4 h-4" />} title="Payload Builder" subtitle="Select a configuration and set parameters">
             <div className="space-y-5">
               <SelectField label="Config" tip={makePayloadBuilderTip(app_id)} value={esOptionConfig} onChange={(e) => setCfg(e.target.value)}>
-                {tp_configs.map((config) => (
-                  <option key={config.id} value={config.id}>{config.name} ({config.id})</option>
+                {tp_configs.map((config: { id: string; name: string }, i: number) => (
+                  <option key={`${config.id}-${i}`} value={config.id}>{config.name} ({config.id})</option>
                 ))}
               </SelectField>
 
               <div className="grid grid-cols-2 gap-4">
                 <SelectField label="Version" tip={VERSION_TIP} value={esOptionVersion} onChange={(e) => setVer(e.target.value)}>
-                  {public_es_versions.filter((v) => !['v3-alpha-1', 'v4-public-preview'].includes(v)).map((v) => (
-                    <option key={v} value={v}>{v}</option>
+                  {public_es_versions.filter((v) => !['v3-alpha-1', 'v4-public-preview'].includes(v)).map((v: string) => (
+                    <option key={v} value={v}>{v === 'v4' ? 'v4 (Recommended for production)' : v}</option>
                   ))}
                 </SelectField>
                 <SelectField label="Feature Type" tip={FEATURE_TYPE_TIP} value={esOptionFeatureType} onChange={(e) => setFt(e.target.value)}>
-                  <option value="">None</option>
-                  {public_es_feature_types[esOptionVersion]?.map((ft) => (
+                  <option key="" value="">None</option>
+                  {public_es_feature_types[esOptionVersion]?.map((ft: string) => (
                     <option key={ft} value={ft}>{ft}</option>
                   ))}
                 </SelectField>

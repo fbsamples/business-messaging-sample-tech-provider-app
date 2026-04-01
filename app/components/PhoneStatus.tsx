@@ -5,18 +5,37 @@
 
 'use client';
 
-import {feGraphApiPostWrapper} from '@/app/fe_utils';
+import {feGraphApiPostWrapper} from '@/app/feUtils';
 import {useState, useEffect} from 'react';
+import type {PhoneDetails} from '@/app/types/api';
 
-import { feGraphApiPostWrapper } from '@/app/fe_utils';
-import { useState } from 'react';
-import type { ClientPhone } from '@/app/types/api';
+export default function PhoneStatus({
+  phone,
+  onRegisterClick,
+  onStatusChange,
+  externalStatus,
+}: {
+  phone: PhoneDetails;
+  onRegisterClick?: () => void;
+  onStatusChange?: (newStatus: string) => void;
+  externalStatus?: string;
+}) {
+  const [status, setStatus] = useState(phone.status);
 
-interface PhoneStatusProps {
-    phone: ClientPhone;
-}
+  useEffect(() => {
+    if (externalStatus && externalStatus !== status) {
+      setStatus(externalStatus);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalStatus]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
-export default function PhoneStatus({ phone }: PhoneStatusProps) {
+  // Map raw Meta status to display label
+  const displayStatus =
+    status === 'PENDING' || phone.code_verification_status === 'NOT_VERIFIED'
+      ? 'UNVERIFIED'
+      : status;
 
   let tooltipMsg = null;
 
@@ -52,42 +71,21 @@ export default function PhoneStatus({ phone }: PhoneStatusProps) {
     }
   };
 
-    const onClickHandlerWrapper = () => {
-        setIsLoading(true);
-        onClickHandler().then(() => {
-            setIsLoading(false);
-        });
-    }
-
-    const onChangeWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setOtpCode(e.target.value);
-    };
-
-    const onKeyDownHandler = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            onClickHandlerWrapper();
-        }
-    };
-
-    const otpInput = (
-        <input
-            type="text"
-            className='w-16 pl-1 bg-transparent border-b border-gray-300 focus:border-gray-500 focus:outline-hidden'
-            value={otpCode}
-            onChange={onChangeWrapper}
-            placeholder="Enter code"
-        />
-    )
-
-    let content = <>...</>;
-    if (!isLoading) {
-        content = (
-            <div className="flex items-center gap-1">
-                <span className="font-medium">{status}</span>
-                {status === 'SENT' && otpInput}
-            </div>
-        );
-    }
+  const content = isLoading ? (
+    <div className="flex items-center gap-1">
+      <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      <span className="font-medium">
+        {status === 'CONNECTED' ? 'Disconnecting' : 'Connecting'}
+      </span>
+    </div>
+  ) : (
+    <div className="flex items-center gap-1">
+      <span className="font-medium">{displayStatus}</span>
+    </div>
+  );
 
   const statusColor =
     status === 'CONNECTED'

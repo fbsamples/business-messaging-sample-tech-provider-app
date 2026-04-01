@@ -4,7 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 
-export async function feGraphApiPostWrapper(url: string, params = {}) {
+export async function feGraphApiPostWrapper(url: string, params: Record<string, unknown> = {}) {
     return fetch(url, {
         method: 'POST',
         headers: {
@@ -12,8 +12,11 @@ export async function feGraphApiPostWrapper(url: string, params = {}) {
         },
         body: JSON.stringify(params)
     })
-        .then(response => response.json())
-        .then(data => {
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || `Request failed with status ${response.status}`);
+            }
             return data;
         })
         .catch(err => {

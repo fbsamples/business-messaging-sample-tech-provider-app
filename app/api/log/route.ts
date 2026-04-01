@@ -4,11 +4,11 @@
 // LICENSE file in the root directory of this source tree.
 
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { sql } from '@vercel/postgres';
-import { withAuth } from "../auth_wrapper";
+import { withAuth } from "@/app/api/authWrapper";
 
-export const POST = withAuth(async function logs(request) {
+export const POST = withAuth(async function logs(request: NextRequest) {
     try {
         const { user_id, action } = await request.json();
 

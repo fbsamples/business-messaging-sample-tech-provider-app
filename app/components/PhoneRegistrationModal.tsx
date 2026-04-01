@@ -7,7 +7,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
-import { feGraphApiPostWrapper } from '@/app/fe_utils';
+import { feGraphApiPostWrapper } from '@/app/feUtils';
 
 interface PhoneRegistrationModalProps {
   phone: {
@@ -40,13 +40,13 @@ export default function PhoneRegistrationModal({ phone, onClose, onRegistrationC
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (resendTimer <= 0) return;
+    if (resendTimer <= 0) return undefined;
     const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendTimer]);
 
   useEffect(() => {
-    if (otpExpiry <= 0) return;
+    if (otpExpiry <= 0) return undefined;
     const timer = setTimeout(() => {
       const next = otpExpiry - 1;
       setOtpExpiry(next);

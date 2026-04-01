@@ -4,8 +4,8 @@
 // LICENSE file in the root directory of this source tree.
 "use client";
 import { useEffect, useRef } from "react";
-import MessageBubble from "./MessageBubble";
-import SendMessage from "./SendMessage";
+import MessageBubble from "@/app/components/MessageBubble";
+import SendMessage from "@/app/components/SendMessage";
 
 export type Message = {
   text: string;

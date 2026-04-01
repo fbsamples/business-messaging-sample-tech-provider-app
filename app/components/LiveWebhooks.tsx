@@ -15,33 +15,82 @@ interface WebhookEntry {
   payload: unknown;
 }
 
-    const [webhooks, setWebhooks] = useState<unknown[]>([]);
-    const [isMounted, setIsMounted] = useState(false);
+function extractField(data: unknown): string {
+  try {
+    const d = data as { entry?: { changes?: { field?: string }[] }[] };
+    return d?.entry?.[0]?.changes?.[0]?.field || 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
+}
 
-    function addWebhook(webhook: unknown) {
-        setWebhooks((old_state) => {
-            return [webhook, ...old_state];
-        });
-    }
+function formatTimestamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
 
 function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }) {
   const [expanded, setExpanded] = useState(index === 0);
   const fieldLabel = webhook.field.charAt(0).toUpperCase() + webhook.field.slice(1);
 
-            ablyClient.connection.once("connected", () => {
-            })
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <button
+        className="w-full flex items-center gap-4 px-5 py-3.5 text-left hover:bg-gray-50 transition-colors"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold text-gray-900">{fieldLabel}</span>
+            <span className={cn(
+              'text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
+              webhook.status === 200 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+            )}>
+              {webhook.status}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Clock className="w-3 h-3 text-gray-400" />
+            <span className="text-[11px] text-gray-400 font-mono">{webhook.receivedAt}</span>
+          </div>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        )}
+      </button>
+      {expanded && (
+        <div className="border-t border-gray-100 px-5 py-4">
+          <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Payload</div>
+          <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-auto max-h-64">
+            <pre className="text-[11px] font-mono text-gray-700 p-4 whitespace-pre leading-relaxed">
+              {JSON.stringify(webhook.payload, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-            // Create a channel called 'get-started' and register a listener to subscribe to all messages with the name 'first'
-            const channel = ablyClient.channels.get("get-started")
-            channel.subscribe("first", (message) => {
-                addWebhook(message.data);
-            });
+export default function LiveWebhooks() {
+  const [webhooks, setWebhooks] = useState<WebhookEntry[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+  const [connected, setConnected] = useState(false);
 
-            return function cleanup() {
-                ablyClient.close();
-            }
-        },
-        []);
+  function addWebhook(data: unknown) {
+    const entry: WebhookEntry = {
+      field: extractField(data),
+      receivedAt: formatTimestamp(new Date()),
+      status: 200,
+      payload: data,
+    };
+    setWebhooks((old_state) => [entry, ...old_state]);
+  }
 
   useEffect(() => {
     setIsMounted(true);
@@ -58,6 +107,7 @@ function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }
     const channel = ablyClient.channels.get('get-started');
     channel.subscribe('first', (message) => addWebhook(message.data));
     return function cleanup() {
+      channel.unsubscribe();
       ablyClient.close();
     };
   }, []);
@@ -71,7 +121,7 @@ function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }
         connected ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
       )}>
         <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', connected ? 'bg-emerald-500' : 'bg-amber-500')} />
-        {connected ? 'Connected \u2014 listening for events' : 'Connecting...'}
+        {connected ? 'Connected — listening for events' : 'Connecting...'}
         <Wifi className="w-3 h-3" />
       </div>
 

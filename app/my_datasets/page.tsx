@@ -3,12 +3,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 import { auth0 } from "@/lib/auth0";
-import { getDatasets, getAppDetails } from "@/app/api/be_utils";
-import { DatasetWithDetails } from "@/app/types/api";
+import { getDatasets, getAppDetails } from "@/app/api/beUtils";
+import type { DatasetWithDetails } from "@/app/types/api";
 import LoggedOut from "@/app/components/LoggedOut";
 import WabaPageLayout from "@/app/components/WabaPageLayout";
 import DatasetCard from "@/app/components/DatasetCard";
-import publicConfig from "@/app/public_config";
+import publicConfig from "@/app/publicConfig";
 import { Database } from "lucide-react";
 
 export default async function MyDatasets() {
@@ -36,7 +36,6 @@ export default async function MyDatasets() {
           key={dataset.id}
           id={dataset.id}
           name={dataset.name || "Unnamed Dataset"}
-          access_token={dataset.access_token || ""}
           business_id={dataset.business_id || ""}
         />
       ))}

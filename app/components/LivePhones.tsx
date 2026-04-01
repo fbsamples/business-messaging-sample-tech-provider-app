@@ -46,7 +46,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId, _ph
 
 
     function handleKeyDownWrapper(chat_id: string) {
-        return (message) => {
+        return (message: string) => {
             const new_msg = '>> ' + message;
             addMessage(chat_id, new_msg);
 

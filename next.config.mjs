@@ -6,7 +6,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   eslint: {
 
   },
@@ -14,12 +14,8 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'scontent.xx.fbcdn.net',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.facebook.com',
-      },
+        hostname: '**',
+      }
     ],
   },
 };

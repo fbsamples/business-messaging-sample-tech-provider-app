@@ -6,29 +6,45 @@
 
 "use client"
 
-import { feGraphApiPostWrapper } from '@/app/fe_utils';
+import { feGraphApiPostWrapper } from '@/app/feUtils';
 import { useState, useEffect } from 'react';
-import type { ClientPhone } from '@/app/types/api';
+import type { PhoneDetails } from '@/app/types/api';
 
-interface AckBotStatusProps {
-    phone: ClientPhone;
-}
-
-export default function AckBotStatus({ phone }: { phone: any }: AckBotStatusProps) {
+export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
     const [isAckBotEnabled, setIsAckBotEnabled] = useState(phone.isAckBotEnabled);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [ackMessage, setAckMessage] = useState('');
     const [showTooltip, setShowTooltip] = useState(false);
 
-    function handleClick() {
-        return feGraphApiPostWrapper(`/api/phones/${phone.id}`, { isAckBotEnabled: !isAckBotEnabled, phoneId: phone.id })
-            .then(() => {
-                setIsAckBotEnabled(!isAckBotEnabled);
+    // Load saved message when modal opens
+    useEffect(() => {
+        if (showModal) {
+            fetch(`/api/phones/${phone.id}?phoneId=${phone.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const msg = data.ackBotMessage || '';
+                    setAckMessage(msg);
+                })
+                .catch((err) => console.error('Failed to load ackbot message:', err));
+        }
+    }, [showModal, phone.id]);
+
+    function handleToggle() {
+        if (isAckBotEnabled) {
+            // Disabling — just turn off, no modal needed
+            setIsLoading(true);
+            feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
+                isAckBotEnabled: false,
+                phoneId: phone.id,
             })
-            .catch(error => {
-                console.error('Failed to update ack bot status:', error);
-            });
+                .then(() => setIsAckBotEnabled(false))
+                .catch(console.error)
+                .finally(() => setIsLoading(false));
+        } else {
+            // Enabling — show modal to configure message
+            setShowModal(true);
+        }
     }
 
     function handleSave() {

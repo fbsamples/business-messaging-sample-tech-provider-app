@@ -6,7 +6,7 @@
 
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface CopyableProps {
     text_to_copy: string;

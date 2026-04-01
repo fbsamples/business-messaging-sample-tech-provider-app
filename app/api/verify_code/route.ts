@@ -5,8 +5,8 @@
 
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { getTokenForWaba, verifyCode } from "../be_utils"
-import { withAuth } from "../auth_wrapper";
+import { getTokenForWaba, verifyCode } from "@/app/api/beUtils"
+import { withAuth } from "@/app/api/authWrapper";
 
 export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest, session) {
     try {
@@ -26,20 +26,22 @@ export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequ
         const accessToken = await getTokenForWaba(wabaId, session.user.email);
         await verifyCode(phoneId, accessToken, otpCode);
         return NextResponse.json({ status: 'ok' });
-    } catch (error) {
-        console.error('Failed to verify code:', error);
+    } catch (err: unknown) {
+        console.error('verify_code error:', err);
+        const { code, message, status } = mapGraphApiError(err);
         return NextResponse.json(
-            { error: 'Failed to verify code' },
-            { status: 500 }
+            { error: true, code, message },
+            { status },
         );
     }
 });
 
-function mapGraphApiError(err: any): { code: string; message: string; status: number } {
-    const apiCode = err?.code;
-    const apiSubcode = err?.error_subcode;
+function mapGraphApiError(err: unknown): { code: string; message: string; status: number } {
+    const e = err as Record<string, unknown>;
+    const apiCode = e?.code;
+    const apiSubcode = e?.error_subcode;
 
-    if (apiSubcode === 136025 || (err?.message && /expired|invalid.*otp/i.test(err.message))) {
+    if (apiSubcode === 136025 || (typeof e?.message === 'string' && /expired|invalid.*otp/i.test(e.message))) {
         return { code: 'OTP_EXPIRED', message: 'Verification code has expired. Please request a new one.', status: 400 };
     }
     if (apiCode === 100) {

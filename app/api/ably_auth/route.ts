@@ -6,12 +6,13 @@
 
 import { NextResponse } from 'next/server'
 import Ably from 'ably';
-import { withAuth } from "../auth_wrapper";
+import { withAuth } from "@/app/api/authWrapper";
+import getPrivateConfig from "@/app/privateConfig";
 
 export const dynamic = 'force-dynamic';
 
 async function createTokenRequest(clientId: string) {
-    const ably_key = process.env.ABLY_KEY;
+    const { ably_key } = await getPrivateConfig();
     const ably = new Ably.Realtime(ably_key);
     const r = await ably.auth.createTokenRequest({
         ttl: 3600000,

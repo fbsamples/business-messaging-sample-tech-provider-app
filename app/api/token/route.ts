@@ -5,9 +5,9 @@
 
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { getToken, saveTokens, registerNumber, subscribeWebhook } from "../be_utils"
-import { wrapFn, skipProm } from "../../errorformat";
-import { withAuth } from "../auth_wrapper";
+import { getToken, saveTokens, registerNumber, subscribeWebhook } from "@/app/api/beUtils"
+import { wrapFn, skipProm } from "@/app/errorformat";
+import { withAuth } from "@/app/api/authWrapper";
 
 export const POST = withAuth(async function exchangeToken(request: NextRequest, session) {
     const user = session.user;
@@ -16,7 +16,7 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
 
     const data = await request.json();
 
-    const { code, waba_id, waba_ids: rawWabaIds, business_id, ad_account_ids: rawAdAccountIds, page_ids: rawPageIds, dataset_ids: rawDatasetIds, catalog_ids: rawCatalogIds, instagram_account_ids: rawInstagramAccountIds, app_id, phone_number_id, es_option_reg, es_option_loc, es_option_sys, es_option_sub } = data;
+    const { code, waba_id, waba_ids: rawWabaIds, business_id, ad_account_ids: rawAdAccountIds, page_ids: rawPageIds, dataset_ids: rawDatasetIds, catalog_ids: rawCatalogIds, instagram_account_ids: rawInstagramAccountIds, app_id, phone_number_id, es_option_reg, es_option_loc: _es_option_loc, es_option_sys: _es_option_sys, es_option_sub } = data;
 
     // Default arrays to [] and construct waba_ids from singular waba_id if needed
     const waba_ids = rawWabaIds || (waba_id ? [waba_id] : []);
@@ -37,7 +37,10 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
         const result = await Promise.all([
             wrapFn(getToken(code, app_id), "getToken")
                 .then(([{ fun, status, result, error }]) => {
-                    const access_token = result;
+                    if (status !== 'completed' || !result) {
+                        throw new Error(`getToken ${status}: ${error}`);
+                    }
+                    const access_token = result as string;
                     return Promise.all([
                         wrapFn(saveTokens(user_id, app_id, business_id, page_ids, ad_account_ids, waba_ids, dataset_ids, catalog_ids, instagram_account_ids, access_token), "saveTokens"),
                         (es_option_reg && phone_number_id) ? wrapFn(registerNumber(phone_number_id, access_token), "registerNumber") : skipProm('registerNumber'),

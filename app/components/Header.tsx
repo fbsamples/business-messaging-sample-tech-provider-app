@@ -6,9 +6,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import publicConfig from "@/app/public_config";
-import { getAppDetails } from "@/app/api/be_utils";
-import PrivacyPolicyModal from "./PrivacyPolicyModal";
+import publicConfig from "@/app/publicConfig";
+import { getAppDetails } from "@/app/api/beUtils";
+import PrivacyPolicyModal from "@/app/components/PrivacyPolicyModal";
 
 export default async function Header({ user_id }: { user_id: string }) {
 

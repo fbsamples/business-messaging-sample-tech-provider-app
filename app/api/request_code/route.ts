@@ -5,8 +5,8 @@
 
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { getTokenForWaba, requestCode } from "../be_utils"
-import { withAuth } from "../auth_wrapper";
+import { getTokenForWaba, requestCode } from "@/app/api/beUtils"
+import { withAuth } from "@/app/api/authWrapper";
 
 export const POST = withAuth(async function requestCodeEndpoint(request: NextRequest, session) {
     try {

@@ -3,8 +3,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import publicConfig from "../public_config";
-import { getAppDetails } from "../api/be_utils";
+import publicConfig from "@/app/publicConfig";
+import { getAppDetails } from "@/app/api/beUtils";
 
 export default async function LoggedOut() {
   const { app_id } = publicConfig;

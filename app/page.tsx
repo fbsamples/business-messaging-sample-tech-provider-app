@@ -6,8 +6,8 @@
 import ClientDashboard from "@/app/components/ClientDashboard";
 import SidebarLayout from "@/app/components/SidebarLayout";
 import LoggedOut from "@/app/components/LoggedOut";
-import publicConfig from "@/app/public_config";
-import { getAppDetails } from "@/app/api/be_utils";
+import publicConfig from "@/app/publicConfig";
+import { getAppDetails } from "@/app/api/beUtils";
 import { auth0 } from "@/lib/auth0";
 
 const { app_id, public_es_versions, public_es_feature_types, public_es_feature_options } = publicConfig;
