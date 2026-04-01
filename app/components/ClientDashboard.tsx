@@ -742,12 +742,7 @@ export default function ClientDashboard({
 
   const handleClickFbl4b = useCallback(() => {
     setStep(3);
-    fetch('/api/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, action: 'launch_fbl4b' }),
-    });
-  }, [userId]);
+  }, []);
 
   const setFt = (v: string) => {
     if (v === 'only_waba_sharing') setEsOptionReg(false);
