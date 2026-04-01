@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
 import type { SessionInfo } from '@/app/types/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FB SDK global has no published type declarations

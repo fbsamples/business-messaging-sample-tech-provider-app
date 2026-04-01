@@ -3,14 +3,17 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 'use client';
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info, CheckCircle2, Circle, Server } from 'lucide-react';
+
 import { formatErrors } from '@/app/errorformat';
 import { feGraphApiPostWrapper } from '@/app/feUtils';
 import FBL4BLauncher from '@/app/components/Fbl4bLauncher';
 import type { SessionInfo } from '@/app/types/api';
-import { Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info, CheckCircle2, Circle, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Rich popover tooltip — portal-based, viewport-edge-aware positioning

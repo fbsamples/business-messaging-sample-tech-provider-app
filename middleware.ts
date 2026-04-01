@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type { NextRequest } from 'next/server';
+
 import { auth0 } from '@/lib/auth0';
 
 export async function middleware(request: NextRequest) {

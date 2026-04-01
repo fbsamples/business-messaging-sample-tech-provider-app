@@ -5,6 +5,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+
 import publicConfig from '@/app/publicConfig';
 import { getAppDetails } from '@/app/api/beUtils';
 import PrivacyPolicyModal from '@/app/components/PrivacyPolicyModal';

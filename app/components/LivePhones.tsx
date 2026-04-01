@@ -5,10 +5,13 @@
 
 'use client';
 
-import Ably from 'ably';
 import { useState, useEffect } from 'react';
+
+import Ably from 'ably';
+
 import SendMessage from '@/app/components/SendMessage';
 import type { ClientPhone } from '@/app/types/api';
+import { cn } from '@/lib/utils';
 
 interface LivePhonesProps {
   phoneDisplay: string;
@@ -153,7 +156,7 @@ export default function LivePhones({ phoneDisplay, phoneNumberId, wabaId, _phone
               : 'bg-gray-100 text-gray-800 mr-4';
 
             return (
-              <div key={index} className={'p-2 rounded-lg text-sm ' + messageClass}>
+              <div key={index} className={cn('p-2 rounded-lg text-sm', messageClass)}>
                 {message}
               </div>
             );

@@ -5,9 +5,10 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import Ably from 'ably';
+import { sql } from '@vercel/postgres';
+
 import { getAckBotStatus, getAckBotMessage, send } from '@/app/api/beUtils';
 import privateConfig from '@/app/privateConfig';
-import { sql } from '@vercel/postgres';
 
 export const dynamic = 'force-dynamic';
 

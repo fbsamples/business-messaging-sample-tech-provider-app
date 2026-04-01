@@ -6,7 +6,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+
 import { feGraphApiPostWrapper } from '@/app/feUtils';
+import { cn } from '@/lib/utils';
 
 interface PhoneRegistrationModalProps {
   phone: {
@@ -222,7 +224,7 @@ export default function PhoneRegistrationModal({
 
                 <div className="flex items-center justify-between text-sm">
                   <button
-                    className={`text-blue-600 hover:text-blue-800 ${resendTimer > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={cn('text-blue-600 hover:text-blue-800', resendTimer > 0 && 'opacity-50 cursor-not-allowed')}
                     onClick={handleRequestCode}
                     disabled={resendTimer > 0 || isLoading}
                   >

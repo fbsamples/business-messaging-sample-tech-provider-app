@@ -18,6 +18,7 @@ import {
   BookOpen,
   Instagram,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SidebarLayoutProps {
   children: ReactNode;
@@ -151,11 +152,12 @@ export default function SidebarLayout({ children, userId, appName }: SidebarLayo
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-start gap-3 px-5 py-2 text-sm transition-colors ${
-                          isActive ? 'bg-[#e4e6ea]' : 'hover:bg-[#e4e6ea]'
-                        }`}
+                        className={cn(
+                          'flex items-start gap-3 px-5 py-2 text-sm transition-colors',
+                          isActive ? 'bg-[#e4e6ea]' : 'hover:bg-[#e4e6ea]',
+                        )}
                       >
-                        <span className={`mt-0.5 flex-shrink-0 ${isActive ? 'text-indigo-500' : 'text-slate-400'}`}>
+                        <span className={cn('mt-0.5 flex-shrink-0', isActive ? 'text-indigo-500' : 'text-slate-400')}>
                           <item.Icon className="w-4 h-4" />
                         </span>
                         <div>

@@ -5,9 +5,10 @@
 
 'use server';
 
+import { sql } from '@vercel/postgres';
+
 import getPrivateConfig from '@/app/privateConfig';
 import publicConfig from '@/app/publicConfig';
-import { sql } from '@vercel/postgres';
 import type {
   SubscribeWebhookResponse,
   SqlResult,

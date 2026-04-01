@@ -5,6 +5,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { sql } from '@vercel/postgres';
+
 import { withAuth } from '@/app/api/authWrapper';
 
 export const POST = withAuth(async function logs(request: NextRequest) {

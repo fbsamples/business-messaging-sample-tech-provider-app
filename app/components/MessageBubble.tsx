@@ -4,6 +4,8 @@
 // LICENSE file in the root directory of this source tree.
 'use client';
 
+import { cn } from '@/lib/utils';
+
 interface MessageBubbleProps {
   text: string;
   direction: 'incoming' | 'outgoing';
@@ -18,14 +20,15 @@ export default function MessageBubble({ text, direction, timestamp }: MessageBub
   });
 
   return (
-    <div className={`flex ${isIncoming ? 'justify-start' : 'justify-end'} mb-1`}>
-      <div className={`flex flex-col max-w-[72%] ${isIncoming ? 'items-start' : 'items-end'}`}>
+    <div className={cn('flex mb-1', isIncoming ? 'justify-start' : 'justify-end')}>
+      <div className={cn('flex flex-col max-w-[72%]', isIncoming ? 'items-start' : 'items-end')}>
         <div
-          className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed shadow-sm ${
+          className={cn(
+            'px-3.5 py-2 rounded-2xl text-sm leading-relaxed shadow-sm',
             isIncoming
               ? 'bg-white text-gray-800 rounded-tl-sm border border-gray-100'
-              : 'bg-indigo-600 text-white rounded-tr-sm'
-          }`}
+              : 'bg-indigo-600 text-white rounded-tr-sm',
+          )}
         >
           {text}
         </div>
