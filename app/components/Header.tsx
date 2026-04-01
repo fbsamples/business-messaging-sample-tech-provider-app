@@ -9,25 +9,24 @@ import publicConfig from '@/app/publicConfig';
 import { getAppDetails } from '@/app/api/beUtils';
 import PrivacyPolicyModal from '@/app/components/PrivacyPolicyModal';
 
-export default async function Header({ user_id }: { user_id: string }) {
-  const appId = publicConfig.app_id;
-  const appDetails = await getAppDetails(appId);
-  const app_name = appDetails.name;
-  const logo_url = appDetails.logo_url;
+export default async function Header({ userId }: { userId: string }) {
+  const appDetails = await getAppDetails(publicConfig.appId);
+  const appName = appDetails.name;
+  const logoUrl = appDetails.logo_url;
 
   return (
     <>
       <div className="border-solid border-black border-0 m-2 rounded-md flex justify-between">
         <div>
           <Link href="/" className="cursor-pointer">
-            <Image className="relative" src={logo_url} alt={app_name} width={30} height={30} priority />
+            <Image className="relative" src={logoUrl} alt={appName} width={30} height={30} priority />
           </Link>
         </div>
         <div className="flex items-center">
           <div className="mr-4">
-            <PrivacyPolicyModal app_name={app_name} contact_email={publicConfig.contact_email} />
+            <PrivacyPolicyModal appName={appName} contactEmail={publicConfig.contactEmail} />
           </div>
-          <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">{user_id}</div>
+          <div className="rounded-lg px-4 py-1 mr-4 bg-gray-200">{userId}</div>
           <a
             href="/auth/logout"
             className="group rounded-lg border border-transparent px-4 py-1 transition-colors hover:border-gray-300 hover:bg-gray-100 text-base font-semibold"

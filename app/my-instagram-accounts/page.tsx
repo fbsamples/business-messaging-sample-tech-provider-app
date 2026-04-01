@@ -16,16 +16,16 @@ export default async function MyInstagramAccounts() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.app_id);
+  const appDetails = await getAppDetails(publicConfig.appId);
   const accounts = await getInstagramAccounts(userId);
 
   return (
     <WabaPageLayout
       title="My Instagram Accounts"
       description="Instagram accounts connected to your app."
-      user_id={userId}
-      logo_url={appDetails.logo_url}
-      app_name={appDetails.name}
+      userId={userId}
+      logoUrl={appDetails.logo_url}
+      appName={appDetails.name}
       isEmpty={accounts.length === 0}
       emptyMessage="No Instagram accounts found."
       emptyDescription="Instagram accounts will appear here once they are connected through the Embedded Signup flow."

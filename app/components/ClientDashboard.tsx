@@ -313,8 +313,8 @@ const FEATURES_TIP = (
   />
 );
 
-function makePayloadBuilderTip(app_id: string | number) {
-  const devxUrl = `https://developers.facebook.com/apps/${app_id}/business-login/configurations/`;
+function makePayloadBuilderTip(appId: string | number) {
+  const devxUrl = `https://developers.facebook.com/apps/${appId}/business-login/configurations/`;
   return (
     <div>
       <div className="px-4 pt-3.5 pb-2 border-b border-gray-100">
@@ -609,23 +609,23 @@ function SelectField({
 }
 
 interface ClientDashboardProps {
-  app_id: string;
-  app_name: string;
-  user_id: string;
-  tp_configs: { id: string; name: string }[];
-  public_es_versions: string[];
-  public_es_feature_types: Record<string, string[]>;
-  public_es_feature_options: Record<string, string[]>;
+  appId: string;
+  appName: string;
+  userId: string;
+  tpConfigs: { id: string; name: string }[];
+  publicEsVersions: string[];
+  publicEsFeatureTypes: Record<string, string[]>;
+  publicEsFeatureOptions: Record<string, string[]>;
 }
 
 export default function ClientDashboard({
-  app_id,
-  app_name,
-  user_id,
-  tp_configs,
-  public_es_versions,
-  public_es_feature_types,
-  public_es_feature_options,
+  appId,
+  appName,
+  userId,
+  tpConfigs,
+  publicEsVersions,
+  publicEsFeatureTypes,
+  publicEsFeatureOptions,
 }: ClientDashboardProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -645,10 +645,10 @@ export default function ClientDashboard({
   };
 
   const parseUrlParams = () => {
-    const esVersion = searchParams.get('esVersion') || public_es_versions[public_es_versions.length - 1];
+    const esVersion = searchParams.get('esVersion') || publicEsVersions[publicEsVersions.length - 1];
     const esFeatureType = searchParams.get('esFeatureType') || '';
     const esFeatures = searchParams.get('esFeatures') ? searchParams.get('esFeatures')!.split(',') : [];
-    const tpConfig = searchParams.get('tpConfig') || tp_configs[0]?.id || '';
+    const tpConfig = searchParams.get('tpConfig') || tpConfigs[0]?.id || '';
     return { esVersion, esFeatureType, esFeatures, tpConfig };
   };
 
@@ -663,8 +663,8 @@ export default function ClientDashboard({
   const [esOptionFeatures, setEsOptionFeatures] = useState(initialEsFeatures);
   const [esOptionConfig, setEsOptionConfig] = useState(initialTpConfig);
   const [esOptionVersion, setEsOptionVersion] = useState(initialEsVersion);
-  const [es_option_reg, setEs_option_reg] = useState(true);
-  const [es_option_sub, setEs_option_sub] = useState(true);
+  const [esOptionReg, setEsOptionReg] = useState(true);
+  const [esOptionSub, setEsOptionSub] = useState(true);
   const [step, setStep] = useState<Step>(1);
 
   const computeEsConfig = (ft: string, cfg: string, feats: string[], ver: string) => {
@@ -703,7 +703,7 @@ export default function ClientDashboard({
   const handleLastEventDataChange = useCallback((data: unknown) => setLastEventData(data), []);
 
   const handleSaveToken = useCallback(
-    (code: string, session_info: SessionInfo) => {
+    (code: string, sessionInfo: SessionInfo) => {
       setBannerInfo('Setting up WABA...');
       const {
         waba_id,
@@ -714,11 +714,11 @@ export default function ClientDashboard({
         catalog_ids,
         dataset_ids,
         instagram_account_ids,
-      } = session_info.data;
+      } = sessionInfo.data;
       const filterIds = (ids: string[] | undefined) => (ids || []).filter((id) => id && id.trim() !== '');
       feGraphApiPostWrapper('/api/token', {
         code,
-        app_id,
+        app_id: appId,
         waba_id,
         waba_ids: waba_id ? [waba_id] : [],
         business_id,
@@ -728,12 +728,12 @@ export default function ClientDashboard({
         dataset_ids: filterIds(dataset_ids),
         catalog_ids: filterIds(catalog_ids),
         instagram_account_ids: filterIds(instagram_account_ids),
-        es_option_reg,
-        es_option_sub,
-        user_id,
+        es_option_reg: esOptionReg,
+        es_option_sub: esOptionSub,
+        user_id: userId,
       }).then((d) => setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n'));
     },
-    [app_id, es_option_reg, es_option_sub, user_id],
+    [appId, esOptionReg, esOptionSub, userId],
   );
 
   const handleClickFbl4b = useCallback(() => {
@@ -741,12 +741,12 @@ export default function ClientDashboard({
     fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id, action: 'launch_fbl4b' }),
+      body: JSON.stringify({ user_id: userId, action: 'launch_fbl4b' }),
     });
-  }, [user_id]);
+  }, [userId]);
 
   const setFt = (v: string) => {
-    if (v === 'only_waba_sharing') setEs_option_reg(false);
+    if (v === 'only_waba_sharing') setEsOptionReg(false);
     setEsOptionFeatureType(v);
     updateUrlParams({ esFeatureType: v });
     recomputeJson(v, esOptionConfig, esOptionFeatures, esOptionVersion);
@@ -758,7 +758,7 @@ export default function ClientDashboard({
   };
   const setReg = (v: boolean) => {
     if (v && esOptionFeatureType === 'only_waba_sharing') setFt('');
-    setEs_option_reg(v);
+    setEsOptionReg(v);
   };
   const setVer = (v: string) => {
     setEsOptionVersion(v);
@@ -791,10 +791,10 @@ export default function ClientDashboard({
       <div className="flex items-center gap-1.5 text-[12px] text-gray-400 mb-4">
         <a
           target="_blank"
-          href={`https://developers.facebook.com/apps/${app_id}`}
+          href={`https://developers.facebook.com/apps/${appId}`}
           className="hover:text-gray-700 transition-colors font-mono"
         >
-          App {app_id}
+          App {appId}
         </a>
         <ChevronRight className="w-3 h-3" />
         <span className="text-gray-600">Configuration</span>
@@ -824,11 +824,11 @@ export default function ClientDashboard({
             <div className="space-y-5">
               <SelectField
                 label="Config"
-                tip={makePayloadBuilderTip(app_id)}
+                tip={makePayloadBuilderTip(appId)}
                 value={esOptionConfig}
                 onChange={(e) => setCfg(e.target.value)}
               >
-                {tp_configs.map((config: { id: string; name: string }, i: number) => (
+                {tpConfigs.map((config: { id: string; name: string }, i: number) => (
                   <option key={`${config.id}-${i}`} value={config.id}>
                     {config.name} ({config.id})
                   </option>
@@ -842,7 +842,7 @@ export default function ClientDashboard({
                   value={esOptionVersion}
                   onChange={(e) => setVer(e.target.value)}
                 >
-                  {public_es_versions
+                  {publicEsVersions
                     .filter((v) => !['v3-alpha-1', 'v4-public-preview'].includes(v))
                     .map((v: string) => (
                       <option key={v} value={v}>
@@ -859,7 +859,7 @@ export default function ClientDashboard({
                   <option key="" value="">
                     None
                   </option>
-                  {public_es_feature_types[esOptionVersion]?.map((ft: string) => (
+                  {publicEsFeatureTypes[esOptionVersion]?.map((ft: string) => (
                     <option key={ft} value={ft}>
                       {ft}
                     </option>
@@ -872,7 +872,7 @@ export default function ClientDashboard({
                   Features <HelpDot tip={FEATURES_TIP} />
                 </label>
                 <FeaturesMultiSelect
-                  options={public_es_feature_options?.[esOptionVersion] ?? []}
+                  options={publicEsFeatureOptions?.[esOptionVersion] ?? []}
                   selected={esOptionFeatures}
                   onChange={setFeats}
                 />
@@ -917,7 +917,7 @@ export default function ClientDashboard({
           >
             <div className="space-y-3">
               <Toggle
-                checked={es_option_reg}
+                checked={esOptionReg}
                 onChange={setReg}
                 label="Register number"
                 tip={
@@ -928,8 +928,8 @@ export default function ClientDashboard({
                 }
               />
               <Toggle
-                checked={es_option_sub}
-                onChange={setEs_option_sub}
+                checked={esOptionSub}
+                onChange={setEsOptionSub}
                 label="Subscribe webhooks"
                 tip={
                   <TipBody
@@ -954,7 +954,7 @@ export default function ClientDashboard({
                   { label: 'Config ID', value: esOptionConfig },
                   { label: 'Version', value: esOptionVersion },
                   { label: 'Feature Type', value: esOptionFeatureType || 'None' },
-                  { label: 'Register number', value: es_option_reg ? 'On' : 'Off' },
+                  { label: 'Register number', value: esOptionReg ? 'On' : 'Off' },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between text-[12px]">
                     <span className="text-gray-500">{label}</span>
@@ -965,8 +965,8 @@ export default function ClientDashboard({
                 ))}
               </div>
               <FBL4BLauncher
-                app_id={app_id}
-                app_name={app_name}
+                appId={appId}
+                appName={appName}
                 esConfig={esConfig}
                 onClickFbl4b={handleClickFbl4b}
                 onBannerInfoChange={handleBannerInfoChange}

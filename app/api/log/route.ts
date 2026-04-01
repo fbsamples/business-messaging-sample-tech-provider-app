@@ -9,15 +9,15 @@ import { withAuth } from '@/app/api/authWrapper';
 
 export const POST = withAuth(async function logs(request: NextRequest) {
   try {
-    const { user_id, action } = await request.json();
+    const { user_id: userId, action } = await request.json();
 
-    if (!user_id || !action) {
+    if (!userId || !action) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     await sql`
       INSERT INTO logs (user_id, action, ts)
-      VALUES (${user_id}, ${action}, CURRENT_TIMESTAMP)
+      VALUES (${userId}, ${action}, CURRENT_TIMESTAMP)
     `;
 
     return NextResponse.json({ success: true });

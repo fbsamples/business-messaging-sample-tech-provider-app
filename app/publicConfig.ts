@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-const es_prefilled_setup = {
+const esPrefilledSetup = {
   business: {
     id: null as string | null,
     name: 'Prefilled Business Name',
@@ -37,11 +37,11 @@ const es_prefilled_setup = {
 };
 
 const publicConfig = {
-  app_id: process.env.FB_APP_ID,
-  redirect_uri: '',
-  contact_email: process.env.TP_CONTACT_EMAIL,
-  graph_api_version: process.env.FB_GRAPH_API_VERSION,
-  public_es_feature_options: {
+  appId: process.env.FB_APP_ID,
+  redirectUri: '',
+  contactEmail: process.env.TP_CONTACT_EMAIL,
+  graphApiVersion: process.env.FB_GRAPH_API_VERSION,
+  publicEsFeatureOptions: {
     v2: ['marketing_messages_lite'],
     'v2-public-preview': ['marketing_messages_lite', 'app_only_install'],
     'v3-alpha-1': [
@@ -58,8 +58,8 @@ const publicConfig = {
     'v3-public-preview': ['marketing_messages_lite', 'app_only_install'],
     v4: ['app_only_install'],
   },
-  public_es_versions: ['v2', 'v2-public-preview', 'v3-alpha-1', 'v3', 'v3-public-preview', 'v4'],
-  public_es_feature_types: {
+  publicEsVersions: ['v2', 'v2-public-preview', 'v3-alpha-1', 'v3', 'v3-public-preview', 'v4'],
+  publicEsFeatureTypes: {
     v2: ['whatsapp_business_app_onboarding', 'only_waba_sharing'],
     'v2-public-preview': ['whatsapp_business_app_onboarding', 'only_waba_sharing', 'marketing_messages_lite'],
     'v3-alpha-1': ['whatsapp_business_app_onboarding'],
@@ -67,7 +67,7 @@ const publicConfig = {
     'v3-public-preview': ['whatsapp_business_app_onboarding'],
     v4: ['whatsapp_business_app_onboarding'],
   },
-  es_prefilled_setup,
+  esPrefilledSetup,
 };
 
 export default publicConfig;

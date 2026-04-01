@@ -91,7 +91,7 @@ export default function LiveWebhooks() {
       status: 200,
       payload: data,
     };
-    setWebhooks((old_state) => [entry, ...old_state]);
+    setWebhooks((oldState) => [entry, ...oldState]);
   }
 
   useEffect(() => {

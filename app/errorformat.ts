@@ -12,8 +12,8 @@
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-const arrow_right = ' \u{2192} '; // Right arrow for sequential operations
-const arrow_down = ' \u{21B3} '; // Down arrow for parallel operations
+const arrowRight = ' \u{2192} '; // Right arrow for sequential operations
+const arrowDown = ' \u{21B3} '; // Down arrow for parallel operations
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -41,11 +41,11 @@ function parseP(str: string, indent: string, parallel: (OperationStatus | Operat
   parallel.forEach(function (serial, i) {
     if (i === 0) {
       // First parallel operation uses right arrow
-      str += arrow_right;
+      str += arrowRight;
       str += parseS('', indent, serial);
     } else {
       // Subsequent parallel operations use down arrow
-      str += indent + arrow_down;
+      str += indent + arrowDown;
       str += parseS('', indent, serial);
     }
   });
@@ -71,7 +71,7 @@ function parseS(
       str += parseP('', indent, serialItem);
     } else {
       // If item is not an array, it's a single operation
-      if (i > 0) str += arrow_right; // Add separator between operations
+      if (i > 0) str += arrowRight; // Add separator between operations
 
       const content = `${serialItem.status} (${serialItem.fun})`;
       str += content;

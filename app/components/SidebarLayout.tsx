@@ -21,9 +21,9 @@ import {
 
 interface SidebarLayoutProps {
   children: ReactNode;
-  user_id: string;
-  logo_url?: string;
-  app_name: string;
+  userId: string;
+  logoUrl?: string;
+  appName: string;
 }
 
 const navSections = [
@@ -78,7 +78,7 @@ const navSections = [
   },
 ];
 
-export default function SidebarLayout({ children, user_id, app_name }: SidebarLayoutProps) {
+export default function SidebarLayout({ children, userId, appName }: SidebarLayoutProps) {
   const pathname = usePathname();
 
   return (
@@ -93,7 +93,7 @@ export default function SidebarLayout({ children, user_id, app_name }: SidebarLa
             viewBox="0 0 256 256"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            aria-label={app_name}
+            aria-label={appName}
             className="flex-shrink-0"
           >
             <defs>
@@ -110,13 +110,13 @@ export default function SidebarLayout({ children, user_id, app_name }: SidebarLa
             {/* Lightning bolt — centered */}
             <path d="M137 55L96 119H128L110 165L160 101H128L137 55Z" fill="white" />
           </svg>
-          <span className="font-semibold text-slate-700 tracking-tight">{app_name}</span>
+          <span className="font-semibold text-slate-700 tracking-tight">{appName}</span>
         </div>
         <div className="flex items-center gap-5">
           <a href="/privacy" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
             Privacy Policy
           </a>
-          <span className="text-sm font-medium text-slate-600">{user_id}</span>
+          <span className="text-sm font-medium text-slate-600">{userId}</span>
 
           <a
             href="/auth/logout"

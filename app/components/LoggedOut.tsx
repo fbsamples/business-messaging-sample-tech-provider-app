@@ -7,15 +7,15 @@ import publicConfig from '@/app/publicConfig';
 import { getAppDetails } from '@/app/api/beUtils';
 
 export default async function LoggedOut() {
-  const { app_id } = publicConfig;
-  const appDetails = await getAppDetails(app_id);
-  const app_name = appDetails.name;
+  const { appId } = publicConfig;
+  const appDetails = await getAppDetails(appId);
+  const appName = appDetails.name;
 
   return (
     <main className="min-h-screen bg-[#e8edf2] flex flex-col items-center justify-center p-4">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{app_name}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{appName}</h1>
         <p className="text-sm text-gray-500 mt-1">Developer Testing Environment</p>
       </div>
 

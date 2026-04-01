@@ -7,12 +7,12 @@ import { ExternalLink, Building2 } from 'lucide-react';
 interface WabaCardProps {
   id: string;
   name: string;
-  business_id: string;
+  businessId: string;
 }
 
-export default function WabaCard({ id, name, business_id }: WabaCardProps) {
-  const businessSettingsUrl = `https://business.facebook.com/latest/settings/whatsapp_account?business_id=${business_id}&selected_asset_id=${id}&selected_asset_type=whatsapp-business-account`;
-  const whatsAppManagerUrl = `https://business.facebook.com/latest/whatsapp_manager/phone_numbers/?business_id=${business_id}&tab=phone-numbers&nav_ref=whatsapp_manager&asset_id=${id}`;
+export default function WabaCard({ id, name, businessId }: WabaCardProps) {
+  const businessSettingsUrl = `https://business.facebook.com/latest/settings/whatsapp_account?business_id=${businessId}&selected_asset_id=${id}&selected_asset_type=whatsapp-business-account`;
+  const whatsAppManagerUrl = `https://business.facebook.com/latest/whatsapp_manager/phone_numbers/?business_id=${businessId}&tab=phone-numbers&nav_ref=whatsapp_manager&asset_id=${id}`;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">

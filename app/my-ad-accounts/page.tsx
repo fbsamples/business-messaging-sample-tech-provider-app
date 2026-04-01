@@ -16,16 +16,16 @@ export default async function MyAdAccounts() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.app_id);
+  const appDetails = await getAppDetails(publicConfig.appId);
   const adAccounts = await getAdAccounts(userId);
 
   return (
     <WabaPageLayout
       title="My Ad Accounts"
       description="Facebook Ad Accounts connected to your app."
-      user_id={userId}
-      logo_url={appDetails.logo_url}
-      app_name={appDetails.name}
+      userId={userId}
+      logoUrl={appDetails.logo_url}
+      appName={appDetails.name}
       isEmpty={adAccounts.length === 0}
       emptyMessage="No ad accounts found."
       emptyDescription="Ad accounts will appear here once they are connected through the Embedded Signup flow."

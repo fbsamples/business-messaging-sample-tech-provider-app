@@ -35,193 +35,193 @@ import type {
   AppDetails,
 } from '@/app/types/api';
 
-const { graph_api_version, redirect_uri } = publicConfig;
+const { graphApiVersion, redirectUri } = publicConfig;
 
-export async function getToken(code: string, app_id: string): Promise<string> {
+export async function getToken(code: string, appId: string): Promise<string> {
   const privateConfig = await getPrivateConfig();
-  const { fb_app_secret: app_secret } = privateConfig;
-  console.log('getToken:', 'appId', app_id);
+  const { fbAppSecret } = privateConfig;
+  console.log('getToken:', 'appId', appId);
   // OAuth token exchange requires client_secret as a query parameter per Meta's API spec
-  const url = `/oauth/access_token?client_id=${app_id}&redirect_uri=${redirect_uri}&client_secret=${app_secret}&code=${code}`;
+  const url = `/oauth/access_token?client_id=${appId}&redirect_uri=${redirectUri}&client_secret=${fbAppSecret}&code=${code}`;
   return graphApiWrapperGet(url).then((data) => {
-    console.log('getTokenResponse:', 'appId', app_id);
+    console.log('getTokenResponse:', 'appId', appId);
     if (data.error) throw data.error;
     return data.access_token;
   });
 }
 
-export async function subscribeWebhook(access_token: string, waba_id: string): Promise<SubscribeWebhookResponse> {
-  console.log('subscribeWebhook:', 'wabaId', waba_id);
-  const url = `/${waba_id}/subscribed_apps`;
-  return graphApiWrapperPost(url, access_token).then((data) => {
-    console.log('subscribeWebhookResponse:', 'wabaId', waba_id);
+export async function subscribeWebhook(accessToken: string, wabaId: string): Promise<SubscribeWebhookResponse> {
+  console.log('subscribeWebhook:', 'wabaId', wabaId);
+  const url = `/${wabaId}/subscribed_apps`;
+  return graphApiWrapperPost(url, accessToken).then((data) => {
+    console.log('subscribeWebhookResponse:', 'wabaId', wabaId);
     if (data.error) throw data.error;
     return data;
   });
 }
 
 async function saveWabaToken(
-  access_token: string,
-  waba_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  wabaId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-  console.log('saveWabaToken:', 'wabaId', waba_id, 'appId', app_id, 'businessId', business_id);
+  console.log('saveWabaToken:', 'wabaId', wabaId, 'appId', appId, 'businessId', businessId);
 
   return await sql`
         INSERT INTO wabas (user_id, app_id, waba_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${waba_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${wabaId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, waba_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function savePageToken(
-  access_token: string,
-  page_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  pageId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-  console.log('savePageToken:', 'pageId', page_id, 'appId', app_id, 'businessId', business_id);
+  console.log('savePageToken:', 'pageId', pageId, 'appId', appId, 'businessId', businessId);
 
   return await sql`
         INSERT INTO pages (user_id, app_id, page_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${page_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${pageId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, page_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function saveAdAccountToken(
-  access_token: string,
-  ad_account_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  adAccountId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-  console.log('saveAdAccountToken:', 'adAccountId', ad_account_id, 'appId', app_id, 'businessId', business_id);
+  console.log('saveAdAccountToken:', 'adAccountId', adAccountId, 'appId', appId, 'businessId', businessId);
 
   return await sql`
         INSERT INTO ad_accounts (user_id, app_id, ad_account_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${ad_account_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${adAccountId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, ad_account_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function saveDatasetToken(
-  access_token: string,
-  dataset_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  datasetId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-  console.log('saveDatasetToken:', 'datasetId', dataset_id, 'appId', app_id, 'businessId', business_id);
+  console.log('saveDatasetToken:', 'datasetId', datasetId, 'appId', appId, 'businessId', businessId);
 
   return await sql`
         INSERT INTO datasets (user_id, app_id, dataset_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${dataset_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${datasetId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, dataset_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function saveCatalogToken(
-  access_token: string,
-  catalog_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  catalogId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-  console.log('saveCatalogToken:', 'catalogId', catalog_id, 'appId', app_id, 'businessId', business_id);
+  console.log('saveCatalogToken:', 'catalogId', catalogId, 'appId', appId, 'businessId', businessId);
 
   return await sql`
         INSERT INTO catalogs (user_id, app_id, catalog_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${catalog_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${catalogId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, catalog_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function saveInstagramAccountToken(
-  access_token: string,
-  instagram_account_id: string,
-  app_id: string,
-  user_id: string,
-  business_id: string,
+  accessToken: string,
+  instagramAccountId: string,
+  appId: string,
+  userId: string,
+  businessId: string,
 ): Promise<SqlResult> {
-    instagram_account_id,
-    app_id,
-    business_id,
+    instagramAccountId,
+    appId,
+    businessId,
   return await sql`
         INSERT INTO instagram_accounts (user_id, app_id, instagram_account_id, access_token, business_id, last_updated)
-        VALUES (${user_id}, ${app_id}, ${instagram_account_id}, ${access_token}, ${business_id}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${instagramAccountId}, ${accessToken}, ${businessId}, current_timestamp)
         ON CONFLICT (user_id, app_id, instagram_account_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, business_id = EXCLUDED.business_id, last_updated=current_timestamp
     `;
 }
 
 async function saveBusinessToken(
-  access_token: string,
-  business_id: string,
-  app_id: string,
-  user_id: string,
+  accessToken: string,
+  businessId: string,
+  appId: string,
+  userId: string,
 ): Promise<SqlResult> {
-  console.log('saveBusinessToken:', 'businessId', business_id, 'appId', app_id);
+  console.log('saveBusinessToken:', 'businessId', businessId, 'appId', appId);
 
   return await sql`
         INSERT INTO businesses (user_id, app_id, business_id, access_token, last_updated)
-        VALUES (${user_id}, ${app_id}, ${business_id}, ${access_token}, current_timestamp)
+        VALUES (${userId}, ${appId}, ${businessId}, ${accessToken}, current_timestamp)
         ON CONFLICT (user_id, app_id, business_id)
         DO UPDATE SET access_token = EXCLUDED.access_token, last_updated=current_timestamp
     `;
 }
 
 export async function saveTokens(
-  user_id: string,
-  app_id: string,
-  business_id: string,
-  page_ids: string[],
-  ad_account_ids: string[],
-  waba_ids: string[],
-  dataset_ids: string[],
-  catalog_ids: string[],
-  instagram_account_ids: string[],
-  access_token: string,
+  userId: string,
+  appId: string,
+  businessId: string,
+  pageIds: string[],
+  adAccountIds: string[],
+  wabaIds: string[],
+  datasetIds: string[],
+  catalogIds: string[],
+  instagramAccountIds: string[],
+  accessToken: string,
 ): Promise<SqlResult[]> {
   const promises: Promise<SqlResult>[] = [];
-  promises.push(saveBusinessToken(access_token, business_id, app_id, user_id));
-  page_ids.forEach((page_id) => {
-    promises.push(savePageToken(access_token, page_id, app_id, user_id, business_id));
+  promises.push(saveBusinessToken(accessToken, businessId, appId, userId));
+  pageIds.forEach((pageId) => {
+    promises.push(savePageToken(accessToken, pageId, appId, userId, businessId));
   });
-  ad_account_ids.forEach((ad_account_id) => {
-    promises.push(saveAdAccountToken(access_token, ad_account_id, app_id, user_id, business_id));
+  adAccountIds.forEach((adAccountId) => {
+    promises.push(saveAdAccountToken(accessToken, adAccountId, appId, userId, businessId));
   });
-  waba_ids.forEach((waba_id) => {
-    promises.push(saveWabaToken(access_token, waba_id, app_id, user_id, business_id));
+  wabaIds.forEach((wabaId) => {
+    promises.push(saveWabaToken(accessToken, wabaId, appId, userId, businessId));
   });
-  dataset_ids.forEach((dataset_id) => {
-    promises.push(saveDatasetToken(access_token, dataset_id, app_id, user_id, business_id));
+  datasetIds.forEach((datasetId) => {
+    promises.push(saveDatasetToken(accessToken, datasetId, appId, userId, businessId));
   });
-  catalog_ids.forEach((catalog_id) => {
-    promises.push(saveCatalogToken(access_token, catalog_id, app_id, user_id, business_id));
+  catalogIds.forEach((catalogId) => {
+    promises.push(saveCatalogToken(accessToken, catalogId, appId, userId, businessId));
   });
-  instagram_account_ids.forEach((instagram_account_id) => {
-    promises.push(saveInstagramAccountToken(access_token, instagram_account_id, app_id, user_id, business_id));
+  instagramAccountIds.forEach((instagramAccountId) => {
+    promises.push(saveInstagramAccountToken(accessToken, instagramAccountId, appId, userId, businessId));
   });
   return Promise.all(promises);
 }
 
 export async function registerNumber(phoneId: string, accessToken: string): Promise<RegisterNumberResponse> {
   const privateConfig = await getPrivateConfig();
-  const { fb_reg_pin } = privateConfig;
+  const { fbRegPin } = privateConfig;
   console.log('registerNumber:', 'phoneId', phoneId);
   const url = `/${phoneId}/register`;
   return graphApiWrapperPost(url, accessToken, {
     messaging_product: 'whatsapp',
-    pin: fb_reg_pin,
+    pin: fbRegPin,
   }).then((data) => {
     console.log('registerNumberResponse:', 'phoneId', phoneId);
     if (data.error) throw data.error;
@@ -240,21 +240,21 @@ export async function deregisterNumber(phoneId: string, accessToken: string): Pr
 }
 
 export async function send(
-  phone_number_id: string,
+  phoneNumberId: string,
   accessToken: string,
-  dest_phone: string,
-  message_content: string,
+  destPhone: string,
+  messageContent: string,
 ): Promise<SendMessageResponse> {
-  console.log('send:', 'phoneNumberId', phone_number_id);
-  const url = `/${phone_number_id}/messages`;
+  console.log('send:', 'phoneNumberId', phoneNumberId);
+  const url = `/${phoneNumberId}/messages`;
   return graphApiWrapperPost(url, accessToken, {
     messaging_product: 'whatsapp',
     recipient_type: 'individual',
-    to: dest_phone,
+    to: destPhone,
     type: 'text',
     text: {
       preview_url: false,
-      body: message_content,
+      body: messageContent,
     },
   }).then((data) => {
     if (data.error) throw data.error;
@@ -266,12 +266,12 @@ export async function send(
 // WABA Details \/
 //////////////////////////////////////////////////////////
 
-export async function getWabas(user_id: string): Promise<WabaWithDetails[]> {
+export async function getWabas(userId: string): Promise<WabaWithDetails[]> {
   // Get page IDs and access tokens from the database
   const { rows }: { rows: WabaRow[] } = await sql`
     SELECT DISTINCT waba_id, access_token, business_id
     FROM wabas
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY waba_id ASC
   `;
 
@@ -325,21 +325,21 @@ async function getWabaRows(userId: string): Promise<WabaRow[]> {
 
 export async function getClientPhones(userId: string): Promise<ClientPhone[]> {
   const rows: WabaRow[] = await getWabaRows(userId);
-  const nested_phones: PhoneDetails[][] = await Promise.all(
+  const nestedPhones: PhoneDetails[][] = await Promise.all(
     rows.map(async (row: WabaRow) => {
       const wabaId: string = row.waba_id;
       const accessToken: string = row.access_token;
       const data = await graphApiWrapperGet(`/${wabaId}?fields=phone_numbers`, accessToken);
       const phones: PhoneNumber[] = data?.phone_numbers?.data || [];
-      const phone_deets: PhoneDetails[] = await Promise.all(
+      const phoneDeets: PhoneDetails[] = await Promise.all(
         phones.map(async (phone: PhoneNumber) => {
           return await getPhoneDetails(phone.id, accessToken, wabaId);
         }),
       );
-      return phone_deets;
+      return phoneDeets;
     }),
   );
-  return nested_phones.flat() as ClientPhone[];
+  return nestedPhones.flat() as ClientPhone[];
 }
 
 async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: string): Promise<PhoneDetails> {
@@ -354,12 +354,12 @@ async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: str
   });
 }
 
-export async function getTokenForWaba(waba_id: string, user_id: string): Promise<string> {
-  console.log('getTokenForWaba:', 'wabaId', waba_id);
+export async function getTokenForWaba(wabaId: string, userId: string): Promise<string> {
+  console.log('getTokenForWaba:', 'wabaId', wabaId);
   const { rows }: { rows: { access_token: string }[] } =
-    await sql`SELECT access_token FROM wabas WHERE waba_id = ${waba_id} AND user_id = ${user_id}`;
+    await sql`SELECT access_token FROM wabas WHERE waba_id = ${wabaId} AND user_id = ${userId}`;
   if (rows.length === 0) {
-    throw new Error(`No access token found for WABA ${waba_id}`);
+    throw new Error(`No access token found for WABA ${wabaId}`);
   }
   return rows[0].access_token;
 }
@@ -384,12 +384,12 @@ export async function verifyCode(phoneId: string, accessToken: string, otpCode: 
 // Pages
 //////////////////////////////////////////////////////////
 
-export async function getPages(user_id: string): Promise<PageWithDetails[]> {
+export async function getPages(userId: string): Promise<PageWithDetails[]> {
   // Get page IDs and access tokens from the database
   const { rows }: { rows: PageRow[] } = await sql`
     SELECT DISTINCT page_id, access_token, business_id
     FROM pages
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY page_id ASC
   `;
 
@@ -420,12 +420,12 @@ export async function getPages(user_id: string): Promise<PageWithDetails[]> {
 // Ad accounts
 //////////////////////////////////////////////////////////
 
-export async function getAdAccounts(user_id: string): Promise<AdAccountWithDetails[]> {
+export async function getAdAccounts(userId: string): Promise<AdAccountWithDetails[]> {
   // Get ad account IDs and access tokens from the database
   const { rows }: { rows: AdAccountRow[] } = await sql`
     SELECT DISTINCT ad_account_id, access_token, business_id
     FROM ad_accounts
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY ad_account_id ASC
   `;
 
@@ -463,7 +463,7 @@ async function graphApiWrapperGet(url: string, accessToken?: string): Promise<an
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
-  return fetch(`https://graph.facebook.com/${graph_api_version}${url}`, {
+  return fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
     method: 'GET',
     headers,
     cache: 'no-store',
@@ -498,7 +498,7 @@ async function graphApiWrapperPost(
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
-  return fetch(`https://graph.facebook.com/${graph_api_version}${url}`, {
+  return fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
     method: 'POST',
     headers,
     cache: 'no-store',
@@ -566,11 +566,11 @@ export async function setAckBotStatus(
 // App Details
 //////////////////////////////////////////////////////////
 
-export async function getAppDetails(app_id: string): Promise<AppDetails> {
+export async function getAppDetails(appId: string): Promise<AppDetails> {
   const privateConfig = await getPrivateConfig();
-  console.log('getAppDetails:', 'appId', app_id);
-  const url = `/${app_id}?fields=client_config,name,logo_url,app_domains,app_type,company,link,config_ids`;
-  return graphApiWrapperGet(url, `${publicConfig.app_id}|${privateConfig.fb_app_secret}`).then((data) => {
+  console.log('getAppDetails:', 'appId', appId);
+  const url = `/${appId}?fields=client_config,name,logo_url,app_domains,app_type,company,link,config_ids`;
+  return graphApiWrapperGet(url, `${publicConfig.appId}|${privateConfig.fbAppSecret}`).then((data) => {
     if (data.error) throw data.error;
     return data;
   });
@@ -580,12 +580,12 @@ export async function getAppDetails(app_id: string): Promise<AppDetails> {
 // Datasets
 //////////////////////////////////////////////////////////
 
-export async function getDatasets(user_id: string): Promise<DatasetWithDetails[]> {
+export async function getDatasets(userId: string): Promise<DatasetWithDetails[]> {
   // Get dataset IDs and access tokens from the database
   const { rows }: { rows: DatasetRow[] } = await sql`
     SELECT DISTINCT dataset_id, access_token, business_id
     FROM datasets
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY dataset_id ASC
   `;
 
@@ -627,12 +627,12 @@ export async function getDatasets(user_id: string): Promise<DatasetWithDetails[]
 // Catalogs
 //////////////////////////////////////////////////////////
 
-export async function getCatalogs(user_id: string): Promise<CatalogWithDetails[]> {
+export async function getCatalogs(userId: string): Promise<CatalogWithDetails[]> {
   // Get catalog IDs and access tokens from the database
   const { rows }: { rows: CatalogRow[] } = await sql`
     SELECT DISTINCT catalog_id, access_token, business_id
     FROM catalogs
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY catalog_id ASC
   `;
 
@@ -665,12 +665,12 @@ export async function getCatalogs(user_id: string): Promise<CatalogWithDetails[]
 // Instagram Accounts
 //////////////////////////////////////////////////////////
 
-export async function getInstagramAccounts(user_id: string): Promise<InstagramAccountWithDetails[]> {
+export async function getInstagramAccounts(userId: string): Promise<InstagramAccountWithDetails[]> {
   // Get Instagram account IDs and access tokens from the database
   const { rows }: { rows: InstagramAccountRow[] } = await sql`
     SELECT DISTINCT instagram_account_id, access_token, business_id
     FROM instagram_accounts
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
     ORDER BY instagram_account_id ASC
   `;
 
@@ -683,7 +683,7 @@ export async function getInstagramAccounts(user_id: string): Promise<InstagramAc
   const { rows: pageRows }: { rows: { page_id: string; access_token: string }[] } = await sql`
     SELECT DISTINCT page_id, access_token
     FROM pages
-    WHERE user_id = ${user_id}
+    WHERE user_id = ${userId}
   `;
 
   const igUsernameMap: Record<string, string> = {};

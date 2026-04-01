@@ -8,12 +8,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
 interface PrivacyPolicyModalProps {
-  app_name?: string;
+  appName?: string;
   host?: string;
-  contact_email?: string;
+  contactEmail?: string;
 }
 
-export default function PrivacyPolicyModal({ app_name = '', host = '', contact_email = '' }: PrivacyPolicyModalProps) {
+export default function PrivacyPolicyModal({ appName = '', host = '', contactEmail = '' }: PrivacyPolicyModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const close = useCallback(() => setIsOpen(false), []);
@@ -108,7 +108,7 @@ export default function PrivacyPolicyModal({ app_name = '', host = '', contact_e
                   </li>
                   <li>
                     <strong>Company</strong> (referred to as either &quot;the Company&quot;, &quot;We&quot;,
-                    &quot;Us&quot; or &quot;Our&quot; in this Agreement) refers to {app_name || 'the Company'}.
+                    &quot;Us&quot; or &quot;Our&quot; in this Agreement) refers to {appName || 'the Company'}.
                   </li>
                   <li>
                     <strong>Cookies</strong> are small files that are placed on Your computer, mobile device or any
@@ -140,7 +140,7 @@ export default function PrivacyPolicyModal({ app_name = '', host = '', contact_e
                     the Service or from the Service infrastructure itself (for example, the duration of a page visit).
                   </li>
                   <li>
-                    <strong>Website</strong> refers to {app_name || 'the Website'}
+                    <strong>Website</strong> refers to {appName || 'the Website'}
                     {host && (
                       <>
                         , accessible from{' '}
@@ -262,9 +262,9 @@ export default function PrivacyPolicyModal({ app_name = '', host = '', contact_e
 
                 <h2 className="text-lg font-bold text-gray-900 pt-2">Contact Us</h2>
                 <p>If you have any questions about this Privacy Policy, You can contact us:</p>
-                {contact_email && (
+                {contactEmail && (
                   <ul className="list-disc pl-6">
-                    <li>By email: {contact_email}</li>
+                    <li>By email: {contactEmail}</li>
                   </ul>
                 )}
               </div>

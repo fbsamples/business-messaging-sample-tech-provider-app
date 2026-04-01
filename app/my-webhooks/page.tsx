@@ -14,12 +14,12 @@ export default async function MyWebhooks() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.app_id);
-  const app_name = appDetails.name;
-  const logo_url = appDetails.logo_url;
+  const appDetails = await getAppDetails(publicConfig.appId);
+  const appName = appDetails.name;
+  const logoUrl = appDetails.logo_url;
 
   return (
-    <SidebarLayout user_id={userId} logo_url={logo_url} app_name={app_name}>
+    <SidebarLayout userId={userId} logoUrl={logoUrl} appName={appName}>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-gray-900">My Webhooks</h1>

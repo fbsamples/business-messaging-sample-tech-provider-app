@@ -10,23 +10,23 @@ import { withAuth } from '@/app/api/authWrapper';
 export const POST = withAuth(async function sendMessage(request: NextRequest, session) {
   try {
     const body = await request.json();
-    const { waba_id, phone_number_id, dest_phone, message_content } = body;
+    const { waba_id: wabaId, phone_number_id: phoneNumberId, dest_phone: destPhone, message_content: messageContent } = body;
 
-    if (!waba_id || typeof waba_id !== 'string') {
+    if (!wabaId || typeof wabaId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid waba_id' }, { status: 400 });
     }
-    if (!phone_number_id || typeof phone_number_id !== 'string') {
+    if (!phoneNumberId || typeof phoneNumberId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid phone_number_id' }, { status: 400 });
     }
-    if (!dest_phone || typeof dest_phone !== 'string') {
+    if (!destPhone || typeof destPhone !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid dest_phone' }, { status: 400 });
     }
-    if (!message_content || typeof message_content !== 'string') {
+    if (!messageContent || typeof messageContent !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid message_content' }, { status: 400 });
     }
 
-    const accessToken = await getTokenForWaba(waba_id, session.user.email);
-    const result = await send(phone_number_id, accessToken, dest_phone, message_content);
+    const accessToken = await getTokenForWaba(wabaId, session.user.email);
+    const result = await send(phoneNumberId, accessToken, destPhone, messageContent);
     return NextResponse.json({ status: 'ok', data: result });
   } catch (error) {
     console.error('Failed to send message:', error);

@@ -10,17 +10,17 @@ import { withAuth } from '@/app/api/authWrapper';
 export const POST = withAuth(async function requestCodeEndpoint(request: NextRequest, session) {
   try {
     const body = await request.json();
-    const { waba_id, phone_number_id } = body;
+    const { waba_id: wabaId, phone_number_id: phoneNumberId } = body;
 
-    if (!waba_id || typeof waba_id !== 'string') {
+    if (!wabaId || typeof wabaId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid waba_id' }, { status: 400 });
     }
-    if (!phone_number_id || typeof phone_number_id !== 'string') {
+    if (!phoneNumberId || typeof phoneNumberId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid phone_number_id' }, { status: 400 });
     }
 
-    const accessToken = await getTokenForWaba(waba_id, session.user.email);
-    await requestCode(phone_number_id, accessToken);
+    const accessToken = await getTokenForWaba(wabaId, session.user.email);
+    await requestCode(phoneNumberId, accessToken);
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
     console.error('Failed to request verification code:', error);

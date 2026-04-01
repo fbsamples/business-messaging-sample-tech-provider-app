@@ -16,16 +16,16 @@ export default async function MyPages() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.app_id);
+  const appDetails = await getAppDetails(publicConfig.appId);
   const pages = await getPages(userId);
 
   return (
     <WabaPageLayout
       title="My Pages"
       description="Facebook Pages connected to your app."
-      user_id={userId}
-      logo_url={appDetails.logo_url}
-      app_name={appDetails.name}
+      userId={userId}
+      logoUrl={appDetails.logo_url}
+      appName={appDetails.name}
       isEmpty={pages.length === 0}
       emptyMessage="No pages found."
       emptyDescription="Facebook Pages will appear here once they are connected through the Embedded Signup flow."

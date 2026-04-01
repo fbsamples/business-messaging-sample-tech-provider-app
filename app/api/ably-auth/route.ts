@@ -11,15 +11,15 @@ import getPrivateConfig from '@/app/privateConfig';
 export const dynamic = 'force-dynamic';
 
 async function createTokenRequest(clientId: string) {
-  const { ably_key } = await getPrivateConfig();
-  const ably = new Ably.Realtime(ably_key);
+  const { ablyKey } = await getPrivateConfig();
+  const ably = new Ably.Realtime(ablyKey);
   const r = await ably.auth.createTokenRequest(
     {
       ttl: 3600000,
       clientId: clientId,
     },
     {
-      key: ably_key,
+      key: ablyKey,
     },
   );
   ably.close();

@@ -16,16 +16,16 @@ export default async function MyWabas() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.app_id);
+  const appDetails = await getAppDetails(publicConfig.appId);
   const wabas = await getWabas(userId);
 
   return (
     <WabaPageLayout
       title="My WABAs"
       description="WhatsApp Business Accounts connected to your app."
-      user_id={userId}
-      logo_url={appDetails.logo_url}
-      app_name={appDetails.name}
+      userId={userId}
+      logoUrl={appDetails.logo_url}
+      appName={appDetails.name}
       isEmpty={wabas.length === 0}
       emptyMessage="No WABAs found."
       emptyDescription="WABAs will appear here once they are connected through the Embedded Signup flow."
@@ -36,7 +36,7 @@ export default async function MyWabas() {
           key={`${waba.id}-${i}`}
           id={waba.id}
           name={waba.name || 'Unnamed WABA'}
-          business_id={waba.business_id || ''}
+          businessId={waba.business_id || ''}
         />
       ))}
     </WabaPageLayout>

@@ -12,21 +12,21 @@ import type { SessionInfo } from '@/app/types/api';
 declare const FB: any;
 
 interface FBL4BLauncherProps {
-  app_id: string;
-  app_name: string;
+  appId: string;
+  appName: string;
   esConfig: string;
   onClickFbl4b: () => void;
   onBannerInfoChange: (info: string) => void;
   onLastEventDataChange: (data: unknown) => void;
-  onSaveToken: (code: string, session_info: SessionInfo) => void;
+  onSaveToken: (code: string, sessionInfo: SessionInfo) => void;
   onQuickLaunch?: (fn: () => void) => void;
 }
 
-let session_info_outer: SessionInfo | null = null;
-let code_outer: string | null = null;
+let sessionInfoOuter: SessionInfo | null = null;
+let codeOuter: string | null = null;
 
 export default function FBL4BLauncher({
-  app_id,
+  appId,
   esConfig,
   onClickFbl4b,
   onBannerInfoChange,
@@ -57,9 +57,9 @@ export default function FBL4BLauncher({
     clearEsState();
     if (response.authResponse) {
       const code = response.authResponse.code;
-      code_outer = code;
-      if (session_info_outer && code_outer) {
-        onSaveToken(code_outer, session_info_outer);
+      codeOuter = code;
+      if (sessionInfoOuter && codeOuter) {
+        onSaveToken(codeOuter, sessionInfoOuter);
       }
     } else {
       // User clicked Cancel on the FB login dialog itself
@@ -77,8 +77,8 @@ export default function FBL4BLauncher({
     const esConfigJson = JSON.parse(esConfig);
     onBannerInfoChange('ES Started...');
     onLastEventDataChange(null);
-    session_info_outer = null;
-    code_outer = null;
+    sessionInfoOuter = null;
+    codeOuter = null;
     esInProgress.current = true;
     popupWindowRef.current = null;
 
@@ -122,7 +122,7 @@ export default function FBL4BLauncher({
   useEffect(() => {
     const initFB = () => {
       FB.init({
-        appId: app_id,
+        appId: appId,
         autoLogAppEvents: true,
         xfbml: true,
         version: 'v24.0',
@@ -148,10 +148,10 @@ export default function FBL4BLauncher({
             clearEsState();
             onBannerInfoChange('');
           } else {
-            const session_info: SessionInfo = data;
-            session_info_outer = session_info;
-            if (session_info_outer && code_outer) {
-              onSaveToken(code_outer, session_info);
+            const sessionInfo: SessionInfo = data;
+            sessionInfoOuter = sessionInfo;
+            if (sessionInfoOuter && codeOuter) {
+              onSaveToken(codeOuter, sessionInfo);
             }
           }
         }
@@ -167,7 +167,7 @@ export default function FBL4BLauncher({
       stopPolling();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [app_id, onBannerInfoChange, onLastEventDataChange, onSaveToken]);
+  }, [appId, onBannerInfoChange, onLastEventDataChange, onSaveToken]);
 
   return (
     <button
