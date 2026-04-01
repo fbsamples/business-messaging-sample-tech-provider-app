@@ -2,6 +2,8 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
+import { Building2 } from 'lucide-react';
+
 import { auth0 } from '@/lib/auth0';
 import { getWabas, getAppDetails } from '@/app/api/beUtils';
 import type { WabaWithDetails } from '@/app/types/api';
@@ -9,7 +11,6 @@ import LoggedOut from '@/app/components/LoggedOut';
 import WabaPageLayout from '@/app/components/WabaPageLayout';
 import WabaCard from '@/app/components/WabaCard';
 import publicConfig from '@/app/publicConfig';
-import { Building2 } from 'lucide-react';
 
 export default async function MyWabas() {
   const session = await auth0.getSession();

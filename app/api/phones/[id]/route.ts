@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import { type NextRequest, NextResponse } from 'next/server';
+
 import { setAckBotStatus, getAckBotMessage } from '@/app/api/beUtils';
 import { withAuth } from '@/app/api/authWrapper';
 
@@ -28,10 +29,15 @@ export const POST = withAuth(async function updateAckBotStatus(request: NextRequ
 });
 
 export const GET = withAuth(async function getPhoneConfig(request: NextRequest) {
-  const phoneId = request.nextUrl.searchParams.get('phoneId');
-  if (!phoneId) {
-    return NextResponse.json({ error: 'phoneId is required' }, { status: 400 });
+  try {
+    const phoneId = request.nextUrl.searchParams.get('phoneId');
+    if (!phoneId) {
+      return NextResponse.json({ error: 'phoneId is required' }, { status: 400 });
+    }
+    const message = await getAckBotMessage(phoneId);
+    return NextResponse.json({ ackBotMessage: message });
+  } catch (error) {
+    console.error('Failed to get phone config:', error);
+    return NextResponse.json({ error: 'Failed to get phone config' }, { status: 500 });
   }
-  const message = await getAckBotMessage(phoneId);
-  return NextResponse.json({ ackBotMessage: message });
 });
