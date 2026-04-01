@@ -39,7 +39,7 @@ const navSections = [
       {
         label: 'My Webhooks',
         description: 'Debug tool showing all your incoming webhooks',
-        href: '/my_webhooks',
+        href: '/my-webhooks',
         Icon: Webhook,
       },
     ],
@@ -50,7 +50,7 @@ const navSections = [
       {
         label: 'My Inbox',
         description: 'Send and receive messages across all your phone numbers',
-        href: '/my_inbox',
+        href: '/my-inbox',
         Icon: MessageSquare,
       },
     ],
@@ -58,20 +58,20 @@ const navSections = [
   {
     title: 'My Assets',
     items: [
-      { label: 'My WABAs', description: 'View all your WABAs', href: '/my_wabas', Icon: Building2 },
-      { label: 'My Pages', description: 'View all your Facebook Pages', href: '/my_pages', Icon: FileText },
+      { label: 'My WABAs', description: 'View all your WABAs', href: '/my-wabas', Icon: Building2 },
+      { label: 'My Pages', description: 'View all your Facebook Pages', href: '/my-pages', Icon: FileText },
       {
         label: 'My Ad Accounts',
         description: 'View all your Facebook Ad Accounts',
-        href: '/my_ad_accounts',
+        href: '/my-ad-accounts',
         Icon: Megaphone,
       },
-      { label: 'My Datasets', description: 'View all your Facebook Datasets', href: '/my_datasets', Icon: Database },
-      { label: 'My Catalogs', description: 'View all your Facebook Catalogs', href: '/my_catalogs', Icon: BookOpen },
+      { label: 'My Datasets', description: 'View all your Facebook Datasets', href: '/my-datasets', Icon: Database },
+      { label: 'My Catalogs', description: 'View all your Facebook Catalogs', href: '/my-catalogs', Icon: BookOpen },
       {
         label: 'My Instagram Accounts',
         description: 'View all your Instagram Accounts',
-        href: '/my_instagram_accounts',
+        href: '/my-instagram-accounts',
         Icon: Instagram,
       },
     ],

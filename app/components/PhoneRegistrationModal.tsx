@@ -81,7 +81,7 @@ export default function PhoneRegistrationModal({
     setIsLoading(true);
     setError(null);
     try {
-      await feGraphApiPostWrapper('/api/request_code', {
+      await feGraphApiPostWrapper('/api/request-code', {
         waba_id: phone.wabaId,
         phone_number_id: phone.id,
       });
@@ -102,7 +102,7 @@ export default function PhoneRegistrationModal({
     setIsLoading(true);
     setError(null);
     try {
-      await feGraphApiPostWrapper('/api/verify_code', {
+      await feGraphApiPostWrapper('/api/verify-code', {
         wabaId: phone.wabaId,
         phoneId: phone.id,
         otpCode,
