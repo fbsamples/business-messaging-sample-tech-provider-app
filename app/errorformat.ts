@@ -32,7 +32,14 @@ const arrow_down = " \u{21B3} ";   // Down arrow for parallel operations
  * @param parallel - Array of parallel operations
  * @returns Formatted string with parallel operations
  */
-function parseP(str: string, indent: string, parallel: any[]): string {
+interface OperationStatus {
+    fun: string;
+    status: string;
+    result: unknown;
+    error: unknown;
+}
+
+function parseP(str: string, indent: string, parallel: (OperationStatus | OperationStatus[])[]): string {
     parallel.forEach(function (serial, i) {
         if (i === 0) {
             // First parallel operation uses right arrow
@@ -54,7 +61,7 @@ function parseP(str: string, indent: string, parallel: any[]): string {
  * @param serial - Array of serial operations
  * @returns Formatted string with serial operations
  */
-function parseS(str: string, indent: string, serial: any[]): string {
+function parseS(str: string, indent: string, serial: (OperationStatus | OperationStatus[])[]): string {
     serial.forEach(function (serialItem, i) {
         if (Array.isArray(serialItem)) {
             // If item is an array, it contains parallel operations
@@ -87,7 +94,7 @@ function parseS(str: string, indent: string, serial: any[]): string {
  * @param data - Array of operations with status and function names
  * @returns Formatted string representation
  */
-function formatErrors(data: any[]): string {
+function formatErrors(data: (OperationStatus | OperationStatus[])[]): string {
     return parseP("", "", data);
 }
 
@@ -97,7 +104,7 @@ function formatErrors(data: any[]): string {
  * @param label - Label for the operation
  * @returns Promise that resolves to status object
  */
-function wrapFn(promise: Promise<any>, label: string): Promise<any[]> {
+function wrapFn(promise: Promise<unknown>, label: string): Promise<OperationStatus[]> {
     return promise
         .then(data => {
             return [{ fun: label, status: "completed", result: data, error: null }];
@@ -108,13 +115,42 @@ function wrapFn(promise: Promise<any>, label: string): Promise<any[]> {
         });
 }
 
+/**
+ * Creates a function that chains operations with previous results
+ * @param promise - Promise function to execute
+ * @param label - Label for the operation
+ * @returns Function that can be chained with previous results
+ */
+function w(promise: (arg?: unknown) => Promise<unknown>, label: string): (prev_result?: OperationStatus[]) => Promise<OperationStatus[]> {
+    return (prev_result) => {
+        let arg: unknown;
+        if (!prev_result) prev_result = [];
+
+        // Extract result from previous operation if available
+        if (prev_result[prev_result.length - 1]) {
+            arg = prev_result[prev_result.length - 1].result;
+            if (prev_result[prev_result.length - 1]) {
+                prev_result = [];
+            }
+        }
+
+        // Execute promise and return status object
+        return promise(arg)
+            .then(data => {
+                return [...prev_result, { fun: label, status: "completed", result: data, error: null }];
+            })
+            .catch(err => {
+                return [...prev_result, { fun: label, status: "failed", result: null, error: err }];
+            });
+    };
+}
 
 /**
  * Creates a skipped operation status (for operations that are intentionally not executed)
  * @param label - Label for the skipped operation
  * @returns Status object indicating skipped operation
  */
-function skipProm(label: string): any[] {
+function skipProm(label: string): OperationStatus[] {
     return [{ fun: label, status: "skipped", result: null, error: null }];
 }
 

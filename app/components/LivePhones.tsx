@@ -9,14 +9,22 @@
 import Ably from 'ably';
 import { useState, useEffect } from 'react';
 import SendMessage from '@/app/components/SendMessage';
+import type { ClientPhone } from '@/app/types/api';
 
-export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
+interface LivePhonesProps {
+    phone_display: string;
+    phone_number_id: string;
+    wabaId: string;
+    _phone_details: ClientPhone;
+}
 
-    const [, setWebhooks] = useState([]);
-    const [messages, setMessages] = useState({});
-    const [chats, setChats] = useState({});
+export default function LivePhones({ phone_display, phone_number_id, wabaId, _phone_details }: LivePhonesProps) {
 
-    function addMessage(chat_id, message) {
+    const [_webhooks, setWebhooks] = useState<string[]>([]);
+    const [messages, setMessages] = useState<Record<string, string[]>>({});
+    const [chats, setChats] = useState<Record<string, { chat_id: string; displayName: string }>>({});
+
+    function addMessage(chat_id: string, message: string) {
         setMessages((old_state) => {
             const old_chat_list = old_state[chat_id] || [];
             const new_state = { ...old_state };
@@ -25,7 +33,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
         });
     }
 
-    function addChat(chat_id, displayName) {
+    function addChat(chat_id: string, displayName: string) {
         setChats((old_state) => {
             const new_state = { ...old_state };
             new_state[chat_id] = {
@@ -37,7 +45,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
     }
 
 
-    function handleKeyDownWrapper(chat_id) {
+    function handleKeyDownWrapper(chat_id: string) {
         return (message) => {
             const new_msg = '>> ' + message;
             addMessage(chat_id, new_msg);
@@ -67,7 +75,7 @@ export default function LivePhones({ phone_display, phone_number_id, wabaId }) {
         };
     }
 
-    function addWebhook(webhook) {
+    function addWebhook(webhook: string) {
         setWebhooks((old_state) => {
             return [webhook, ...old_state];
         });

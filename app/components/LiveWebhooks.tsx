@@ -15,19 +15,14 @@ interface WebhookEntry {
   payload: unknown;
 }
 
-function extractField(data: unknown): string {
-  try {
-    const d = data as { entry?: { changes?: { field?: string }[] }[] };
-    return d?.entry?.[0]?.changes?.[0]?.field || 'Unknown';
-  } catch {
-    return 'Unknown';
-  }
-}
+    const [webhooks, setWebhooks] = useState<unknown[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
 
-function formatTimestamp(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-}
+    function addWebhook(webhook: unknown) {
+        setWebhooks((old_state) => {
+            return [webhook, ...old_state];
+        });
+    }
 
 function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }) {
   const [expanded, setExpanded] = useState(index === 0);

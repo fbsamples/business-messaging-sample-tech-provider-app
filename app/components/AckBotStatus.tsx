@@ -8,8 +8,13 @@
 
 import { feGraphApiPostWrapper } from '@/app/fe_utils';
 import { useState, useEffect } from 'react';
+import type { ClientPhone } from '@/app/types/api';
 
-export default function AckBotStatus({ phone }: { phone: any }) {
+interface AckBotStatusProps {
+    phone: ClientPhone;
+}
+
+export default function AckBotStatus({ phone }: { phone: any }: AckBotStatusProps) {
     const [isAckBotEnabled, setIsAckBotEnabled] = useState(phone.isAckBotEnabled);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);

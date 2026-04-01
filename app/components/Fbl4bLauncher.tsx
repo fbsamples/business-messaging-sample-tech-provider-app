@@ -16,7 +16,7 @@ interface FBL4BLauncherProps {
     esConfig: string;
     onClickFbl4b: () => void;
     onBannerInfoChange: (info: string) => void;
-    onLastEventDataChange: (data: any) => void;
+    onLastEventDataChange: (data: unknown) => void;
     onSaveToken: (code: string, session_info: SessionInfo) => void;
     onQuickLaunch?: (fn: () => void) => void;
 }
@@ -52,7 +52,7 @@ export default function FBL4BLauncher({
         stopPolling();
     };
 
-    const fbLoginCallback = (response: any) => {
+    const fbLoginCallback = (response: { authResponse?: { code: string } }) => {
         clearEsState();
         if (response.authResponse) {
             const code = response.authResponse.code;

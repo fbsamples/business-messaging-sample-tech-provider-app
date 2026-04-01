@@ -34,7 +34,7 @@ export type SqlResult = {
     command: string;
     rowCount: number;
     oid: number;
-    rows: any[];
+    rows: unknown[];
 };
 
 // ============================================================================
@@ -45,7 +45,7 @@ export type WabaDetails = {
     id: string;
     account_review_status: string;
     purchase_order_number?: string;
-    audiences?: any[];
+    audiences?: unknown[];
     name: string;
     ownership_type: string;
     subscribed_apps: {
@@ -58,10 +58,10 @@ export type WabaDetails = {
     country: string;
     currency: string;
     timezone_id: string;
-    on_behalf_of_business_info?: any;
-    schedules?: any[];
+    on_behalf_of_business_info?: unknown;
+    schedules?: unknown[];
     is_enabled_for_insights: boolean;
-    message_templates?: any;
+    message_templates?: unknown;
     phone_numbers: {
         data: PhoneNumber[];
     };
@@ -309,7 +309,7 @@ export type AckBotStatusResponse = {
 // Generic API Response
 // ============================================================================
 
-export type ApiResponse<T = any> = {
+export type ApiResponse<T = unknown> = {
     data?: T;
     error?: FacebookError;
     success?: boolean;

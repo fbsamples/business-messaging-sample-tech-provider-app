@@ -7,7 +7,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 
-type ApiHandler = (request: NextRequest, user: any) => Promise<NextResponse> | NextResponse;
+export interface AuthSession {
+    user: {
+        email?: string;
+        name?: string;
+        sub?: string;
+    };
+}
+
+type ApiHandler = (request: NextRequest, session: AuthSession) => Promise<NextResponse> | NextResponse;
 
 export function withAuth(handler: ApiHandler) {
     return async (request: NextRequest): Promise<NextResponse> => {

@@ -10,7 +10,7 @@ import publicConfig from "@/app/public_config";
 import { getAppDetails } from "@/app/api/be_utils";
 import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
-export default async function Header({ user_id }) {
+export default async function Header({ user_id }: { user_id: string }) {
 
     const appId = publicConfig.app_id;
     const appDetails = await getAppDetails(appId);
