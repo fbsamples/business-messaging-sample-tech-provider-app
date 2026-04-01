@@ -22,10 +22,16 @@ async function createTokenRequest(clientId: string) {
     return r;
 }
 
-export const GET = withAuth(async function myApiRoute(_, session) {
-    const user = session.user;
-    const clientId = user.email;
-    const tokenRequest_outer = await createTokenRequest(clientId);
-    const response = new NextResponse(JSON.stringify(tokenRequest_outer), { status: 200 });
-    return response;
+export const GET = withAuth(async function createAblyToken(_, session) {
+    try {
+        const clientId = session.user.email;
+        const tokenRequest = await createTokenRequest(clientId);
+        return NextResponse.json(tokenRequest);
+    } catch (error) {
+        console.error('Failed to create Ably token:', error);
+        return NextResponse.json(
+            { error: 'Failed to create Ably token' },
+            { status: 500 }
+        );
+    }
 });

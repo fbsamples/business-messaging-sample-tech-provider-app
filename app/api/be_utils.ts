@@ -191,7 +191,7 @@ export async function deregisterNumber(phoneId: string, accessToken: string): Pr
         })
 }
 
-export async function send(phone_number_id: string, accessToken: string, dest_phone: string, message_content: string): Promise<SendMessageResponse | void> {
+export async function send(phone_number_id: string, accessToken: string, dest_phone: string, message_content: string): Promise<SendMessageResponse> {
     console.log('send:', 'phoneNumberId', phone_number_id);
     const url = `/${phone_number_id}/messages`;
     return graphApiWrapperPost(url, accessToken, {
@@ -199,13 +199,15 @@ export async function send(phone_number_id: string, accessToken: string, dest_ph
         "recipient_type": "individual",
         "to": dest_phone,
         "type": "text",
-        "text": { // the text object
+        "text": {
             "preview_url": false,
             "body": message_content
         }
     })
-        .then(data => console.log('sendResponse', JSON.stringify(data, null, 2)))
-        .catch(err => console.error(err));
+        .then(data => {
+            if (data.error) throw data.error;
+            return data;
+        });
 }
 
 //////////////////////////////////////////////////////////

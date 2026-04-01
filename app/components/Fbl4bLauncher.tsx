@@ -157,8 +157,8 @@ export default function FBL4BLauncher({
                         }
                     }
                 }
-            } catch {
-                // this is not an event that we are interested in since JSON.parse(event.data) threw an exception
+            } catch (err) {
+                // Non-ES message events from Facebook iframes are expected and can be ignored
             }
         };
 

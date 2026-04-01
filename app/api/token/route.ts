@@ -9,11 +9,10 @@ import { getToken, saveTokens, registerNumber, subscribeWebhook } from "../be_ut
 import { wrapFn, skipProm } from "../../errorformat";
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function myApiRoute(request: NextRequest, session) {
+export const POST = withAuth(async function exchangeToken(request: NextRequest, session) {
     const user = session.user;
 
     const user_id = user.email;
-
 
     const data = await request.json();
 
@@ -27,7 +26,12 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
     const catalog_ids = rawCatalogIds || [];
     const instagram_account_ids = rawInstagramAccountIds || [];
 
-    let response = null;
+    if (!code || typeof code !== 'string') {
+        return NextResponse.json({ error: 'Missing or invalid code' }, { status: 400 });
+    }
+    if (!app_id || typeof app_id !== 'string') {
+        return NextResponse.json({ error: 'Missing or invalid app_id' }, { status: 400 });
+    }
 
     try {
         const result = await Promise.all([
@@ -43,11 +47,12 @@ export const POST = withAuth(async function myApiRoute(request: NextRequest, ses
 
                 }),
         ])
-        response = new NextResponse(JSON.stringify(result, null, 2));
-    } catch (e) {
-        console.log("error", e);
-        response = new NextResponse(JSON.stringify(e, null, 2), { status: 500 });
+        return NextResponse.json(result);
+    } catch (error) {
+        console.error('Failed to exchange token:', error);
+        return NextResponse.json(
+            { error: 'Failed to exchange token' },
+            { status: 500 }
+        );
     }
-
-    return response;
 });

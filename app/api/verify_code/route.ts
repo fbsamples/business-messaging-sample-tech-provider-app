@@ -9,11 +9,30 @@ import { getTokenForWaba, verifyCode } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
 export const POST = withAuth(async function verifyCodeEndpoint(request: NextRequest, session) {
-    const body = await request.json();
-    const { wabaId, phoneId, otpCode } = body;
-    const accessToken = await getTokenForWaba(wabaId, session.user.email);
-    await verifyCode(phoneId, accessToken, otpCode);
-    return new NextResponse('{"register":"ok"}');
+    try {
+        const body = await request.json();
+        const { wabaId, phoneId, otpCode } = body;
+
+        if (!wabaId || typeof wabaId !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid wabaId' }, { status: 400 });
+        }
+        if (!phoneId || typeof phoneId !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid phoneId' }, { status: 400 });
+        }
+        if (!otpCode || typeof otpCode !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid otpCode' }, { status: 400 });
+        }
+
+        const accessToken = await getTokenForWaba(wabaId, session.user.email);
+        await verifyCode(phoneId, accessToken, otpCode);
+        return NextResponse.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Failed to verify code:', error);
+        return NextResponse.json(
+            { error: 'Failed to verify code' },
+            { status: 500 }
+        );
+    }
 });
 
 function mapGraphApiError(err: any): { code: string; message: string; status: number } {

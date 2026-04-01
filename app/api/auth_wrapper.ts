@@ -15,24 +15,18 @@ export function withAuth(handler: ApiHandler) {
             const session = await auth0.getSession();
 
             if (!session || !session.user) {
-                return new NextResponse(
-                    JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }),
-                    {
-                        status: 401,
-                        headers: { 'Content-Type': 'application/json' }
-                    }
+                return NextResponse.json(
+                    { error: 'Unauthorized', message: 'Authentication required' },
+                    { status: 401 }
                 );
             }
 
             return await handler(request, session);
         } catch (error) {
             console.error('Auth wrapper error:', error);
-            return new NextResponse(
-                JSON.stringify({ error: 'Internal Server Error', message: 'Authentication failed' }),
-                {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
-                }
+            return NextResponse.json(
+                { error: 'Internal Server Error', message: 'Authentication failed' },
+                { status: 500 }
             );
         }
     };

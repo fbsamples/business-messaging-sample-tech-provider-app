@@ -8,12 +8,27 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { setAckBotStatus, getAckBotMessage } from "../../be_utils"
 import { withAuth } from "../../auth_wrapper";
 
-export const POST = withAuth(async function phones(request: NextRequest) {
-    const body = await request.json();
-    const { isAckBotEnabled, phoneId, ackBotMessage } = body;
-    const resp = await setAckBotStatus(phoneId, isAckBotEnabled, ackBotMessage);
-    console.log('done', resp);
-    return new NextResponse(JSON.stringify({ response: 'ok' }));
+export const POST = withAuth(async function updateAckBotStatus(request: NextRequest, _session) {
+    try {
+        const body = await request.json();
+        const { isAckBotEnabled, phoneId } = body;
+
+        if (!phoneId || typeof phoneId !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid phoneId' }, { status: 400 });
+        }
+        if (typeof isAckBotEnabled !== 'boolean') {
+            return NextResponse.json({ error: 'Missing or invalid isAckBotEnabled' }, { status: 400 });
+        }
+
+        await setAckBotStatus(phoneId, isAckBotEnabled);
+        return NextResponse.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Failed to update ack bot status:', error);
+        return NextResponse.json(
+            { error: 'Failed to update ack bot status' },
+            { status: 500 }
+        );
+    }
 });
 
 export const GET = withAuth(async function getPhoneConfig(request: NextRequest) {

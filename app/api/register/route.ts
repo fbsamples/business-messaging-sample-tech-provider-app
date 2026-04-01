@@ -8,12 +8,28 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { registerNumber, getTokenForWaba } from "../be_utils"
 import { withAuth } from "../auth_wrapper";
 
-export const POST = withAuth(async function phones(request: NextRequest, session) {
-    const body = await request.json();
-    const { wabaId, phoneId } = body;
-    const accessToken = await getTokenForWaba(wabaId, session.user.email);
-    await registerNumber(phoneId, accessToken); // TODO: need error handling
-    return new NextResponse(JSON.stringify({ response: 'ok' }));
+export const POST = withAuth(async function registerPhone(request: NextRequest, session) {
+    try {
+        const body = await request.json();
+        const { wabaId, phoneId } = body;
+
+        if (!wabaId || typeof wabaId !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid wabaId' }, { status: 400 });
+        }
+        if (!phoneId || typeof phoneId !== 'string') {
+            return NextResponse.json({ error: 'Missing or invalid phoneId' }, { status: 400 });
+        }
+
+        const accessToken = await getTokenForWaba(wabaId, session.user.email);
+        await registerNumber(phoneId, accessToken);
+        return NextResponse.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Failed to register phone number:', error);
+        return NextResponse.json(
+            { error: 'Failed to register phone number' },
+            { status: 500 }
+        );
+    }
 });
 
 function mapGraphApiError(err: any): { code: string; message: string; status: number } {
