@@ -28,8 +28,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // TODO: For extra security, validate the X-Hub-Signature-256 header
+    // against the request body using your app secret to verify that
+    // incoming webhook requests are genuinely from Meta.
+    // See: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#event-notifications
     const data = await request.json();
-    // Connect to Ably with your API key
     const { ablyKey } = await privateConfig();
     const ably = new Ably.Realtime({ key: ablyKey, clientId: 'webhook_server' });
 
