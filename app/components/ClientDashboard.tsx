@@ -168,10 +168,11 @@ function HelpDot({ tip }: { tip: React.ReactNode }) {
 }
 
 // Tooltip content builders
-function TipSection({ title, items, footer }: {
+function TipSection({ title, items, footer, docLink }: {
   title: string;
   items: { name: string; desc: string }[];
   footer?: string;
+  docLink?: { href: string; label: string };
 }) {
   return (
     <div>
@@ -187,8 +188,21 @@ function TipSection({ title, items, footer }: {
         ))}
       </div>
       {footer && (
-        <div className="px-4 pb-3.5 pt-1 border-t border-gray-100">
+        <div className="px-4 pb-1 pt-1">
           <p className="text-[11px] text-gray-400 leading-relaxed">{footer}</p>
+        </div>
+      )}
+      {docLink && (
+        <div className="px-4 pb-3.5 pt-2 border-t border-gray-100">
+          <a
+            href={docLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-medium transition-colors"
+          >
+            {docLink.label}
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
         </div>
       )}
     </div>
@@ -222,35 +236,39 @@ const VERSION_TIP = (
   <TipSection
     title="ES Version Guide"
     items={[
-      { name: 'v2 (Recommended for production)', desc: 'Classic ES with multiple forks and legacy features support.' },
-      { name: 'v2-public-preview', desc: 'Mirrors v2 but uses Unified Onboarding UI for non-forked flows.' },
-      { name: 'v3', desc: 'Similar to v2 without forks. Adds app-only feature flag and removes proxy sharing.' },
+      { name: 'v4 (Latest)', desc: 'Latest major release with enhanced features.' },
       { name: 'v3-public-preview', desc: 'Reveals Unified Onboarding UI for Cloud API onboarding.' },
-      { name: 'v3-alpha-1', desc: 'Alpha release with expanded Unified Onboarding for select partners/products.' },
-      { name: 'v4-public-preview (Testing only)', desc: 'Preview version of v4 for testing and feedback.' },
-      { name: 'v4', desc: 'Upcoming major release with enhanced features.' },
+      { name: 'v3', desc: 'Similar to v2 without forks. Adds app-only feature flag and removes proxy sharing.' },
+      { name: 'v2-public-preview', desc: 'Mirrors v2 but uses Unified Onboarding UI for non-forked flows.' },
+      { name: 'v2 (Recommended for production)', desc: 'Classic ES with multiple forks and legacy features support.' },
     ]}
+    docLink={{ href: 'https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/versions', label: 'View version documentation' }}
   />
 );
 
 const FEATURE_TYPE_TIP = (
   <TipSection
-    title="ES Feature Type Guide"
+    title="ES Feature Type"
     items={[
-      { name: 'whatsapp_business_app_onboarding', desc: 'Standard WhatsApp Business App onboarding flow.' },
-      { name: 'only_waba_sharing', desc: 'Restricts the flow to WABA (WhatsApp Business Account) sharing only.' },
-      { name: 'none (Default)', desc: 'No additional feature type or restricted sharing applied.' },
+      { name: 'whatsapp_business_app_onboarding', desc: 'Enables the WhatsApp Business App phone number onboarding custom flow.' },
+      { name: 'only_waba_sharing', desc: 'Enables the WhatsApp Business App phone number onboarding custom flow.' },
+      { name: 'marketing_messages_lite', desc: 'Enables the MM API for WhatsApp onboarding custom flow.' },
+      { name: 'none (Default)', desc: 'Leave blank to enable the default onboarding flow.' },
     ]}
+    footer="Indicates a flow or feature to enable."
+    docLink={{ href: 'https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/versions#overview-of-feature-availability', label: 'View feature availability documentation' }}
   />
 );
 
 const FEATURES_TIP = (
   <TipSection
-    title="ES Features Guide"
+    title="ES Features"
     items={[
-      { name: 'marketing_messages_lite', desc: 'Enables a lightweight version of marketing message features during onboarding.' },
+      { name: 'app_only_install', desc: 'Allows partners to access WABAs via API using a granular token (BISU), without creating a system user access token (SUAT).' },
+      { name: 'marketing_messages_lite', desc: 'Enables the MM API for WhatsApp onboarding flow.' },
     ]}
-    footer="Enter feature flags as comma-separated values or leave empty for default behavior."
+    footer="Indicates a flow or feature to enable. Select one or more, or leave empty for default behavior."
+    docLink={{ href: 'https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/versions#overview-of-feature-availability', label: 'View feature availability documentation' }}
   />
 );
 
@@ -278,6 +296,109 @@ function makePayloadBuilderTip(app_id: string | number) {
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>
       </div>
+    </div>
+  );
+}
+
+// Multi-select dropdown for Features — uses portal to escape overflow:hidden parent
+function FeaturesMultiSelect({
+  options,
+  selected,
+  onChange,
+}: {
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const [mounted, setMounted] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        triggerRef.current && !triggerRef.current.contains(e.target as Node) &&
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node)
+      ) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const reposition = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  };
+
+  const handleOpen = () => {
+    reposition();
+    setOpen(o => !o);
+  };
+
+  const toggle = (opt: string) => {
+    const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+    onChange(next);
+  };
+
+  const displayText = selected.length === 0
+    ? <span className="text-gray-300">None (default)</span>
+    : selected.map((s, i) => (
+        <span key={s} className="inline-flex items-center gap-0.5">
+          <span className="bg-blue-50 text-blue-700 text-[11px] font-medium px-1.5 py-0.5 rounded">{s}</span>
+          {i < selected.length - 1 && <span className="mx-0.5 text-gray-300">,</span>}
+        </span>
+      ));
+
+  const dropdownContent = (
+    <div
+      ref={dropdownRef}
+      style={dropdownStyle}
+      className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+    >
+      {options.length > 0 ? options.map(opt => (
+        <label
+          key={opt}
+          className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors"
+        >
+          <input
+            type="checkbox"
+            checked={selected.includes(opt)}
+            onChange={() => toggle(opt)}
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+          />
+          <span className="text-[13px] text-gray-800">{opt}</span>
+        </label>
+      )) : (
+        <div className="px-4 py-3">
+          <p className="text-[12px] text-gray-400">No feature options available for this version.</p>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleOpen}
+        className="w-full min-h-9 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[13px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors text-left flex items-center justify-between gap-2"
+      >
+        <span className="flex flex-wrap gap-1 items-center">{displayText}</span>
+        <svg className={cn('w-4 h-4 text-gray-400 flex-shrink-0 transition-transform', open && 'rotate-180')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+      </button>
+      {open && mounted && createPortal(dropdownContent, document.body)}
     </div>
   );
 }
@@ -374,7 +495,7 @@ function SelectField({ label, tip, children, ...props }: React.SelectHTMLAttribu
   );
 }
 
-export default function ClientDashboard({ app_id, app_name, user_id, tp_configs, public_es_versions, public_es_feature_types }) {
+export default function ClientDashboard({ app_id, app_name, user_id, tp_configs, public_es_versions, public_es_feature_types, public_es_feature_options }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -421,7 +542,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
   };
 
   const [esConfig, setEsConfig] = useState(JSON.stringify(computeEsConfig(esOptionFeatureType, esOptionConfig, esOptionFeatures, esOptionVersion), null, 2));
-  const [_bannerInfo, setBannerInfo] = useState<string>('');
+  const [bannerInfo, setBannerInfo] = useState<string>('');
   const [lastEventData, setLastEventData] = useState<any>(null);
 
   const recomputeJson = (ft, cfg, feats, ver) => {
@@ -461,7 +582,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
   const setCfg = (v) => { setEsOptionConfig(v); updateUrlParams({ tpConfig: v }); recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion); };
   const setReg = (v) => { if (v && esOptionFeatureType === 'only_waba_sharing') setFt(''); setEs_option_reg(v); };
   const setVer = (v) => { setEsOptionVersion(v); updateUrlParams({ esVersion: v }); recomputeJson(esOptionFeatureType, esOptionConfig, esOptionFeatures, v); };
-  const setFeats = (e) => { const f = e.target.value.split(',').map(s => s.trim()).filter(Boolean); setEsOptionFeatures(f); updateUrlParams({ esFeatures: f }); recomputeJson(esOptionFeatureType, esOptionConfig, f, esOptionVersion); };
+  const setFeats = (f: string[]) => { setEsOptionFeatures(f); updateUrlParams({ esFeatures: f }); recomputeJson(esOptionFeatureType, esOptionConfig, f, esOptionVersion); };
 
   const highlightJson = (json: string) => {
     return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
@@ -507,7 +628,7 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
 
               <div className="grid grid-cols-2 gap-4">
                 <SelectField label="Version" tip={VERSION_TIP} value={esOptionVersion} onChange={(e) => setVer(e.target.value)}>
-                  {public_es_versions.map((v) => (
+                  {public_es_versions.filter((v) => !['v3-alpha-1', 'v4-public-preview'].includes(v)).map((v) => (
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </SelectField>
@@ -523,12 +644,10 @@ export default function ClientDashboard({ app_id, app_name, user_id, tp_configs,
                 <label className="flex items-center text-[11px] font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
                   Features <HelpDot tip={FEATURES_TIP} />
                 </label>
-                <input
-                  type="text"
-                  value={esOptionFeatures.join(', ')}
+                <FeaturesMultiSelect
+                  options={public_es_feature_options?.[esOptionVersion] ?? []}
+                  selected={esOptionFeatures}
                   onChange={setFeats}
-                  placeholder="e.g. marketing_messages_lite"
-                  className="w-full h-9 px-3 bg-white border border-gray-200 rounded-lg text-[13px] text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors"
                 />
               </div>
             </div>

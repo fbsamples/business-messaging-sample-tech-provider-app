@@ -10,7 +10,7 @@ import publicConfig from "@/app/public_config";
 import { getAppDetails } from "@/app/api/be_utils";
 import { auth0 } from "@/lib/auth0";
 
-const { app_id, public_es_versions, public_es_feature_types } = publicConfig;
+const { app_id, public_es_versions, public_es_feature_types, public_es_feature_options } = publicConfig;
 
 export default async function Home() {
   // Fetch the user session
@@ -36,6 +36,7 @@ export default async function Home() {
         tp_configs={tp_configs}
         public_es_versions={public_es_versions}
         public_es_feature_types={public_es_feature_types}
+        public_es_feature_options={public_es_feature_options}
       />
     </SidebarLayout>
   );

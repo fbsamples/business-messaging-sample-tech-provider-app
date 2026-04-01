@@ -201,16 +201,19 @@ The allowed logout URLs should be the URL of your Vercel deployment. For example
 
 ### Meta setup
 
-You need a configured Meta app and business
+You need a configured Meta app and business.
 
 1. Create a Meta Developer account
 2. Create a new app
-3. Add the WhatsApp Product
+3. Add the **Connect with customers through WhatsApp** use case as shown in App dashboard when creating a new app
 4. Go through app review for the permissions you need (or add any other testers/developers to the app)
 5. Create a new Business Portfolio and connect it to the app
-6. Add the Vercel deployment domain to the app's valid callback urls
-7. Set the webhook callback URL to the Vercel deployment `domain/api/webhooks`
-8. Add Meta environment variables to Vercel deployment
+6. In **App Settings → Basic**, add your Vercel deployment domain to **App Domains**
+7. In the **Facebook Login for Business** product settings:
+   - Add your Vercel deployment URL to **Valid OAuth Redirect URIs** (e.g. `https://your-app.vercel.app/`)
+   - Add your Vercel deployment URL to **Allowed Domains for the JavaScript SDK**
+8. Set the webhook callback URL to the Vercel deployment `domain/api/webhooks`
+9. Add Meta environment variables to Vercel deployment
 
 ## License
 
