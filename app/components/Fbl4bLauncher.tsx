@@ -167,7 +167,7 @@ export default function FBL4BLauncher({
       window.removeEventListener('message', cb);
       stopPolling();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearEsState and stopPolling are stable refs; including them would cause unnecessary re-subscriptions
   }, [appId, onBannerInfoChange, onLastEventDataChange, onSaveToken]);
 
   return (

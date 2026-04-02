@@ -177,10 +177,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   useEffect(() => {
     const ablyClient = new Ably.Realtime({
       authCallback: async (_, callback) => {
-        fetch('/api/ably-auth')
-          .then((res) => res.json())
-          .then((tokenRequest) => callback(null, tokenRequest))
-          .catch((error) => callback(error, null));
+        try {
+          const response = await fetch('/api/ably-auth');
+          const tokenRequest = await response.json();
+          callback(null, tokenRequest);
+        } catch (error) {
+          callback(error, null);
+        }
       },
     });
 

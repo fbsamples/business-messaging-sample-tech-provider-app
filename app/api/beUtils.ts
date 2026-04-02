@@ -47,21 +47,19 @@ export async function getToken(code: string, appId: string): Promise<string> {
   console.log('getToken:', 'appId', appId);
   // OAuth token exchange requires client_secret as a query parameter per Meta's API spec
   const url = `/oauth/access_token?client_id=${appId}&redirect_uri=${redirectUri}&client_secret=${fbAppSecret}&code=${code}`;
-  return graphApiWrapperGet(url).then((data) => {
-    console.log('getTokenResponse:', 'appId', appId);
-    if (data.error) throw data.error;
-    return data.access_token;
-  });
+  const data = await graphApiWrapperGet(url);
+  console.log('getTokenResponse:', 'appId', appId);
+  if (data.error) throw data.error;
+  return data.access_token;
 }
 
 export async function subscribeWebhook(accessToken: string, wabaId: string): Promise<SubscribeWebhookResponse> {
   console.log('subscribeWebhook:', 'wabaId', wabaId);
   const url = `/${wabaId}/subscribed_apps`;
-  return graphApiWrapperPost(url, accessToken).then((data) => {
-    console.log('subscribeWebhookResponse:', 'wabaId', wabaId);
-    if (data.error) throw data.error;
-    return data;
-  });
+  const data = await graphApiWrapperPost(url, accessToken);
+  console.log('subscribeWebhookResponse:', 'wabaId', wabaId);
+  if (data.error) throw data.error;
+  return data;
 }
 
 async function saveWabaToken(
@@ -222,24 +220,22 @@ export async function registerNumber(phoneId: string, accessToken: string): Prom
   const { fbRegPin } = privateConfig;
   console.log('registerNumber:', 'phoneId', phoneId);
   const url = `/${phoneId}/register`;
-  return graphApiWrapperPost(url, accessToken, {
+  const data = await graphApiWrapperPost(url, accessToken, {
     messaging_product: 'whatsapp',
     pin: fbRegPin,
-  }).then((data) => {
-    console.log('registerNumberResponse:', 'phoneId', phoneId);
-    if (data.error) throw data.error;
-    return data;
   });
+  console.log('registerNumberResponse:', 'phoneId', phoneId);
+  if (data.error) throw data.error;
+  return data;
 }
 
 export async function deregisterNumber(phoneId: string, accessToken: string): Promise<DeregisterNumberResponse> {
   console.log('deregisterNumber:', 'phoneId', phoneId);
   const url = `/${phoneId}/deregister`;
-  return graphApiWrapperPost(url, accessToken).then((data) => {
-    console.log('deregisterNumberResponse:', 'phoneId', phoneId);
-    if (data.error) throw data.error;
-    return data;
-  });
+  const data = await graphApiWrapperPost(url, accessToken);
+  console.log('deregisterNumberResponse:', 'phoneId', phoneId);
+  if (data.error) throw data.error;
+  return data;
 }
 
 export async function send(
@@ -250,7 +246,7 @@ export async function send(
 ): Promise<SendMessageResponse> {
   console.log('send:', 'phoneNumberId', phoneNumberId);
   const url = `/${phoneNumberId}/messages`;
-  return graphApiWrapperPost(url, accessToken, {
+  const data = await graphApiWrapperPost(url, accessToken, {
     messaging_product: 'whatsapp',
     recipient_type: 'individual',
     to: destPhone,
@@ -259,10 +255,9 @@ export async function send(
       preview_url: false,
       body: messageContent,
     },
-  }).then((data) => {
-    if (data.error) throw data.error;
-    return data;
   });
+  if (data.error) throw data.error;
+  return data;
 }
 
 //////////////////////////////////////////////////////////
@@ -346,15 +341,14 @@ export async function getClientPhones(userId: string): Promise<ClientPhone[]> {
 }
 
 async function getPhoneDetails(phoneId: string, accessToken: string, wabaId: string): Promise<PhoneDetails> {
-  return graphApiWrapperGet(
+  const data = await graphApiWrapperGet(
     `/${phoneId}?fields=status,account_mode,certificate,is_on_biz_app,display_phone_number,code_verification_status`,
     accessToken,
-  ).then(async (data) => {
-    data.wabaId = wabaId;
-    const isAckBotEnabled = await getAckBotStatus(phoneId);
-    data.isAckBotEnabled = isAckBotEnabled;
-    return data;
-  });
+  );
+  data.wabaId = wabaId;
+  const isAckBotEnabled = await getAckBotStatus(phoneId);
+  data.isAckBotEnabled = isAckBotEnabled;
+  return data;
 }
 
 export async function getTokenForWaba(wabaId: string, userId: string): Promise<string> {
@@ -367,13 +361,13 @@ export async function getTokenForWaba(wabaId: string, userId: string): Promise<s
   return rows[0].access_token;
 }
 
-export async function getTokenForWabaByUser(waba_id: string, user_id: string, app_id: string): Promise<string | null> {
-    console.log('getTokenForWabaByUser:', 'waba_id', waba_id, 'user_id', user_id, 'app_id', app_id);
-    const { rows }: { rows: { access_token: string }[] } = await sql`
-        SELECT access_token FROM wabas
-        WHERE waba_id = ${waba_id} AND user_id = ${user_id} AND app_id = ${app_id}
-    `;
-    return rows[0]?.access_token || null;
+export async function getTokenForWabaByUser(wabaId: string, userId: string, appId: string): Promise<string | null> {
+  console.log('getTokenForWabaByUser:', 'wabaId', wabaId, 'userId', userId, 'appId', appId);
+  const { rows }: { rows: { access_token: string }[] } = await sql`
+    SELECT access_token FROM wabas
+    WHERE waba_id = ${wabaId} AND user_id = ${userId} AND app_id = ${appId}
+  `;
+  return rows[0]?.access_token || null;
 }
 
 //////////////////////////////////////////////////////////
@@ -403,90 +397,90 @@ export async function verifyCode(phoneId: string, accessToken: string, otpCode: 
 // Paid Messaging (Templates)
 //////////////////////////////////////////////////////////
 
-export async function getMessageTemplates(waba_id: string, access_token: string): Promise<MessageTemplate[]> {
-    console.log('getMessageTemplates:', 'waba_id', waba_id);
-    const url = `/${waba_id}/message_templates?fields=name,language,status,components,category&limit=1000`;
-    const data = await graphApiWrapperGet(url, access_token);
-    if (data.error) {
-        console.error('getMessageTemplates error:', JSON.stringify(data.error, null, 2));
-        throw new Error(data.error.message || 'Failed to fetch message templates');
-    }
-    const templates: MessageTemplate[] = data.data || [];
-    const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
-    return templates.filter((t: MessageTemplate) => sendableStatuses.includes(t.status));
+export async function getMessageTemplates(wabaId: string, accessToken: string): Promise<MessageTemplate[]> {
+  console.log('getMessageTemplates:', 'wabaId', wabaId);
+  const url = `/${wabaId}/message_templates?fields=name,language,status,components,category&limit=1000`;
+  const data = await graphApiWrapperGet(url, accessToken);
+  if (data.error) {
+    console.error('getMessageTemplates error:', data.error.message || data.error.code || 'unknown');
+    throw new Error(data.error.message || 'Failed to fetch message templates');
+  }
+  const templates: MessageTemplate[] = data.data || [];
+  const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
+  return templates.filter((t: MessageTemplate) => sendableStatuses.includes(t.status));
 }
 
 export async function sendTemplateMessage(
-    phone_number_id: string,
-    access_token: string,
-    to: string,
-    template_name: string,
-    template_language: string,
-    components: TemplateComponentParam[]
+  phoneNumberId: string,
+  accessToken: string,
+  to: string,
+  templateName: string,
+  templateLanguage: string,
+  components: TemplateComponentParam[]
 ): Promise<SendMessageResponse> {
-    console.log('sendTemplateMessage:', 'phone_number_id', phone_number_id, 'to', to, 'template_name', template_name);
-    const url = `/${phone_number_id}/messages`;
-    const data = await graphApiWrapperPost(url, access_token, {
-        messaging_product: "whatsapp",
-        to,
-        type: "template",
-        template: {
-            name: template_name,
-            language: { code: template_language },
-            components,
-        },
-    });
+  console.log('sendTemplateMessage:', 'phoneNumberId', phoneNumberId, 'to', to, 'templateName', templateName);
+  const url = `/${phoneNumberId}/messages`;
+  const data = await graphApiWrapperPost(url, accessToken, {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: templateLanguage },
+      components,
+    },
+  });
 
-    // graphApiWrapperPost does NOT throw on Graph API errors — it returns
-    // the error object as data. We must explicitly check and throw.
-    if (data.error) {
-        const err = new Error(data.error.message || 'Graph API error');
-        Object.assign(err, { status: 400, graphApiError: data.error });
-        throw err;
-    }
+  // graphApiWrapperPost does NOT throw on Graph API errors — it returns
+  // the error object as data. We must explicitly check and throw.
+  if (data.error) {
+    const err = new Error(data.error.message || 'Graph API error');
+    Object.assign(err, { status: 400, graphApiError: data.error });
+    throw err;
+  }
 
-    return data;
+  return data;
 }
 
 export async function getTemplateGatingData(
-    waba_id: string,
-    access_token: string
+  wabaId: string,
+  accessToken: string
 ): Promise<TemplateGatingData> {
-    let hasPaymentMethod = false;
-    let hasApprovedTemplates = false;
+  let hasPaymentMethod = false;
+  let hasApprovedTemplates = false;
 
-    try {
-        const [fundingData, templateData] = await Promise.all([
-            graphApiWrapperGet(`/${waba_id}?fields=primary_funding_id`, access_token)
-                .catch((): null => null),
-            graphApiWrapperGet(
-                `/${waba_id}/message_templates?fields=name,status&limit=100`,
-                access_token
-            ).catch((): null => null),
-        ]);
+  try {
+    const [fundingData, templateData] = await Promise.all([
+      graphApiWrapperGet(`/${wabaId}?fields=primary_funding_id`, accessToken)
+        .catch((err: unknown): null => { console.error('getTemplateGatingData: failed to fetch funding:', err); return null; }),
+      graphApiWrapperGet(
+        `/${wabaId}/message_templates?fields=name,status&limit=100`,
+        accessToken
+      ).catch((err: unknown): null => { console.error('getTemplateGatingData: failed to fetch templates:', err); return null; }),
+    ]);
 
-        console.log('getTemplateGatingData:', 'waba_id', waba_id,
-            'hasFunding', !!fundingData?.primary_funding_id,
-            'templateCount', templateData?.data?.length ?? 0);
+    console.log('getTemplateGatingData:', 'wabaId', wabaId,
+      'hasFunding', !!fundingData?.primary_funding_id,
+      'templateCount', templateData?.data?.length ?? 0);
 
-        if (fundingData && !fundingData.error) {
-            hasPaymentMethod = !!fundingData.primary_funding_id;
-        }
-
-        if (templateData && !templateData.error) {
-            const templates: { status: string }[] = templateData.data || [];
-            const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
-            hasApprovedTemplates = templates.some((t) => sendableStatuses.includes(t.status));
-        }
-
-        console.log('getTemplateGatingData result:', 'waba_id', waba_id,
-            'hasPaymentMethod', hasPaymentMethod,
-            'hasApprovedTemplates', hasApprovedTemplates);
-    } catch (err) {
-        console.error('getTemplateGatingData error:', 'waba_id', waba_id, err);
+    if (fundingData && !fundingData.error) {
+      hasPaymentMethod = !!fundingData.primary_funding_id;
     }
 
-    return { hasPaymentMethod, hasApprovedTemplates };
+    if (templateData && !templateData.error) {
+      const templates: { status: string }[] = templateData.data || [];
+      const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
+      hasApprovedTemplates = templates.some((t) => sendableStatuses.includes(t.status));
+    }
+
+    console.log('getTemplateGatingData result:', 'wabaId', wabaId,
+      'hasPaymentMethod', hasPaymentMethod,
+      'hasApprovedTemplates', hasApprovedTemplates);
+  } catch (err) {
+    console.error('getTemplateGatingData error:', 'wabaId', wabaId, err);
+  }
+
+  return { hasPaymentMethod, hasApprovedTemplates };
 }
 
 //////////////////////////////////////////////////////////
@@ -563,7 +557,7 @@ export async function getAdAccounts(userId: string): Promise<AdAccountWithDetail
 // Request Wrappers
 //////////////////////////////////////////////////////////
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
 async function graphApiWrapperGet(url: string, accessToken?: string): Promise<any> {
   console.log('graphApiWrapperGet:', 'path', url.split('?')[0]);
   const headers: Record<string, string> = {
@@ -572,29 +566,27 @@ async function graphApiWrapperGet(url: string, accessToken?: string): Promise<an
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
-  return fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
+  const response = await fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
     method: 'GET',
     headers,
     cache: 'no-store',
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      if (response.error) {
-        console.log(
-          'graphApiWrapperGetResponse:',
-          'path',
-          url.split('?')[0],
-          'error',
-          JSON.stringify(response.error, null, 2),
-        );
-      } else {
-        console.log('graphApiWrapperGetResponse:', 'path', url.split('?')[0]);
-      }
-      return response;
-    });
+  });
+  const data = await response.json();
+  if (data.error) {
+    console.log(
+      'graphApiWrapperGetResponse:',
+      'path',
+      url.split('?')[0],
+      'error',
+      data.error.message || data.error.code || 'unknown',
+    );
+  } else {
+    console.log('graphApiWrapperGetResponse:', 'path', url.split('?')[0]);
+  }
+  return data;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
 async function graphApiWrapperPost(
   url: string,
   accessToken: string,
@@ -607,29 +599,25 @@ async function graphApiWrapperPost(
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
-  return fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
+  const response = await fetch(`https://graph.facebook.com/${graphApiVersion}${url}`, {
     method: 'POST',
     headers,
     cache: 'no-store',
     body: JSON.stringify(params),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      if (data.error) {
-        console.log(
-          'graphApiWrapperPostError:',
-          'path',
-          url.split('?')[0],
-          'error',
-          JSON.stringify(data.error, null, 2),
-        );
-      } else {
-        console.log('graphApiWrapperPostResponse:', 'path', url.split('?')[0]);
-      }
-      return data;
-    });
+  });
+  const data = await response.json();
+  if (data.error) {
+    console.log(
+      'graphApiWrapperPostError:',
+      'path',
+      url.split('?')[0],
+      'error',
+      data.error.message || data.error.code || 'unknown',
+    );
+  } else {
+    console.log('graphApiWrapperPostResponse:', 'path', url.split('?')[0]);
+  }
+  return data;
 }
 
 //////////////////////////////////////////////////////////
@@ -685,10 +673,9 @@ export async function getAppDetails(appId: string): Promise<AppDetails> {
   const privateConfig = await getPrivateConfig();
   console.log('getAppDetails:', 'appId', appId);
   const url = `/${appId}?fields=client_config,name,logo_url,app_domains,app_type,company,link,config_ids`;
-  return graphApiWrapperGet(url, `${publicConfig.appId}|${privateConfig.fbAppSecret}`).then((data) => {
-    if (data.error) throw data.error;
-    return data;
-  });
+  const data = await graphApiWrapperGet(url, `${publicConfig.appId}|${privateConfig.fbAppSecret}`);
+  if (data.error) throw data.error;
+  return data;
 }
 
 //////////////////////////////////////////////////////////

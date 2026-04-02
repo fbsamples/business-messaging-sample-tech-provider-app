@@ -47,9 +47,9 @@ const navSections = [
         Icon: Webhook,
       },
       {
-        label: "Send Template Message",
-        description: "Send paid template messages via WhatsApp",
-        href: "/paid_messaging",
+        label: 'Send Template Message',
+        description: 'Send paid template messages via WhatsApp',
+        href: '/paid_messaging',
         Icon: Mail,
       },
     ],

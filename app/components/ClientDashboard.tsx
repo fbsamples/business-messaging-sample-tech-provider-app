@@ -706,7 +706,7 @@ export default function ClientDashboard({
   const handleLastEventDataChange = useCallback((data: unknown) => setLastEventData(data), []);
 
   const handleSaveToken = useCallback(
-    (code: string, sessionInfo: SessionInfo) => {
+    async (code: string, sessionInfo: SessionInfo) => {
       setBannerInfo('Setting up WABA...');
       const {
         waba_id: wabaId,
@@ -719,27 +719,28 @@ export default function ClientDashboard({
         instagram_account_ids: instagramAccountIds,
       } = sessionInfo.data;
       const filterIds = (ids: string[] | undefined) => (ids || []).filter((id) => id && id.trim() !== '');
-      feGraphApiPostWrapper('/api/token', {
-        code,
-        app_id: appId,
-        waba_id: wabaId,
-        waba_ids: wabaId ? [wabaId] : [],
-        business_id: businessId,
-        phone_number_id: phoneNumberId,
-        page_ids: pageIds || [],
-        ad_account_ids: adAccountIds || [],
-        dataset_ids: filterIds(datasetIds),
-        catalog_ids: filterIds(catalogIds),
-        instagram_account_ids: filterIds(instagramAccountIds),
-        es_option_reg: esOptionReg,
-        es_option_sub: esOptionSub,
-        user_id: userId,
-      })
-        .then((d) => setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n'))
-        .catch((err) => {
-          console.error('WABA setup failed:', err);
-          setBannerInfo('WABA Setup Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      try {
+        const d = await feGraphApiPostWrapper('/api/token', {
+          code,
+          app_id: appId,
+          waba_id: wabaId,
+          waba_ids: wabaId ? [wabaId] : [],
+          business_id: businessId,
+          phone_number_id: phoneNumberId,
+          page_ids: pageIds || [],
+          ad_account_ids: adAccountIds || [],
+          dataset_ids: filterIds(datasetIds),
+          catalog_ids: filterIds(catalogIds),
+          instagram_account_ids: filterIds(instagramAccountIds),
+          es_option_reg: esOptionReg,
+          es_option_sub: esOptionSub,
+          user_id: userId,
         });
+        setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n');
+      } catch (err) {
+        console.error('WABA setup failed:', err);
+        setBannerInfo('WABA Setup Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      }
     },
     [appId, esOptionReg, esOptionSub, userId],
   );

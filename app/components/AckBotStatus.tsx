@@ -23,79 +23,81 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
   useEffect(() => {
     if (showModal) {
       setError('');
-      fetch(`/api/phones/${phone.id}?phoneId=${phone.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const msg = data.ackBotMessage || '';
-          setAckMessage(msg);
-        })
-        .catch((err) => {
+      (async () => {
+        try {
+          const res = await fetch(`/api/phones/${phone.id}?phoneId=${phone.id}`);
+          const data = await res.json();
+          setAckMessage(data.ackBotMessage || '');
+        } catch (err) {
           console.error('Failed to load ackbot message:', err);
           setError('Failed to load AckBot message');
-        });
+        }
+      })();
     }
   }, [showModal, phone.id]);
 
-  function handleToggle() {
+  async function handleToggle() {
     if (isAckBotEnabled) {
       // Disabling — just turn off, no modal needed
       setIsLoading(true);
       setError('');
-      feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
-        isAckBotEnabled: false,
-        phoneId: phone.id,
-      })
-        .then(() => setIsAckBotEnabled(false))
-        .catch((err) => {
-          console.error('Failed to toggle AckBot:', err);
-          setError('Failed to disable AckBot');
-        })
-        .finally(() => setIsLoading(false));
+      try {
+        await feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
+          isAckBotEnabled: false,
+          phoneId: phone.id,
+        });
+        setIsAckBotEnabled(false);
+      } catch (err) {
+        console.error('Failed to toggle AckBot:', err);
+        setError('Failed to disable AckBot');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       // Enabling — show modal to configure message
       setShowModal(true);
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     setIsLoading(true);
     setError('');
-    feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
-      isAckBotEnabled: true,
-      phoneId: phone.id,
-      ackBotMessage: ackMessage,
-    })
-      .then(() => {
-        setIsAckBotEnabled(true);
-        setShowModal(false);
-      })
-      .catch((err) => {
-        console.error('Failed to save AckBot config:', err);
-        setError('Failed to save AckBot configuration');
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      await feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
+        isAckBotEnabled: true,
+        phoneId: phone.id,
+        ackBotMessage: ackMessage,
+      });
+      setIsAckBotEnabled(true);
+      setShowModal(false);
+    } catch (err) {
+      console.error('Failed to save AckBot config:', err);
+      setError('Failed to save AckBot configuration');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleEditMessage() {
     setShowModal(true);
   }
 
-  function handleUpdateMessage() {
+  async function handleUpdateMessage() {
     setIsLoading(true);
     setError('');
-    feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
-      isAckBotEnabled: true,
-      phoneId: phone.id,
-      ackBotMessage: ackMessage,
-    })
-      .then(() => {
-        setShowModal(false);
-      })
-      .catch((err) => {
-        console.error('Failed to update AckBot message:', err);
-        setError('Failed to update message');
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      await feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
+        isAckBotEnabled: true,
+        phoneId: phone.id,
+        ackBotMessage: ackMessage,
+      });
+      setShowModal(false);
+    } catch (err) {
+      console.error('Failed to update AckBot message:', err);
+      setError('Failed to update message');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const statusColor = isAckBotEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600';

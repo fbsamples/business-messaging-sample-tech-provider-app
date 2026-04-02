@@ -103,15 +103,14 @@ function formatErrors(data: (OperationStatus | OperationStatus[])[]): string {
  * @param label - Label for the operation
  * @returns Promise that resolves to status object
  */
-function wrapFn(promise: Promise<unknown>, label: string): Promise<OperationStatus[]> {
-  return promise
-    .then((data) => {
-      return [{ fun: label, status: 'completed', result: data, error: null as unknown }];
-    })
-    .catch((err: unknown) => {
-      console.error(err);
-      return [{ fun: label, status: 'failed', result: null as unknown, error: err }];
-    });
+async function wrapFn(promise: Promise<unknown>, label: string): Promise<OperationStatus[]> {
+  try {
+    const data = await promise;
+    return [{ fun: label, status: 'completed', result: data, error: null as unknown }];
+  } catch (err: unknown) {
+    console.error(err);
+    return [{ fun: label, status: 'failed', result: null as unknown, error: err }];
+  }
 }
 
 /**

@@ -10,7 +10,7 @@ import Script from 'next/script';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 
-import './globals.css';
+import '@/app/globals.css';
 import ErrorBoundary from '@/app/components/ErrorBoundary';
 import MissingEnvVars from '@/app/components/MissingEnvVars';
 import { getMissingEnvVars, type MissingEnvVarInfo } from '@/app/envChecker';

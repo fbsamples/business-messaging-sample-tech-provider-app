@@ -28,7 +28,7 @@ export default function PhoneStatus({
     if (externalStatus && externalStatus !== status) {
       setStatus(externalStatus);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the parent passes a new externalStatus, not when local status changes
   }, [externalStatus]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -58,25 +58,23 @@ export default function PhoneStatus({
     tooltipMsg = `Status: ${status}`;
   }
 
-  const onClickHandlerWrapper = () => {
+  const onClickHandlerWrapper = async () => {
     if (status === 'CONNECTED') {
       setIsLoading(true);
       setErrorMsg('');
-      feGraphApiPostWrapper(`/api/deregister`, {
-        wabaId: phone.wabaId,
-        phoneId: phone.id,
-      })
-        .then(() => {
-          setStatus('DISCONNECTED');
-          onStatusChange?.('DISCONNECTED');
-        })
-        .catch((error) => {
-          console.error('Failed to deregister phone:', error);
-          setErrorMsg('Failed to disconnect');
-        })
-        .finally(() => {
-          setIsLoading(false);
+      try {
+        await feGraphApiPostWrapper('/api/deregister', {
+          wabaId: phone.wabaId,
+          phoneId: phone.id,
         });
+        setStatus('DISCONNECTED');
+        onStatusChange?.('DISCONNECTED');
+      } catch (error) {
+        console.error('Failed to deregister phone:', error);
+        setErrorMsg('Failed to disconnect');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       onRegisterClick?.();
     }

@@ -48,39 +48,44 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
   if (!appId || typeof appId !== 'string') {
     return NextResponse.json({ error: 'Missing or invalid app_id' }, { status: 400 });
   }
+  if (!businessId || typeof businessId !== 'string') {
+    return NextResponse.json({ error: 'Missing or invalid business_id' }, { status: 400 });
+  }
 
   try {
-    const result = await Promise.all([
-      wrapFn(getToken(code, appId), 'getToken').then(([{ fun, status, result, error }]) => {
-        if (status !== 'completed' || !result) {
-          throw new Error(`getToken ${status}: ${error}`);
-        }
-        const accessToken = result as string;
-        return Promise.all([
-          wrapFn(
-            saveTokens(
-              userId,
-              appId,
-              businessId,
-              pageIds,
-              adAccountIds,
-              wabaIds,
-              datasetIds,
-              catalogIds,
-              instagramAccountIds,
-              accessToken,
-            ),
-            'saveTokens',
-          ),
-          esOptionReg && phoneNumberId
-            ? wrapFn(registerNumber(phoneNumberId, accessToken), 'registerNumber')
-            : skipProm('registerNumber'),
-          esOptionSub
-            ? wrapFn(subscribeWebhook(accessToken, wabaId), 'subscribeWebhook')
-            : skipProm('subscribeWebhook'),
-        ]).then((response) => [{ fun, status, result: '***', error }, response]);
-      }),
+    const tokenResult = await wrapFn(getToken(code, appId), 'getToken');
+    const [{ fun, status, result: tokenValue, error: tokenError }] = tokenResult;
+
+    if (status !== 'completed' || !tokenValue) {
+      throw new Error(`getToken ${status}: ${tokenError}`);
+    }
+
+    const accessToken = tokenValue as string;
+    const operations = await Promise.all([
+      wrapFn(
+        saveTokens(
+          userId,
+          appId,
+          businessId,
+          pageIds,
+          adAccountIds,
+          wabaIds,
+          datasetIds,
+          catalogIds,
+          instagramAccountIds,
+          accessToken,
+        ),
+        'saveTokens',
+      ),
+      esOptionReg && phoneNumberId
+        ? wrapFn(registerNumber(phoneNumberId, accessToken), 'registerNumber')
+        : skipProm('registerNumber'),
+      esOptionSub
+        ? wrapFn(subscribeWebhook(accessToken, wabaId), 'subscribeWebhook')
+        : skipProm('subscribeWebhook'),
     ]);
+
+    const result = [[{ fun, status, result: '***', error: tokenError }, operations]];
     return NextResponse.json(result);
   } catch (error) {
     console.error('Failed to exchange token:', error);

@@ -14,6 +14,9 @@ export const POST = withAuth(async function updateAckBotStatus(request: NextRequ
     const { isAckBotEnabled, phoneId, ackBotMessage } = body;
     const userId = session.user.email;
 
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing user email in session' }, { status: 401 });
+    }
     if (!phoneId || typeof phoneId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid phoneId' }, { status: 400 });
     }
@@ -21,7 +24,7 @@ export const POST = withAuth(async function updateAckBotStatus(request: NextRequ
       return NextResponse.json({ error: 'Missing or invalid isAckBotEnabled' }, { status: 400 });
     }
 
-    await setAckBotStatus(phoneId, isAckBotEnabled, userId!, ackBotMessage);
+    await setAckBotStatus(phoneId, isAckBotEnabled, userId, ackBotMessage);
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
     console.error('Failed to update ack bot status:', error);
