@@ -273,8 +273,8 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
         >
           <option value="">Select a WABA...</option>
-          {wabas.map(waba => (
-            <option key={waba.id} value={waba.id}>
+          {wabas.map((waba, index) => (
+            <option key={`${waba.id}-${index}`} value={waba.id}>
               {waba.name || waba.id}
             </option>
           ))}
