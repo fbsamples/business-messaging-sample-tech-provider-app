@@ -83,7 +83,7 @@ function WebhookRow({ webhook, index }: { webhook: WebhookEntry; index: number }
   );
 }
 
-export default function LiveWebhooks() {
+export default function LiveWebhooks({ appId }: { appId: string }) {
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -141,6 +141,19 @@ export default function LiveWebhooks() {
           <p className="text-sm font-medium text-gray-500">No webhook events yet</p>
           <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
             Events will appear here in real time as they are received by your app.
+          </p>
+          <p className="text-[10px] text-gray-300 mt-3 max-w-md mx-auto">
+            Go to{' '}
+            <a
+              href={`https://developers.facebook.com/apps/${appId}/whatsapp-business/wa-configurations/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-400 transition-colors"
+            >
+              WhatsApp Configuration ↗
+            </a>
+            {' '}and set the Callback URL to{' '}
+            <code className="text-[10px] bg-gray-50 px-1 rounded font-mono whitespace-nowrap">your-domain/api/webhooks</code>
           </p>
         </div>
       ) : (

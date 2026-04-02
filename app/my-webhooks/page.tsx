@@ -15,7 +15,8 @@ export default async function MyWebhooks() {
   if (!session) return <LoggedOut />;
 
   const userId = session.user.email;
-  const appDetails = await getAppDetails(publicConfig.appId);
+  const appId = publicConfig.appId;
+  const appDetails = await getAppDetails(appId);
   const appName = appDetails.name;
   const logoUrl = appDetails.logo_url;
 
@@ -28,7 +29,8 @@ export default async function MyWebhooks() {
             Real-time debug view of all incoming webhook events for your app.
           </p>
         </div>
-        <LiveWebhooks />
+
+        <LiveWebhooks appId={appId ?? ''} />
       </div>
     </SidebarLayout>
   );

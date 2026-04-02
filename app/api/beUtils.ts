@@ -156,9 +156,9 @@ async function saveInstagramAccountToken(
   userId: string,
   businessId: string,
 ): Promise<SqlResult> {
-    instagramAccountId,
-    appId,
-    businessId,
+  instagramAccountId,
+appId,
+businessId,
   return await sql`
         INSERT INTO instagram_accounts (user_id, app_id, instagram_account_id, access_token, business_id, last_updated)
         VALUES (${userId}, ${appId}, ${instagramAccountId}, ${accessToken}, ${businessId}, current_timestamp)
@@ -390,7 +390,14 @@ export async function requestCode(phoneId: string, accessToken: string): Promise
 export async function verifyCode(phoneId: string, accessToken: string, otpCode: string): Promise<VerifyCodeResponse> {
   console.log('verifyCode:', 'phoneId', phoneId);
   const url = `/${phoneId}/verify_code?code=${otpCode}`;
-  return graphApiWrapperPost(url, accessToken);
+  return graphApiWrapperPost(url, accessToken).then((data) => {
+    // graphApiWrapperPost never throws — it returns the raw response including errors.
+    // We must explicitly check and throw so the /api/verify-code route catches the
+    // error and returns a 4xx, keeping the modal on P1 (verify step) instead of
+    // advancing to P2 (register step) on a wrong OTP.
+    if (data.error) throw data.error;
+    return data;
+  });
 }
 
 //////////////////////////////////////////////////////////

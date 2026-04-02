@@ -35,6 +35,9 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
   // Global chat metadata: { [phone_number_id]: { [chat_id]: ChatMeta } }
   const [allChats, setAllChats] = useState<Record<string, Record<string, ChatMeta>>>({});
+  // Unread tracking: { [phone_number_id]: Set<chat_id> }
+  // A chat is unread if an incoming message arrived while it was not the active view.
+  const [unreadChats, setUnreadChats] = useState<Record<string, Set<string>>>({});
 
   // OTP modal state
   const [otpModalPhone, setOtpModalPhone] = useState<PhoneDetails | null>(null);
@@ -55,10 +58,42 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     setPhoneStatuses((prev) => ({ ...prev, [phoneId]: newStatus }));
   }, []);
 
+  // Mark a chat as unread (used when a message arrives for a non-active chat)
+  const markUnread = useCallback((phoneId: string, chatId: string) => {
+    setUnreadChats((prev) => {
+      const phoneSet = new Set(prev[phoneId] ?? []);
+      phoneSet.add(chatId);
+      return { ...prev, [phoneId]: phoneSet };
+    });
+  }, []);
+
+  // Clear unread status for a chat when the user opens it
+  const markRead = useCallback((phoneId: string, chatId: string) => {
+    setUnreadChats((prev) => {
+      const phoneSet = new Set(prev[phoneId] ?? []);
+      phoneSet.delete(chatId);
+      return { ...prev, [phoneId]: phoneSet };
+    });
+  }, []);
+
+  // Reset selected chat when switching phones — prevents a chat from a previous
+  // phone appearing in the conversation pane of the newly selected phone.
+  const prevSelectedPhoneIdRef = useRef<string | null>(selectedPhone?.id ?? null);
+  useEffect(() => {
+    if (selectedPhone?.id !== prevSelectedPhoneIdRef.current) {
+      setSelectedChatId(null);
+      prevSelectedPhoneIdRef.current = selectedPhone?.id ?? null;
+    }
+  }, [selectedPhone?.id]);
+
   // Refs for Ably callback access to latest state without re-subscribing
+  const phonesRef = useRef(phones);
   const selectedPhoneRef = useRef(selectedPhone);
   const selectedChatIdRef = useRef(selectedChatId);
   const phoneStatusesRef = useRef(phoneStatuses);
+  useEffect(() => {
+    phonesRef.current = phones;
+  }, [phones]);
   useEffect(() => {
     selectedPhoneRef.current = selectedPhone;
   }, [selectedPhone]);
@@ -68,6 +103,12 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   useEffect(() => {
     selectedChatIdRef.current = selectedChatId;
   }, [selectedChatId]);
+  // Auto-clear unread when a chat becomes visible (handles both manual click and auto-open)
+  useEffect(() => {
+    if (selectedPhone && selectedChatId) {
+      markRead(selectedPhone.id, selectedChatId);
+    }
+  }, [selectedPhone?.id, selectedChatId, markRead]);
 
   // State management functions
   const addMessage = useCallback((phoneId: string, chatId: string, message: Message) => {
@@ -100,12 +141,16 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   // Send message handler
   const handleSendMessage = useCallback(
     (phone: PhoneDetails, chatId: string, text: string) => {
-      addMessage(phone.id, chatId, {
-        text,
-        direction: 'outgoing',
-        timestamp: Date.now(),
-      });
-      addChat(phone.id, chatId, allChats[phone.id]?.[chatId]?.displayName ?? chatId, text);
+      // Only update local inbox state for CONNECTED phones — prevents chats from
+      // leaking into the inbox of phones that are Pending or Disconnected.
+      if (phoneStatusesRef.current[phone.id] === 'CONNECTED') {
+        addMessage(phone.id, chatId, {
+          text,
+          direction: 'outgoing',
+          timestamp: Date.now(),
+        });
+        addChat(phone.id, chatId, allChats[phone.id]?.[chatId]?.displayName ?? chatId, text);
+      }
 
       fetch('/api/send', {
         method: 'POST',
@@ -160,8 +205,15 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       if (text) {
         const phoneId = message.data.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
 
+        // Guard: drop messages for phones not in this user's list.
+        // Read from ref so the check always uses the latest phones prop.
+        const ownedPhoneIds = new Set(phonesRef.current.map((p) => p.id));
+        if (!phoneId || !ownedPhoneIds.has(phoneId)) {
+          return;
+        }
+
         // Drop messages for disconnected phones
-        if (phoneId && phoneStatusesRef.current[phoneId] !== 'CONNECTED') {
+        if (phoneStatusesRef.current[phoneId] !== 'CONNECTED') {
           return;
         }
 
@@ -180,7 +232,14 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
         if (!isAckBot) {
           addChat(phoneId, consumerPhone, displayName ?? consumerPhone, text);
         }
-
+        // Mark as unread if this chat is not currently open.
+        // A chat is "open" when: the phone is selected AND the chat is selected.
+        const isCurrentlyViewing =
+          phoneId === selectedPhoneRef.current?.id &&
+          consumerPhone === selectedChatIdRef.current;
+        if (!isAckBot && !isCurrentlyViewing) {
+          markUnread(phoneId, consumerPhone);
+        }
         // Auto-select first incoming chat if no chat is selected
         if (phoneId === selectedPhoneRef.current?.id && !selectedChatIdRef.current) {
           setSelectedChatId(consumerPhone);
@@ -189,9 +248,10 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     });
 
     return () => {
+      channel.unsubscribe();
       ablyClient.close();
     };
-  }, [addMessage, addChat]);
+  }, [addMessage, addChat, markUnread]);
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-gray-50">
@@ -338,35 +398,56 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                     </div>
                     {Object.entries(allChats[selectedPhone.id] ?? {})
                       .sort(([, a], [, b]) => (b.lastTimestamp ?? 0) - (a.lastTimestamp ?? 0))
-                      .map(([chatId, chat]) => (
-                        <button
-                          key={chatId}
-                          onClick={() => setSelectedChatId(chatId)}
-                          className={cn(
-                            'w-full text-left flex items-center gap-3 px-4 py-3 border-b border-gray-50 transition-colors',
-                            selectedChatId === chatId ? 'bg-indigo-50' : 'hover:bg-gray-50',
-                          )}
-                        >
-                          <div
+                      .map(([chatId, chat]) => {
+                        const isUnread = unreadChats[selectedPhone.id]?.has(chatId) ?? false;
+                        return (
+                          <button
+                            key={chatId}
+                            onClick={() => {
+                              setSelectedChatId(chatId);
+                              markRead(selectedPhone.id, chatId);
+                            }}
                             className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0',
-                              selectedChatId === chatId ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500',
+                              'w-full text-left flex items-center gap-3 px-4 py-3 border-b border-gray-50 transition-colors',
+                              selectedChatId === chatId ? 'bg-indigo-50' : 'hover:bg-gray-50',
                             )}
                           >
-                            {chat.displayName.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className={cn('text-sm font-medium truncate', selectedChatId === chatId ? 'text-indigo-700' : 'text-gray-900')}
-                            >
-                              {chat.displayName}
+                            <div className="relative flex-shrink-0">
+                              <div
+                                className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold',
+                                  selectedChatId === chatId ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500',
+                                )}
+                              >
+                                {chat.displayName.slice(0, 2).toUpperCase()}
+                              </div>
+                              {isUnread && (
+                                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-2 ring-white" />
+                              )}
                             </div>
-                            {chat.lastMessage && (
-                              <div className="text-xs text-gray-400 truncate mt-0.5">{chat.lastMessage}</div>
+                            <div className="flex-1 min-w-0">
+                              <div
+                                className={cn(
+                                  'text-sm truncate',
+                                  selectedChatId === chatId ? 'font-medium text-indigo-700' :
+                                  isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700',
+                                )}
+                              >
+                                {chat.displayName}
+                              </div>
+                              {chat.lastMessage && (
+                                <div className={cn(
+                                  'text-xs truncate mt-0.5',
+                                  isUnread ? 'text-gray-600 font-medium' : 'text-gray-400',
+                                )}>{chat.lastMessage}</div>
+                              )}
+                            </div>
+                            {isUnread && (
+                              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500" />
                             )}
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        );
+                      })}
                   </div>
                 )}
 

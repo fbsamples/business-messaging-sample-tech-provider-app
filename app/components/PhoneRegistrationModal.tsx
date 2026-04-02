@@ -63,6 +63,16 @@ export default function PhoneRegistrationModal({
     return () => clearTimeout(timer);
   }, [otpExpiry]);
 
+  // Auto-submit only when all 6 slots contain a valid digit (0-9)
+  const allDigitsFilled = digits.every((d) => /^\d$/.test(d));
+
+  useEffect(() => {
+    if (step === 'verify' && allDigitsFilled && !isLoading && !otpExpired && attempts > 0) {
+      handleVerifyCode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [digits]);
+
   function handleDigitChange(index: number, value: string) {
     if (!/^\d*$/.test(value)) return;
     const newDigits = [...digits];
@@ -100,7 +110,8 @@ export default function PhoneRegistrationModal({
 
   async function handleVerifyCode() {
     const otpCode = digits.join('');
-    if (otpCode.length !== 6) return;
+    // Strictly require exactly 6 numeric digits — reject if any slot is empty or non-numeric
+    if (otpCode.length !== 6 || !/^\d{6}$/.test(otpCode)) return;
     setIsLoading(true);
     setError(null);
     try {

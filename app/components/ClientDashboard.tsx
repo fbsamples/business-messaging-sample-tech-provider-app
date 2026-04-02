@@ -8,8 +8,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams, useRouter } from 'next/navigation';
-
-import { Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info, CheckCircle2, Circle, Server } from 'lucide-react';
+import { Settings2, Code2, Rocket, ChevronRight, ExternalLink, Info, CheckCircle2, Circle, Server, HelpCircle } from 'lucide-react';
 
 import { formatErrors } from '@/app/errorformat';
 import { feGraphApiPostWrapper } from '@/app/feUtils';
@@ -973,6 +972,28 @@ export default function ClientDashboard({
                 onSaveToken={handleSaveToken}
                 onQuickLaunch={undefined}
               />
+              {/* Facebook Login for Business settings reminder */}
+              <p className="mt-2 text-[11px] text-gray-400 leading-relaxed">
+                <span className="text-gray-500">Before launching, add your domain in </span>
+                <a
+                  href={`https://developers.facebook.com/apps/${appId}/business-login/settings/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-500 transition-colors"
+                >
+                  Facebook Login for Business → Settings
+                </a>
+                {' '}
+                <RichTip content={
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-[12px] font-semibold text-gray-800">What to add in Settings</p>
+                    <p className="text-[11px] text-gray-500"><span className="font-medium text-gray-700">Valid OAuth Redirect URIs</span> &mdash; your app&apos;s domain</p>
+                    <p className="text-[11px] text-gray-500"><span className="font-medium text-gray-700">Allowed Domains for the JavaScript SDK</span> &mdash; your app&apos;s domain</p>
+                  </div>
+                }>
+                  <HelpCircle className="inline w-3 h-3 text-gray-400 cursor-help" />
+                </RichTip>
+              </p>
             </SectionCard>
 
             <SectionCard icon={<Code2 className="w-4 h-4" />} title="Response" subtitle="Results from the signup flow">
