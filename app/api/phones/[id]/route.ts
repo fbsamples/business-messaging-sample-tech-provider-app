@@ -8,10 +8,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { setAckBotStatus, getAckBotMessage } from '@/app/api/beUtils';
 import { withAuth } from '@/app/api/authWrapper';
 
-export const POST = withAuth(async function updateAckBotStatus(request: NextRequest, _session) {
+export const POST = withAuth(async function updateAckBotStatus(request: NextRequest, session) {
   try {
     const body = await request.json();
     const { isAckBotEnabled, phoneId, ackBotMessage } = body;
+    const userId = session.user.email;
 
     if (!phoneId || typeof phoneId !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid phoneId' }, { status: 400 });
@@ -20,7 +21,7 @@ export const POST = withAuth(async function updateAckBotStatus(request: NextRequ
       return NextResponse.json({ error: 'Missing or invalid isAckBotEnabled' }, { status: 400 });
     }
 
-    await setAckBotStatus(phoneId, isAckBotEnabled, ackBotMessage);
+    await setAckBotStatus(phoneId, isAckBotEnabled, userId!, ackBotMessage);
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
     console.error('Failed to update ack bot status:', error);
@@ -28,13 +29,14 @@ export const POST = withAuth(async function updateAckBotStatus(request: NextRequ
   }
 });
 
-export const GET = withAuth(async function getPhoneConfig(request: NextRequest) {
+export const GET = withAuth(async function getPhoneConfig(request: NextRequest, session) {
   try {
     const phoneId = request.nextUrl.searchParams.get('phoneId');
     if (!phoneId) {
       return NextResponse.json({ error: 'phoneId is required' }, { status: 400 });
     }
-    const message = await getAckBotMessage(phoneId);
+    const userId = session.user.email;
+    const message = await getAckBotMessage(phoneId, userId);
     return NextResponse.json({ ackBotMessage: message });
   } catch (error) {
     console.error('Failed to get phone config:', error);

@@ -631,7 +631,6 @@ async function graphApiWrapperPost(
 // SQL
 //////////////////////////////////////////////////////////
 
-// Note: phones table does not have a user_id column, so this query is not user-scoped
 export async function getAckBotStatus(phoneId: string): Promise<boolean> {
   const { rows }: { rows: { is_ack_bot_enabled: string }[] } =
     await sql`SELECT is_ack_bot_enabled FROM phones WHERE phone_id = ${phoneId}`;
@@ -639,7 +638,13 @@ export async function getAckBotStatus(phoneId: string): Promise<boolean> {
   return isAckBotEnabled;
 }
 
-export async function getAckBotMessage(phoneId: string): Promise<string> {
+export async function getAckBotMessage(phoneId: string, userId?: string): Promise<string> {
+  if (userId) {
+    const { rows }: { rows: { ack_bot_message?: string }[] } =
+      await sql`SELECT ack_bot_message FROM phones WHERE phone_id = ${phoneId} AND user_id = ${userId}`;
+    return rows[0]?.ack_bot_message || '';
+  }
+  // Webhook context: no user session, authenticated by X-Hub-Signature-256
   const { rows }: { rows: { ack_bot_message?: string }[] } =
     await sql`SELECT ack_bot_message FROM phones WHERE phone_id = ${phoneId}`;
   return rows[0]?.ack_bot_message || '';
@@ -648,21 +653,22 @@ export async function getAckBotMessage(phoneId: string): Promise<string> {
 export async function setAckBotStatus(
   phoneId: string,
   isAckBotEnabled: boolean,
+  userId: string,
   ackBotMessage?: string,
 ): Promise<SqlResult> {
   if (ackBotMessage !== undefined) {
     return await sql`
-            INSERT INTO phones (phone_id, is_ack_bot_enabled, ack_bot_message)
-            VALUES (${phoneId}, ${isAckBotEnabled}, ${ackBotMessage})
+            INSERT INTO phones (phone_id, is_ack_bot_enabled, ack_bot_message, user_id)
+            VALUES (${phoneId}, ${isAckBotEnabled}, ${ackBotMessage}, ${userId})
             ON CONFLICT (phone_id)
-            DO UPDATE SET is_ack_bot_enabled = EXCLUDED.is_ack_bot_enabled, ack_bot_message = EXCLUDED.ack_bot_message
+            DO UPDATE SET is_ack_bot_enabled = EXCLUDED.is_ack_bot_enabled, ack_bot_message = EXCLUDED.ack_bot_message, user_id = EXCLUDED.user_id
         `;
   }
   return await sql`
-        INSERT INTO phones (phone_id, is_ack_bot_enabled)
-        VALUES (${phoneId}, ${isAckBotEnabled})
+        INSERT INTO phones (phone_id, is_ack_bot_enabled, user_id)
+        VALUES (${phoneId}, ${isAckBotEnabled}, ${userId})
         ON CONFLICT (phone_id)
-        DO UPDATE SET is_ack_bot_enabled = EXCLUDED.is_ack_bot_enabled
+        DO UPDATE SET is_ack_bot_enabled = EXCLUDED.is_ack_bot_enabled, user_id = EXCLUDED.user_id
     `;
 }
 

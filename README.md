@@ -102,6 +102,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_app_page_key ON pages (user_id, app_id, p
 CREATE TABLE IF NOT EXISTS phones (
   key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   phone_id BIGINT NOT NULL,
+  user_id VARCHAR,
   is_ack_bot_enabled BOOLEAN DEFAULT FALSE,
   ack_bot_message TEXT DEFAULT '',
   last_updated TIMESTAMP,
