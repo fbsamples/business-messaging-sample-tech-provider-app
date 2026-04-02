@@ -22,6 +22,7 @@ export default function PhoneStatus({
   externalStatus?: string;
 }) {
   const [status, setStatus] = useState(phone.status);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (externalStatus && externalStatus !== status) {
@@ -42,7 +43,9 @@ export default function PhoneStatus({
 
   let tooltipMsg = null;
 
-  if (status === 'CONNECTED') {
+  if (errorMsg) {
+    tooltipMsg = errorMsg;
+  } else if (status === 'CONNECTED') {
     tooltipMsg = 'Click to disconnect';
   } else if (phone.code_verification_status === 'NOT_VERIFIED') {
     // Phone has never completed OTP verification — must verify first
@@ -58,6 +61,7 @@ export default function PhoneStatus({
   const onClickHandlerWrapper = () => {
     if (status === 'CONNECTED') {
       setIsLoading(true);
+      setErrorMsg('');
       feGraphApiPostWrapper(`/api/deregister`, {
         wabaId: phone.wabaId,
         phoneId: phone.id,
@@ -68,6 +72,7 @@ export default function PhoneStatus({
         })
         .catch((error) => {
           console.error('Failed to deregister phone:', error);
+          setErrorMsg('Failed to disconnect');
         })
         .finally(() => {
           setIsLoading(false);

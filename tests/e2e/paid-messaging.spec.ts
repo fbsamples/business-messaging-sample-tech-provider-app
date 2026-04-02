@@ -97,7 +97,7 @@ test.describe("Paid Messaging Page", () => {
         { timeout: 5000 }
       );
       await wabaSelect.selectOption("waba_001");
-      const req = await templateRequest.catch(() => null);
+      const req = await templateRequest.catch((): null => null);
       if (req) {
         expect(req.url()).toContain("waba_id=waba_001");
       }

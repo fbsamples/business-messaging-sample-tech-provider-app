@@ -734,7 +734,12 @@ export default function ClientDashboard({
         es_option_reg: esOptionReg,
         es_option_sub: esOptionSub,
         user_id: userId,
-      }).then((d) => setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n'));
+      })
+        .then((d) => setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n'))
+        .catch((err) => {
+          console.error('WABA setup failed:', err);
+          setBannerInfo('WABA Setup Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        });
     },
     [appId, esOptionReg, esOptionSub, userId],
   );

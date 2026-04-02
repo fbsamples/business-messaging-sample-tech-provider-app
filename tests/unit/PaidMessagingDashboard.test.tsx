@@ -15,8 +15,8 @@ const mockWabas: WabaClientData[] = [
     name: "Test WABA 1",
     phone_numbers: {
       data: [
-        { id: "phone_001", display_phone_number: "+1 555-0001", verified_name: "Test Business" },
-        { id: "phone_002", display_phone_number: "+1 555-0002", verified_name: "Test Business 2" },
+        { id: "phone_001", display_phone_number: "+1 555-0001", verified_name: "Test Business", quality_rating: "GREEN", platform_type: "CLOUD_API", throughput: { level: "STANDARD" }, last_onboarded_time: "2024-01-01" },
+        { id: "phone_002", display_phone_number: "+1 555-0002", verified_name: "Test Business 2", quality_rating: "GREEN", platform_type: "CLOUD_API", throughput: { level: "STANDARD" }, last_onboarded_time: "2024-01-01" },
       ],
     },
   },

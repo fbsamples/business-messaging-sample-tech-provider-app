@@ -156,9 +156,8 @@ async function saveInstagramAccountToken(
   userId: string,
   businessId: string,
 ): Promise<SqlResult> {
-  instagramAccountId,
-appId,
-businessId,
+  console.log('saveInstagramAccountToken:', 'instagramAccountId', instagramAccountId, 'appId', appId, 'businessId', businessId);
+
   return await sql`
         INSERT INTO instagram_accounts (user_id, app_id, instagram_account_id, access_token, business_id, last_updated)
         VALUES (${userId}, ${appId}, ${instagramAccountId}, ${accessToken}, ${businessId}, current_timestamp)
@@ -441,9 +440,8 @@ export async function sendTemplateMessage(
     // graphApiWrapperPost does NOT throw on Graph API errors — it returns
     // the error object as data. We must explicitly check and throw.
     if (data.error) {
-        const err = new Error(data.error.message || 'Graph API error') as any;
-        err.status = 400;
-        err.graphApiError = data.error;
+        const err = new Error(data.error.message || 'Graph API error');
+        Object.assign(err, { status: 400, graphApiError: data.error });
         throw err;
     }
 
@@ -468,17 +466,17 @@ export async function getTemplateGatingData(
         ]);
 
         console.log('getTemplateGatingData:', 'waba_id', waba_id,
-            'fundingData', JSON.stringify(fundingData),
-            'templateData', JSON.stringify(templateData));
+            'hasFunding', !!fundingData?.primary_funding_id,
+            'templateCount', templateData?.data?.length ?? 0);
 
         if (fundingData && !fundingData.error) {
             hasPaymentMethod = !!fundingData.primary_funding_id;
         }
 
         if (templateData && !templateData.error) {
-            const templates: any[] = templateData.data || [];
+            const templates: { status: string }[] = templateData.data || [];
             const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
-            hasApprovedTemplates = templates.some((t: any) => sendableStatuses.includes(t.status));
+            hasApprovedTemplates = templates.some((t) => sendableStatuses.includes(t.status));
         }
 
         console.log('getTemplateGatingData result:', 'waba_id', waba_id,

@@ -161,7 +161,14 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
           dest_phone: chatId,
           message_content: text,
         }),
-      }).catch(console.error);
+      }).catch((error) => {
+        console.error('Failed to send message:', error);
+        addMessage(phone.id, chatId, {
+          text: 'Failed to send message',
+          direction: 'outgoing',
+          timestamp: Date.now(),
+        });
+      });
     },
     [addMessage, addChat, allChats],
   );

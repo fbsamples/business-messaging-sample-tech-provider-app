@@ -85,9 +85,9 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
                 return;
             }
             setTemplates(data.templates || []);
-        } catch (err: any) {
-            if (err.name === 'AbortError') return;
-            setError(err.message || 'Failed to fetch templates');
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name === 'AbortError') return;
+            setError(err instanceof Error ? err.message : 'Failed to fetch templates');
         } finally {
             setLoadingTemplates(false);
         }
@@ -203,8 +203,8 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
             }
             const messageId = data.messages?.[0]?.id || 'unknown';
             setSuccess(`Message sent successfully! Message ID: ${messageId}`);
-        } catch (err: any) {
-            setError(err.message || 'Failed to send message');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to send message');
         } finally {
             setSending(false);
         }

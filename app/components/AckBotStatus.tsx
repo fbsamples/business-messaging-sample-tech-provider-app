@@ -17,17 +17,22 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
   const [showModal, setShowModal] = useState(false);
   const [ackMessage, setAckMessage] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
+  const [error, setError] = useState('');
 
   // Load saved message when modal opens
   useEffect(() => {
     if (showModal) {
+      setError('');
       fetch(`/api/phones/${phone.id}?phoneId=${phone.id}`)
         .then((res) => res.json())
         .then((data) => {
           const msg = data.ackBotMessage || '';
           setAckMessage(msg);
         })
-        .catch((err) => console.error('Failed to load ackbot message:', err));
+        .catch((err) => {
+          console.error('Failed to load ackbot message:', err);
+          setError('Failed to load AckBot message');
+        });
     }
   }, [showModal, phone.id]);
 
@@ -35,12 +40,16 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
     if (isAckBotEnabled) {
       // Disabling — just turn off, no modal needed
       setIsLoading(true);
+      setError('');
       feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
         isAckBotEnabled: false,
         phoneId: phone.id,
       })
         .then(() => setIsAckBotEnabled(false))
-        .catch(console.error)
+        .catch((err) => {
+          console.error('Failed to toggle AckBot:', err);
+          setError('Failed to disable AckBot');
+        })
         .finally(() => setIsLoading(false));
     } else {
       // Enabling — show modal to configure message
@@ -50,6 +59,7 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
 
   function handleSave() {
     setIsLoading(true);
+    setError('');
     feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
       isAckBotEnabled: true,
       phoneId: phone.id,
@@ -59,7 +69,10 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
         setIsAckBotEnabled(true);
         setShowModal(false);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Failed to save AckBot config:', err);
+        setError('Failed to save AckBot configuration');
+      })
       .finally(() => setIsLoading(false));
   }
 
@@ -69,6 +82,7 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
 
   function handleUpdateMessage() {
     setIsLoading(true);
+    setError('');
     feGraphApiPostWrapper(`/api/phones/${phone.id}`, {
       isAckBotEnabled: true,
       phoneId: phone.id,
@@ -77,7 +91,10 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
       .then(() => {
         setShowModal(false);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Failed to update AckBot message:', err);
+        setError('Failed to update message');
+      })
       .finally(() => setIsLoading(false));
   }
 
@@ -144,6 +161,12 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
                 ? 'Update the auto-reply message for incoming messages.'
                 : 'AckBot will automatically reply to incoming messages. Set a custom message or leave empty to echo the received message.'}
             </p>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-2 mb-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
 
             <label className="block text-sm font-medium text-gray-700 mb-2">Auto-reply message</label>
             <textarea
