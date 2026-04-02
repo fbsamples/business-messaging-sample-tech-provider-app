@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "lint:all": "npm run lint && npm run type-check"
+    "lint:all": "npm run lint && npm run type-check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "4.14.0",
@@ -27,15 +31,22 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "4.1.13",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "24.3.1",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",
+    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "9",
     "eslint-config-next": "15.5.3",
+    "jsdom": "^29.0.1",
     "postcss": "8",
     "tailwindcss": "4.1.13",
-    "vercel": "^50.29.0"
+    "vercel": "^50.29.0",
+    "vitest": "^4.1.2"
   },
   "overrides": {
     "@types/react": "19.1.12",
@@ -43,7 +54,7 @@
     "js-yaml": "4.1.1",
     "srvx": ">=0.11.13",
     "path-to-regexp": ">=8.4.0",
-    "undici": ">=6.24.0",
+    "undici": ">=7.24.5",
     "minimatch": ">=10.2.3",
     "tar": ">=7.5.11",
     "smol-toml": ">=1.6.1",
