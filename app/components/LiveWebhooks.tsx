@@ -148,7 +148,7 @@ export default function LiveWebhooks({ appId }: { appId: string }) {
           <p className="text-[10px] text-gray-300 mt-3 max-w-md mx-auto">
             Go to{' '}
             <a
-              href={`https://developers.facebook.com/apps/${appId}/whatsapp-business/wa-configurations/`}
+              href={`https://developers.facebook.com/apps/${appId}/whatsapp-business/wa-settings/`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-400 transition-colors"
