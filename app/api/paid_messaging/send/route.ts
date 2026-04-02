@@ -31,7 +31,7 @@ export const POST = withAuth(async function sendTemplateRoute(request: NextReque
     }
 
     const user_id = session.user.email;
-    const app_id = publicConfig.app_id;
+    const app_id = publicConfig.appId;
 
     const access_token = await getTokenForWabaByUser(waba_id, user_id, app_id);
     if (!access_token) {

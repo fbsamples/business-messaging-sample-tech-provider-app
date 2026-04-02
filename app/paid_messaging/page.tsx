@@ -17,7 +17,7 @@ export default async function PaidMessaging() {
     if (!session) return <LoggedOut />;
 
     const userId = session.user.email;
-    const appDetails = await getAppDetails(publicConfig.app_id);
+    const appDetails = await getAppDetails(publicConfig.appId);
     const wabas = await getWabas(userId);
 
     // Strip access_token before passing to client component
@@ -28,7 +28,7 @@ export default async function PaidMessaging() {
     }));
 
     return (
-        <SidebarLayout user_id={userId} logo_url={appDetails.logo_url} app_name={appDetails.name}>
+        <SidebarLayout userId={userId} logoUrl={appDetails.logo_url} appName={appDetails.name}>
             <div className="p-6">
                 <div className="mb-6">
                     <h1 className="text-xl font-bold text-gray-900">Send Template Message</h1>

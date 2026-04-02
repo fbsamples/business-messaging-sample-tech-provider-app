@@ -20,7 +20,7 @@ export const GET = withAuth(async function templatesRoute(request: NextRequest, 
     }
 
     const user_id = session.user.email;
-    const app_id = publicConfig.app_id;
+    const app_id = publicConfig.appId;
 
     const access_token = await getTokenForWabaByUser(waba_id, user_id, app_id);
     if (!access_token) {
