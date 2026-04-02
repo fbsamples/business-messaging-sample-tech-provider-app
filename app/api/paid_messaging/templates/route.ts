@@ -5,7 +5,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getTokenForWabaByUser, getMessageTemplates } from '@/app/api/beUtils';
+import { getTokenForWabaByUser, getMessageTemplates, getTemplateGatingData } from '@/app/api/beUtils';
 import { withAuth } from '@/app/api/authWrapper';
 import type { AuthSession } from '@/app/api/authWrapper';
 import publicConfig from '@/app/publicConfig';
@@ -33,8 +33,11 @@ export const GET = withAuth(async function templatesRoute(request: NextRequest, 
       );
     }
 
-    const templates = await getMessageTemplates(wabaId, accessToken);
-    return NextResponse.json({ templates });
+    const [templates, gating] = await Promise.all([
+      getMessageTemplates(wabaId, accessToken),
+      getTemplateGatingData(wabaId, accessToken),
+    ]);
+    return NextResponse.json({ templates, gating });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch templates';
     return NextResponse.json(

@@ -238,6 +238,103 @@ describe('PaidMessagingDashboard', () => {
     });
   });
 
+  it('shows payment warning and disables fields when WABA has no payment method', async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        templates: mockTemplates,
+        gating: { hasPaymentMethod: false, hasApprovedTemplates: true },
+      }),
+    });
+
+    render(<PaidMessagingDashboard wabas={mockWabas} />);
+
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'waba_001');
+
+    await waitFor(() => {
+      // Warning banner should appear (use the descriptive text to avoid matching dropdown placeholders)
+      expect(screen.getByText(/does not have a payment method/)).toBeInTheDocument();
+    });
+
+    // Phone and template selectors should be disabled
+    const phoneSelect = screen.getAllByRole('combobox')[1];
+    const templateSelect = screen.getAllByRole('combobox')[2];
+    expect(phoneSelect).toBeDisabled();
+    expect(templateSelect).toBeDisabled();
+
+    // Recipient input should be disabled
+    const recipientInput = screen.getByPlaceholderText('+1234567890');
+    expect(recipientInput).toBeDisabled();
+
+    // Send button should be disabled
+    const sendButton = screen.getByRole('button', { name: /send template message/i });
+    expect(sendButton).toBeDisabled();
+  });
+
+  it('does not show payment warning when WABA has a payment method', async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        templates: mockTemplates,
+        gating: { hasPaymentMethod: true, hasApprovedTemplates: true },
+      }),
+    });
+
+    render(<PaidMessagingDashboard wabas={mockWabas} />);
+
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'waba_001');
+
+    await waitFor(() => {
+      expect(screen.getByText('hello_world (en_US)')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/does not have a payment method/)).not.toBeInTheDocument();
+
+    // Phone selector should be enabled
+    const phoneSelect = screen.getAllByRole('combobox')[1];
+    expect(phoneSelect).not.toBeDisabled();
+  });
+
+  it('clears payment warning when switching WABAs', async () => {
+    const user = userEvent.setup();
+
+    // First WABA: no payment method
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        templates: mockTemplates,
+        gating: { hasPaymentMethod: false, hasApprovedTemplates: true },
+      }),
+    });
+
+    render(<PaidMessagingDashboard wabas={mockWabas} />);
+
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'waba_001');
+
+    await waitFor(() => {
+      expect(screen.getByText(/does not have a payment method/)).toBeInTheDocument();
+    });
+
+    // Second WABA: has payment method
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        templates: mockTemplates,
+        gating: { hasPaymentMethod: true, hasApprovedTemplates: true },
+      }),
+    });
+
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'waba_002');
+
+    await waitFor(() => {
+      expect(screen.queryByText(/does not have a payment method/)).not.toBeInTheDocument();
+    });
+  });
+
   it('shows error banner when send fails', async () => {
     const user = userEvent.setup();
 

@@ -5,7 +5,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getTokenForWabaByUser, sendTemplateMessage } from '@/app/api/beUtils';
+import { getTokenForWabaByUser, sendTemplateMessage, checkWabaPaymentMethod } from '@/app/api/beUtils';
 import { withAuth } from '@/app/api/authWrapper';
 import type { AuthSession } from '@/app/api/authWrapper';
 import publicConfig from '@/app/publicConfig';
@@ -47,6 +47,15 @@ export const POST = withAuth(async function sendTemplateRoute(request: NextReque
     if (!accessToken) {
       return NextResponse.json(
         { error: 'You do not have access to this WABA' },
+        { status: 403 }
+      );
+    }
+
+    // Verify WABA has a payment method before allowing template sends
+    const hasPaymentMethod = await checkWabaPaymentMethod(wabaId, accessToken);
+    if (!hasPaymentMethod) {
+      return NextResponse.json(
+        { error: 'This WABA does not have a payment method. Add a payment method in WhatsApp Business Manager to send template messages.' },
         { status: 403 }
       );
     }

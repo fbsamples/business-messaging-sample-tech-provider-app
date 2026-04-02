@@ -107,14 +107,22 @@ describe('beUtils - Paid Messaging', () => {
   });
 
   describe('getTemplateGatingData', () => {
-    it('returns true for both when payment method and approved templates exist', async () => {
+    it('returns true for both when health_status has no payment errors and approved templates exist', async () => {
       const { getTemplateGatingData } = await import('@/app/api/beUtils');
 
-      // First call: funding check, second call: templates check
+      // First call: health_status check, second call: templates check
       mockFetch
         .mockResolvedValueOnce({
           json: () =>
-            Promise.resolve({ primary_funding_id: 'fund_123', id: 'waba_123' }),
+            Promise.resolve({
+              id: 'waba_123',
+              health_status: {
+                can_send_message: 'AVAILABLE',
+                entities: [
+                  { entity_type: 'WABA', can_send_message: 'AVAILABLE', errors: [] },
+                ],
+              },
+            }),
         })
         .mockResolvedValueOnce({
           json: () =>
@@ -131,12 +139,30 @@ describe('beUtils - Paid Messaging', () => {
       expect(result.hasApprovedTemplates).toBe(true);
     });
 
-    it('returns false for both when no payment method and no approved templates', async () => {
+    it('returns false for payment when health_status has PAYMENT_METHOD_ERROR', async () => {
       const { getTemplateGatingData } = await import('@/app/api/beUtils');
 
       mockFetch
         .mockResolvedValueOnce({
-          json: () => Promise.resolve({ id: 'waba_123' }),
+          json: () =>
+            Promise.resolve({
+              id: 'waba_123',
+              health_status: {
+                can_send_message: 'LIMITED',
+                entities: [
+                  {
+                    entity_type: 'WABA',
+                    can_send_message: 'LIMITED',
+                    errors: [
+                      {
+                        error_description: 'No valid payment method on file',
+                        possible_solution: 'Add a valid payment method to your account',
+                      },
+                    ],
+                  },
+                ],
+              },
+            }),
         })
         .mockResolvedValueOnce({
           json: () =>
@@ -184,12 +210,47 @@ describe('beUtils - Paid Messaging', () => {
       expect(result.hasApprovedTemplates).toBe(false);
     });
 
+    it('returns true for payment when health_status has no WABA entity errors', async () => {
+      const { getTemplateGatingData } = await import('@/app/api/beUtils');
+
+      mockFetch
+        .mockResolvedValueOnce({
+          json: () =>
+            Promise.resolve({
+              id: 'waba_123',
+              health_status: {
+                can_send_message: 'AVAILABLE',
+                entities: [
+                  { entity_type: 'PHONE_NUMBER', can_send_message: 'AVAILABLE', errors: [] },
+                ],
+              },
+            }),
+        })
+        .mockResolvedValueOnce({
+          json: () =>
+            Promise.resolve({
+              data: [{ name: 'hello', status: 'APPROVED' }],
+            }),
+        });
+
+      const result = await getTemplateGatingData('waba_123', 'token_abc');
+      // No WABA entity found means no payment error detected → hasPaymentMethod = true
+      expect(result.hasPaymentMethod).toBe(true);
+    });
+
     it('detects QUALITY_PENDING as sendable for gating', async () => {
       const { getTemplateGatingData } = await import('@/app/api/beUtils');
 
       mockFetch
         .mockResolvedValueOnce({
-          json: () => Promise.resolve({ id: 'waba_123' }),
+          json: () =>
+            Promise.resolve({
+              id: 'waba_123',
+              health_status: {
+                can_send_message: 'AVAILABLE',
+                entities: [],
+              },
+            }),
         })
         .mockResolvedValueOnce({
           json: () =>

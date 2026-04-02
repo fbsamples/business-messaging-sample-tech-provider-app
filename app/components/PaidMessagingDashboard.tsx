@@ -11,6 +11,7 @@ import type {
   TemplateComponent,
   TemplateComponentParam,
   TemplateMediaParam,
+  TemplateGatingData,
 } from '@/app/types/api';
 
 interface PaidMessagingDashboardProps {
@@ -35,6 +36,9 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
   const [variableValues, setVariableValues] = useState<Record<string, Record<number, string>>>({});
   const [mediaValues, setMediaValues] = useState<Record<string, string>>({});
 
+  // Gating
+  const [gating, setGating] = useState<TemplateGatingData | null>(null);
+
   // UI state
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [sending, setSending] = useState(false);
@@ -50,6 +54,8 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
     };
   }, []);
 
+  const paymentBlocked = gating !== null && !gating.hasPaymentMethod;
+
   const selectedWaba = wabas.find(w => w.id === selectedWabaId);
   const phones = selectedWaba?.phone_numbers?.data || [];
   const selectedTemplate = selectedTemplateKey
@@ -64,6 +70,7 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
     setTemplates([]);
     setVariableValues({});
     setMediaValues({});
+    setGating(null);
     setError('');
     setSuccess('');
 
@@ -85,6 +92,7 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
         return;
       }
       setTemplates(data.templates || []);
+      if (data.gating) setGating(data.gating);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') return;
       setError(err instanceof Error ? err.message : 'Failed to fetch templates');
@@ -281,17 +289,27 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
         </select>
       </div>
 
+      {/* Payment method warning */}
+      {paymentBlocked && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <p className="text-sm font-medium text-amber-800">Payment method required</p>
+          <p className="text-xs text-amber-600 mt-0.5">
+            This WABA does not have a payment method attached. Add a payment method in your WhatsApp Business Manager to send template messages.
+          </p>
+        </div>
+      )}
+
       {/* Phone selector */}
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">Phone Number</label>
         <select
           value={selectedPhoneId}
           onChange={e => { setSelectedPhoneId(e.target.value); setError(''); setSuccess(''); }}
-          disabled={!selectedWabaId}
+          disabled={!selectedWabaId || paymentBlocked}
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white disabled:opacity-50"
         >
           <option value="">
-            {!selectedWabaId ? 'Select a WABA first...' : phones.length === 0 ? 'No phones registered for this WABA' : 'Select a phone number...'}
+            {!selectedWabaId ? 'Select a WABA first...' : paymentBlocked ? 'Payment method required' : phones.length === 0 ? 'No phones registered for this WABA' : 'Select a phone number...'}
           </option>
           {phones.map(phone => (
             <option key={phone.id} value={phone.id}>
@@ -316,11 +334,11 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
           <select
             value={selectedTemplateKey}
             onChange={e => handleTemplateChange(e.target.value)}
-            disabled={!selectedWabaId || templates.length === 0}
+            disabled={!selectedWabaId || paymentBlocked || templates.length === 0}
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white disabled:opacity-50"
           >
             <option value="">
-              {!selectedWabaId ? 'Select a WABA first...' : templates.length === 0 ? 'No approved templates found' : 'Select a template...'}
+              {!selectedWabaId ? 'Select a WABA first...' : paymentBlocked ? 'Payment method required' : templates.length === 0 ? 'No approved templates found' : 'Select a template...'}
             </option>
             {templates.map(template => (
               <option
@@ -355,8 +373,9 @@ export default function PaidMessagingDashboard({ wabas }: PaidMessagingDashboard
           type="tel"
           value={recipient}
           onChange={e => { setRecipient(e.target.value); setError(''); setSuccess(''); }}
+          disabled={paymentBlocked}
           placeholder="+1234567890"
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
         />
         {recipient && !/^\+\d{7,15}$/.test(recipient) && (
           <p className="text-xs text-red-500 mt-1">Phone number must be in E.164 format (e.g., +1234567890)</p>

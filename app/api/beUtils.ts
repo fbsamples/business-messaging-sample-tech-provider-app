@@ -442,6 +442,35 @@ export async function sendTemplateMessage(
   return data;
 }
 
+export async function checkWabaPaymentMethod(
+  wabaId: string,
+  accessToken: string
+): Promise<boolean> {
+  try {
+    const healthData = await graphApiWrapperGet(
+      `/${wabaId}?fields=health_status`, accessToken
+    );
+
+    // health_status returns { can_send_message, entities[] } where each entity
+    // has { entity_type, can_send_message, errors[] }. A WABA entity with a
+    // PAYMENT_METHOD_ERROR in its errors means no valid payment method is attached.
+    // The absence of such an error means payment is healthy.
+    if (healthData && !healthData.error && healthData.health_status) {
+      const entities: { entity_type: string; errors: { error_description: string; possible_solution: string }[] }[] =
+        healthData.health_status.entities || [];
+      const wabaEntity = entities.find((e) => e.entity_type === 'WABA');
+      const hasPaymentError = wabaEntity?.errors?.some(
+        (err) => err.possible_solution?.toLowerCase().includes('payment method')
+      ) ?? false;
+      return !hasPaymentError;
+    }
+  } catch (err) {
+    console.error('checkWabaPaymentMethod error:', 'wabaId', wabaId, err);
+  }
+
+  return false;
+}
+
 export async function getTemplateGatingData(
   wabaId: string,
   accessToken: string
@@ -450,32 +479,21 @@ export async function getTemplateGatingData(
   let hasApprovedTemplates = false;
 
   try {
-    const [fundingData, templateData] = await Promise.all([
-      graphApiWrapperGet(`/${wabaId}?fields=primary_funding_id`, accessToken)
-        .catch((err: unknown): null => { console.error('getTemplateGatingData: failed to fetch funding:', err); return null; }),
+    const [paymentResult, templateData] = await Promise.all([
+      checkWabaPaymentMethod(wabaId, accessToken),
       graphApiWrapperGet(
         `/${wabaId}/message_templates?fields=name,status&limit=100`,
         accessToken
       ).catch((err: unknown): null => { console.error('getTemplateGatingData: failed to fetch templates:', err); return null; }),
     ]);
 
-    console.log('getTemplateGatingData:', 'wabaId', wabaId,
-      'hasFunding', !!fundingData?.primary_funding_id,
-      'templateCount', templateData?.data?.length ?? 0);
-
-    if (fundingData && !fundingData.error) {
-      hasPaymentMethod = !!fundingData.primary_funding_id;
-    }
+    hasPaymentMethod = paymentResult;
 
     if (templateData && !templateData.error) {
       const templates: { status: string }[] = templateData.data || [];
       const sendableStatuses = ['APPROVED', 'QUALITY_PENDING'];
       hasApprovedTemplates = templates.some((t) => sendableStatuses.includes(t.status));
     }
-
-    console.log('getTemplateGatingData result:', 'wabaId', wabaId,
-      'hasPaymentMethod', hasPaymentMethod,
-      'hasApprovedTemplates', hasApprovedTemplates);
   } catch (err) {
     console.error('getTemplateGatingData error:', 'wabaId', wabaId, err);
   }
