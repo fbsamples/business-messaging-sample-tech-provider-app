@@ -108,7 +108,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     if (selectedPhone && selectedChatId) {
       markRead(selectedPhone.id, selectedChatId);
     }
-  }, [selectedPhone?.id, selectedChatId, markRead]);
+  }, [selectedPhone, selectedChatId, markRead]);
 
   // State management functions
   const addMessage = useCallback((phoneId: string, chatId: string, message: Message) => {

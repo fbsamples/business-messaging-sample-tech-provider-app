@@ -45,7 +45,6 @@
     "jsdom": "^29.0.1",
     "postcss": "8",
     "tailwindcss": "4.1.13",
-    "vercel": "^50.29.0",
     "vitest": "^4.1.2"
   },
   "overrides": {

@@ -669,6 +669,7 @@ export default function ClientDashboard({
   const [esOptionReg, setEsOptionReg] = useState(true);
   const [esOptionSub, setEsOptionSub] = useState(true);
   const [step, setStep] = useState<Step>(1);
+  const [configError, setConfigError] = useState(false);
 
   const computeEsConfig = (ft: string, cfg: string, feats: string[], ver: string) => {
     const c: Record<string, unknown> = {
@@ -745,9 +746,15 @@ export default function ClientDashboard({
     [appId, esOptionReg, esOptionSub, userId],
   );
 
-  const handleClickFbl4b = useCallback(() => {
+  const handleClickFbl4b = useCallback((): boolean => {
+    if (!esOptionConfig) {
+      setConfigError(true);
+      return true;
+    }
+    setConfigError(false);
     setStep(3);
-  }, []);
+    return false;
+  }, [esOptionConfig]);
 
   const setFt = (v: string) => {
     if (v === 'only_waba_sharing') setEsOptionReg(false);
@@ -757,6 +764,7 @@ export default function ClientDashboard({
   };
   const setCfg = (v: string) => {
     setEsOptionConfig(v);
+    setConfigError(false);
     updateUrlParams({ tpConfig: v });
     recomputeJson(esOptionFeatureType, v, esOptionFeatures, esOptionVersion);
   };
@@ -838,6 +846,23 @@ export default function ClientDashboard({
                   </option>
                 ))}
               </SelectField>
+              {configError && (
+                <p className="text-[11px] text-red-400 font-normal -mt-3 leading-relaxed" style={{ fontFamily: 'inherit' }}>
+                  No config selected — please{' '}
+                  <a
+                    href={`https://developers.facebook.com/apps/${appId}/business-login/configurations/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-red-500 underline underline-offset-2 hover:text-red-600 transition-colors font-medium"
+                  >
+                    create one
+                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  {' '}in DevX first.
+                </p>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <SelectField
@@ -972,6 +997,7 @@ export default function ClientDashboard({
                 appId={appId}
                 appName={appName}
                 esConfig={esConfig}
+                disabled={!esOptionConfig}
                 onClickFbl4b={handleClickFbl4b}
                 onBannerInfoChange={handleBannerInfoChange}
                 onLastEventDataChange={handleLastEventDataChange}

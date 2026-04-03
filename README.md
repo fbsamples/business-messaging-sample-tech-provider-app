@@ -137,7 +137,7 @@ Ably provides real-time WebSocket connections for streaming incoming messages an
 
 1. Create an account at [ably.com](https://ably.com/)
 2. Create a new app in the Ably dashboard
-3. Copy the API key and set it as `ABLY_KEY`
+3. Copy the API key(root) and set it as `ABLY_KEY`
 
 See the [Ably documentation](https://ably.com/docs) for more details.
 
@@ -182,7 +182,7 @@ The steps above are sufficient for development and testing with app admins and t
   - `whatsapp_business_management` — manage WABAs, phone numbers, templates, and webhook subscriptions
   - `whatsapp_business_messaging` — send text and template messages
   - Additional permissions based on your use case: `pages_show_list`, `catalog_management`, `ads_read`
-- [ ] **Set App Mode to Live** — In **App Settings > Basic**, switch the app from Development to Live. In Development mode, only users with a role on the app (admin, developer, tester) can use it.
+- [ ] **Publish your App** — Go to App Dashboard > **Publish**, click the publish button at the bottom. In Unpublished mode, only users with a role on the app (admin, developer, tester) can use it.
 - [ ] **Verify your webhook configuration** — Confirm the callback URL (`https://your-domain/api/webhooks`), verify token, and `messages` field subscription are all set in **WhatsApp > Configuration**.
 - [ ] **Verify your OAuth redirect URIs** — Confirm your deployment URL is listed in **Facebook Login for Business > Valid OAuth Redirect URIs** and **Allowed Domains for the JavaScript SDK**.
 

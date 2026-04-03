@@ -25,7 +25,7 @@ export default async function Home() {
   const appDetails = await getAppDetails(appId);
   const appName = appDetails.name;
   const logoUrl = appDetails.logo_url;
-  const tpConfigs = appDetails.config_ids;
+  const tpConfigs = appDetails.config_ids ?? [];
 
   return (
     <SidebarLayout userId={userId} logoUrl={logoUrl} appName={appName}>

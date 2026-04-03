@@ -16,7 +16,8 @@ interface FBL4BLauncherProps {
   appId: string;
   appName: string;
   esConfig: string;
-  onClickFbl4b: () => void;
+  disabled?: boolean;
+  onClickFbl4b: () => boolean;
   onBannerInfoChange: (info: string) => void;
   onLastEventDataChange: (data: unknown) => void;
   onSaveToken: (code: string, sessionInfo: SessionInfo) => void;
@@ -29,6 +30,7 @@ let codeOuter: string | null = null;
 export default function FBL4BLauncher({
   appId,
   esConfig,
+  disabled = false,
   onClickFbl4b,
   onBannerInfoChange,
   onLastEventDataChange,
@@ -70,7 +72,8 @@ export default function FBL4BLauncher({
   };
 
   const launchWhatsAppSignup = () => {
-    onClickFbl4b();
+    const blocked = onClickFbl4b();
+    if (blocked) return;
     if (typeof FB === 'undefined') {
       onBannerInfoChange('Facebook SDK is still loading. Please try again in a moment.');
       return;
