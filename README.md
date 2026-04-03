@@ -291,7 +291,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_app_instagram_account_key ON instagram_ac
 ## Project Structure
 
 ```
-app/
+app/ 
   api/                    # API routes (server-side)
     beUtils.ts            # Graph API wrappers, DB operations
     authWrapper.ts        # withAuth() HOF for protecting API routes
