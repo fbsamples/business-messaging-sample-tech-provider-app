@@ -16,7 +16,6 @@ interface FBL4BLauncherProps {
   appId: string;
   appName: string;
   esConfig: string;
-  disabled?: boolean;
   onClickFbl4b: () => boolean;
   onBannerInfoChange: (info: string) => void;
   onLastEventDataChange: (data: unknown) => void;
@@ -30,7 +29,6 @@ let codeOuter: string | null = null;
 export default function FBL4BLauncher({
   appId,
   esConfig,
-  disabled = false,
   onClickFbl4b,
   onBannerInfoChange,
   onLastEventDataChange,

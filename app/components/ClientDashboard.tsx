@@ -997,7 +997,6 @@ export default function ClientDashboard({
                 appId={appId}
                 appName={appName}
                 esConfig={esConfig}
-                disabled={!esOptionConfig}
                 onClickFbl4b={handleClickFbl4b}
                 onBannerInfoChange={handleBannerInfoChange}
                 onLastEventDataChange={handleLastEventDataChange}
