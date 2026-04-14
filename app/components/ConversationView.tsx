@@ -7,14 +7,9 @@
 
 import { useEffect, useRef } from 'react';
 
-import MessageBubble from '@/app/components/MessageBubble';
+import { Phone } from 'lucide-react';
+import MessageBubble, { type Message } from '@/app/components/MessageBubble';
 import SendMessage from '@/app/components/SendMessage';
-
-export type Message = {
-  text: string;
-  direction: 'incoming' | 'outgoing';
-  timestamp: number;
-};
 
 interface ConversationViewProps {
   chatId: string;
@@ -24,9 +19,19 @@ interface ConversationViewProps {
   phoneDisplay: string;
   isAckBotEnabled: boolean;
   onToggleAckBot: () => void;
+  onCallClick?: () => void;
+  callActive?: boolean;
 }
 
-export default function ConversationView({ displayName, messages, onSendMessage }: ConversationViewProps) {
+export type { Message };
+
+export default function ConversationView({
+  displayName,
+  messages,
+  onSendMessage,
+  onCallClick,
+  callActive,
+}: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,12 +48,20 @@ export default function ConversationView({ displayName, messages, onSendMessage 
           <div className="text-sm font-semibold text-gray-900">{displayName}</div>
           <div className="text-xs text-gray-400">WhatsApp</div>
         </div>
+        {onCallClick && (
+          <button
+            onClick={onCallClick}
+            disabled={callActive}
+            className="ml-auto p-2 rounded-full hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title={callActive ? 'Call in progress' : 'Start call'}
+          >
+            <Phone className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto px-5 py-4 space-y-0.5 bg-gradient-to-b from-[#f8f9ff] to-[#f1f3f9]"
-      >
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-0.5 bg-gradient-to-b from-[#f8f9ff] to-[#f1f3f9]">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-14 h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
@@ -67,7 +80,7 @@ export default function ConversationView({ displayName, messages, onSendMessage 
         ) : (
           <>
             {messages.map((msg, i) => (
-              <MessageBubble key={i} text={msg.text} direction={msg.direction} timestamp={msg.timestamp} />
+              <MessageBubble key={i} {...msg} />
             ))}
             <div ref={messagesEndRef} />
           </>

@@ -5,7 +5,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getToken, saveTokens, registerNumber, subscribeWebhook } from '@/app/api/beUtils';
+import { getToken, saveTokens, registerNumber, subscribeWebhook, graphApiEnableCallingWithToken } from '@/app/api/beUtils';
 import { wrapFn, skipProm } from '@/app/errorformat';
 import { withAuth } from '@/app/api/authWrapper';
 
@@ -32,6 +32,7 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
     es_option_loc: _esOptionLoc,
     es_option_sys: _esOptionSys,
     es_option_sub: esOptionSub,
+    es_option_calling: esOptionCalling,
   } = data;
 
   // Default arrays to [] and construct wabaIds from singular wabaId if needed
@@ -83,6 +84,9 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
       esOptionSub
         ? wrapFn(subscribeWebhook(accessToken, wabaId), 'subscribeWebhook')
         : skipProm('subscribeWebhook'),
+      esOptionCalling && phoneNumberId
+        ? wrapFn(graphApiEnableCallingWithToken(phoneNumberId, accessToken), 'enableCalling')
+        : skipProm('enableCalling'),
     ]);
 
     const result = [[{ fun, status, result: '***', error: tokenError }, operations]];

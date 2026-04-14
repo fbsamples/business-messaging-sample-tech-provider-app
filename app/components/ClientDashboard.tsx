@@ -668,6 +668,7 @@ export default function ClientDashboard({
   const [esOptionVersion, setEsOptionVersion] = useState(initialEsVersion);
   const [esOptionReg, setEsOptionReg] = useState(true);
   const [esOptionSub, setEsOptionSub] = useState(true);
+  const [esOptionCalling, setEsOptionCalling] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [configError, setConfigError] = useState(false);
 
@@ -735,6 +736,7 @@ export default function ClientDashboard({
           instagram_account_ids: filterIds(instagramAccountIds),
           es_option_reg: esOptionReg,
           es_option_sub: esOptionSub,
+          es_option_calling: esOptionCalling,
           user_id: userId,
         });
         setBannerInfo('WABA Setup Finished\n' + formatErrors(d) + '\n');
@@ -743,7 +745,7 @@ export default function ClientDashboard({
         setBannerInfo('WABA Setup Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
       }
     },
-    [appId, esOptionReg, esOptionSub, userId],
+    [appId, esOptionReg, esOptionSub, esOptionCalling, userId],
   );
 
   const handleClickFbl4b = useCallback((): boolean => {
@@ -964,6 +966,17 @@ export default function ClientDashboard({
                   <TipBody
                     title="Subscribe webhooks"
                     body="Subscribes the WABA to your app's webhooks automatically after signup. Disable if you manage webhook subscriptions separately."
+                  />
+                }
+              />
+              <Toggle
+                checked={esOptionCalling}
+                onChange={setEsOptionCalling}
+                label="Enable calling"
+                tip={
+                  <TipBody
+                    title="Enable calling"
+                    body="Enables WhatsApp Calling API on the phone number after signup. This allows inbound and outbound voice calls. You can also toggle calling per phone from the inbox."
                   />
                 }
               />

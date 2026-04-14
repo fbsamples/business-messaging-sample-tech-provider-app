@@ -370,6 +370,96 @@ export async function getTokenForWabaByUser(wabaId: string, userId: string, appI
   return rows[0]?.access_token || null;
 }
 
+// ============================================================================
+// Calling
+// ============================================================================
+
+export async function graphApiCallAction(
+  userId: string,
+  wabaId: string,
+  phoneNumberId: string,
+  body: Record<string, unknown>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  const token = await getTokenForWaba(wabaId, userId);
+  return graphApiWrapperPost(`/${phoneNumberId}/calls`, token, body);
+}
+
+export async function graphApiCallPermissionsGet(
+  userId: string,
+  wabaId: string,
+  phoneNumberId: string,
+  userWaId: string,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  const token = await getTokenForWaba(wabaId, userId);
+  return graphApiWrapperGet(
+    `/${phoneNumberId}/call_permissions?user_wa_id=${userWaId}`,
+    token,
+  );
+}
+
+export async function graphApiGetCallSettings(
+  userId: string,
+  wabaId: string,
+  phoneNumberId: string,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  const token = await getTokenForWaba(wabaId, userId);
+  return graphApiWrapperGet(`/${phoneNumberId}/settings`, token);
+}
+
+export async function graphApiUpdateCallSettings(
+  userId: string,
+  wabaId: string,
+  phoneNumberId: string,
+  enabled: boolean,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  const token = await getTokenForWaba(wabaId, userId);
+  return graphApiWrapperPost(`/${phoneNumberId}/settings`, token, {
+    calling: {
+      status: enabled ? 'ENABLED' : 'DISABLED',
+      callback_permission_status: enabled ? 'ENABLED' : 'DISABLED',
+    },
+  });
+}
+
+export async function graphApiEnableCallingWithToken(
+  phoneNumberId: string,
+  accessToken: string,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  return graphApiWrapperPost(`/${phoneNumberId}/settings`, accessToken, {
+    calling: {
+      status: 'ENABLED',
+      callback_permission_status: 'ENABLED',
+    },
+  });
+}
+
+export async function graphApiSendCallPermissionRequest(
+  userId: string,
+  wabaId: string,
+  phoneNumberId: string,
+  to: string,
+  bodyText: string,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
+): Promise<any> {
+  const token = await getTokenForWaba(wabaId, userId);
+  return graphApiWrapperPost(`/${phoneNumberId}/messages`, token, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'interactive',
+    interactive: {
+      type: 'call_permission_request',
+      body: { text: bodyText },
+      action: { name: 'call_permission_request' },
+    },
+  });
+}
+
 //////////////////////////////////////////////////////////
 // Verification Request \/
 //////////////////////////////////////////////////////////

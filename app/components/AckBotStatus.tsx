@@ -104,7 +104,11 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
 
   return (
     <>
-      <div className="relative">
+      <div
+        className="relative"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         <div
           className={cn(
                         'whitespace-normal text-left rounded-md px-2.5 py-1 mr-1 text-[11px] font-semibold',
@@ -121,15 +125,13 @@ export default function AckBotStatus({ phone }: { phone: PhoneDetails }) {
             e.preventDefault();
             handleToggle();
           }}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
           role="button"
           tabIndex={0}
         >
           {isLoading ? '...' : isAckBotEnabled ? 'AckBot On' : 'AckBot Off'}
         </div>
         {showTooltip && (
-          <div className="absolute z-50 px-3 py-2 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-lg whitespace-normal -top-10 left-1/2 transform -translate-x-1/2">
+          <div className="absolute z-50 px-3 py-2 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-lg whitespace-normal bottom-full mb-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
             {isAckBotEnabled ? 'Click to edit message, right-click to disable' : 'Click to enable AckBot'}
             <div className="absolute w-2 h-2 bg-white border-r border-b border-slate-200 transform rotate-45 -bottom-1 left-1/2 -translate-x-1/2"></div>
           </div>
