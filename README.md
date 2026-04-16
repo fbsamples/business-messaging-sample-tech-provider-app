@@ -9,12 +9,6 @@ LICENSE file in the root directory of this source tree.
 
 A [Next.js](https://nextjs.org/) reference application that demonstrates how tech providers can integrate with Meta's [WhatsApp Business Platform](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started). It covers the full lifecycle — onboarding businesses via Embedded Signup, managing WhatsApp Business Accounts, sending and receiving messages, and handling webhooks.
 
-## Demo
-
-**New to this app?** Watch the step-by-step video walkthrough that covers everything you need to get up and running — creating accounts (Vercel, Auth0, Ably), deploying the app, setting up the Meta Developer app, and configuring the database.
-
-**[Watch the Setup Demo](https://github.com/fbsamples/business-messaging-sample-tech-provider-app/releases/tag/demo)**
-
 ## Table of Contents
 
 - [Features](#features)
