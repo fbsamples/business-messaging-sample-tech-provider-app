@@ -435,7 +435,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     const channel = ablyClient.channels.get('get-started');
     channel.subscribe('first', (message) => {
       const ownedPhoneIds = new Set(phonesRef.current.map((p) => p.id));
-      const fields = message.data.entry?.flatMap((e: any) => e.changes?.map((c: any) => c.field));
+      const fields = message.data.entry?.flatMap((e: { changes?: { field: string }[] }) => e.changes?.map((c) => c.field));
       console.log('[Webhook] Received first event. fields:', fields, 'owned phones:', [...ownedPhoneIds]);
 
       // Process each change in the webhook payload

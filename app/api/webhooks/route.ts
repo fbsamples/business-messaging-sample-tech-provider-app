@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Publish raw webhook data for the live webhook viewer (unchanged)
     await channel.publish('first', data);
-    console.log('[Webhook] Published raw data. object:', data.object, 'fields:', data.entry?.map((e: any) => e.changes?.map((c: any) => c.field)).flat());
+    console.log('[Webhook] Published raw data. object:', data.object, 'fields:', data.entry?.map((e: { changes?: { field: string }[] }) => e.changes?.map((c) => c.field)).flat());
 
     if (data.object === 'whatsapp_business_account') {
       for (const entry of data.entry ?? []) {

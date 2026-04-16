@@ -157,7 +157,7 @@ export default function FBL4BLauncher({
             }
           }
         }
-      } catch (_err) {
+      } catch {
         // Non-ES message events from Facebook iframes are expected and can be ignored
       }
     };

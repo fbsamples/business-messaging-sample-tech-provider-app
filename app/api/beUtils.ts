@@ -699,6 +699,7 @@ async function graphApiWrapperPost(
   url: string,
   accessToken: string,
   params: Record<string, unknown> = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Graph API responses have dynamic, untyped shapes
 ): Promise<any> {
   console.log('graphApiWrapperPost:', 'path', url.split('?')[0]);
   const headers: Record<string, string> = {

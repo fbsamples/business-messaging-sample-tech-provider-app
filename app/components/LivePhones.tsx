@@ -10,18 +10,16 @@ import { useState, useEffect } from 'react';
 import Ably from 'ably';
 
 import SendMessage from '@/app/components/SendMessage';
-import type { ClientPhone } from '@/app/types/api';
 import { cn } from '@/lib/utils';
 
 interface LivePhonesProps {
   phoneDisplay: string;
   phoneNumberId: string;
   wabaId: string;
-  _phoneDetails: ClientPhone;
 }
 
-export default function LivePhones({ phoneDisplay, phoneNumberId, wabaId, _phoneDetails }: LivePhonesProps) {
-  const [_webhooks, setWebhooks] = useState<string[]>([]);
+export default function LivePhones({ phoneDisplay, phoneNumberId, wabaId }: LivePhonesProps) {
+  const [, setWebhooks] = useState<string[]>([]);
   const [messages, setMessages] = useState<Record<string, string[]>>({});
   const [chats, setChats] = useState<Record<string, { chatId: string; displayName: string }>>({});
 

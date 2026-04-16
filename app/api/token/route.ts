@@ -29,8 +29,6 @@ export const POST = withAuth(async function exchangeToken(request: NextRequest, 
     app_id: appId,
     phone_number_id: phoneNumberId,
     es_option_reg: esOptionReg,
-    es_option_loc: _esOptionLoc,
-    es_option_sys: _esOptionSys,
     es_option_sub: esOptionSub,
     es_option_calling: esOptionCalling,
   } = data;
