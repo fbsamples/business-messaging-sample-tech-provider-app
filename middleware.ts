@@ -3,11 +3,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type { NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 import { auth0 } from '@/lib/auth0';
 
 export async function middleware(request: NextRequest) {
+  // Bypass Auth0 for local development only
+  if (process.env.BYPASS_AUTH === 'true' && process.env.NODE_ENV === 'development') {
+    return NextResponse.next();
+  }
   return await auth0.middleware(request);
 }
 
