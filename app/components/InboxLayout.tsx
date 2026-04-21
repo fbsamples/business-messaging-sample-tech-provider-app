@@ -48,8 +48,8 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
   // Call state
   const [callState, setCallState] = useState<ActiveCallState>({ state: 'IDLE' });
-  const [permissionState, setPermissionState] = useState<PermissionState>('none');
-  const permissionTargetRef = useRef<string | null>(null); // destPhone for permission flow
+  // Per-conversation permission state: Map<chatId, {state, expirationTime?}>
+  const [permissionMap, setPermissionMap] = useState<Record<string, { state: PermissionState; expirationTime?: number }>>({});
   const callingClientRef = useRef<CallingClient | null>(null);
   const callStateRef = useRef(callState);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -156,10 +156,16 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
       // Reset to IDLE after ENDED so the next call can come through
       if (state === 'ENDED') {
+        const endedChatId = meta?.callerNumber ?? meta?.destPhone;
         setTimeout(() => {
           setCallState({ state: 'IDLE' });
-          setPermissionState('none');
-          permissionTargetRef.current = null;
+          if (endedChatId) {
+            setPermissionMap(prev => {
+              const next = { ...prev };
+              delete next[endedChatId];
+              return next;
+            });
+          }
         }, 4000);
       }
 
@@ -172,15 +178,17 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
           addMessage(meta.phoneNumberId, chatId, {
             type: 'call_event',
             event: 'started',
+            direction: meta.direction,
             timestamp: Date.now(),
           } as Message);
         }
         if (state === 'ENDED' && meta.endReason) {
           // remote_hangup bubble is added by the Ably terminate handler (with webhook duration)
+          const dir = meta.direction;
           const eventMap: Record<string, Message> = {
-            rejected: { type: 'call_event', event: 'declined', timestamp: Date.now() } as Message,
-            missed: { type: 'call_event', event: 'missed', timestamp: Date.now() } as Message,
-            failed: { type: 'call_event', event: 'failed', timestamp: Date.now() } as Message,
+            rejected: { type: 'call_event', event: 'declined', direction: dir, timestamp: Date.now() } as Message,
+            missed: { type: 'call_event', event: 'missed', direction: dir, timestamp: Date.now() } as Message,
+            failed: { type: 'call_event', event: 'failed', direction: dir, timestamp: Date.now() } as Message,
           };
           const msg = eventMap[meta.endReason];
           if (msg) addMessage(meta.phoneNumberId, chatId, msg);
@@ -300,7 +308,6 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       wabaId,
       destPhone,
     });
-    setPermissionState('none');
 
     try {
       const callId = await callingClientRef.current?.startCall(phoneNumberId, wabaId, destPhone);
@@ -323,9 +330,8 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     if (!phone) return;
     if (callStateRef.current.state !== 'IDLE') return;
 
-    permissionTargetRef.current = chatId;
     // Show "Checking..." while we query the API — don't show "permission required" yet
-    setPermissionState('checking');
+    setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'checking' } }));
 
     try {
       const res = await fetch(
@@ -337,7 +343,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
       if (data.error) {
         console.error('[Calling] Permission check error:', data.error);
-        setPermissionState('none');
+        setPermissionMap(prev => { const next = { ...prev }; delete next[chatId]; return next; });
         return;
       }
 
@@ -347,7 +353,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
       if (hasPermission) {
         // Permission granted — start call immediately
-        setPermissionState('none');
+        setPermissionMap(prev => { const next = { ...prev }; delete next[chatId]; return next; });
         await startOutboundCall(phone.id, phone.wabaId, chatId);
       } else {
         // Check if we can request permission or are rate limited
@@ -355,23 +361,23 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
           (a: { action_name: string }) => a.action_name === 'send_call_permission_request',
         );
         if (sendAction && sendAction.can_perform_action === false) {
-          setPermissionState('rate_limited');
+          setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'rate_limited' } }));
         } else {
-          setPermissionState('requesting');
+          setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting' } }));
         }
       }
     } catch (err) {
       console.error('[Calling] Permission check failed:', err);
-      setPermissionState('none');
+      setPermissionMap(prev => { const next = { ...prev }; delete next[chatId]; return next; });
     }
   }, [startOutboundCall]);
 
   const handleRequestPermission = useCallback(async () => {
     const phone = selectedPhoneRef.current;
-    const destPhone = permissionTargetRef.current;
-    if (!phone || !destPhone) return;
+    const chatId = selectedChatIdRef.current;
+    if (!phone || !chatId) return;
 
-    setPermissionState('pending');
+    setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'pending' } }));
 
     try {
       const res = await fetch('/api/calls/request-permission', {
@@ -380,7 +386,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
         body: JSON.stringify({
           phoneNumberId: phone.id,
           wabaId: phone.wabaId,
-          to: destPhone,
+          to: chatId,
         }),
       });
 
@@ -389,20 +395,20 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
       if (!res.ok) {
         console.error('[Calling] Permission request failed:', data.error);
-        setPermissionState('requesting');
+        setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting' } }));
       }
       // Stay in 'pending' — wait for webhook reply
     } catch (err) {
       console.error('[Calling] Permission request error:', err);
-      setPermissionState('requesting');
+      setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting' } }));
     }
   }, []);
 
   const handleCallNow = useCallback(async () => {
     const phone = selectedPhoneRef.current;
-    const destPhone = permissionTargetRef.current;
-    if (!phone || !destPhone) return;
-    await startOutboundCall(phone.id, phone.wabaId, destPhone);
+    const chatId = selectedChatIdRef.current;
+    if (!phone || !chatId) return;
+    await startOutboundCall(phone.id, phone.wabaId, chatId);
   }, [startOutboundCall]);
 
   // Ably connection — single connection for ALL phones
@@ -484,7 +490,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                       setCallState(prev => ({ ...prev, state: 'ENDED', error: undefined }));
                       setTimeout(() => setCallState({ state: 'IDLE' }), 4000);
                       addMessage(phoneId, call.from, {
-                        type: 'call_event', event: 'missed', timestamp: Date.now(),
+                        type: 'call_event', event: 'missed', direction: 'inbound', timestamp: Date.now(),
                       } as Message);
                     }
                   }, 30000);
@@ -514,23 +520,24 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                   ? callStateRef.current.destPhone ?? call.from
                   : callStateRef.current.callerNumber ?? call.from;
 
+                const callDir = callStateRef.current.direction;
                 if ((callStateRef.current.state === 'RINGING' || callStateRef.current.state === 'CONNECTING')
-                  && callStateRef.current.direction === 'inbound') {
+                  && callDir === 'inbound') {
                   setCallState(prev => ({ ...prev, state: 'ENDED' }));
                   setTimeout(() => setCallState({ state: 'IDLE' }), 4000);
                   addMessage(phoneId, chatThreadId, {
-                    type: 'call_event', event: 'missed', timestamp: Date.now(),
+                    type: 'call_event', event: 'missed', direction: 'inbound', timestamp: Date.now(),
                   } as Message);
                 } else if (callStateRef.current.state === 'ACTIVE' || callStateRef.current.state === 'CONNECTING' || callStateRef.current.state === 'RINGING') {
                   callingClientRef.current?.onRemoteEnd(call.id, phoneId, entry.id, 'remote_hangup');
                   addMessage(phoneId, chatThreadId, {
-                    type: 'call_event', event: 'ended', duration: call.duration, timestamp: Date.now(),
+                    type: 'call_event', event: 'ended', direction: callDir, duration: call.duration, timestamp: Date.now(),
                   } as Message);
                 } else {
                   // Local hangup already processed — just add the duration bubble
                   if (call.duration) {
                     addMessage(phoneId, chatThreadId, {
-                      type: 'call_event', event: 'ended', duration: call.duration, timestamp: Date.now(),
+                      type: 'call_event', event: 'ended', direction: callDir, duration: call.duration, timestamp: Date.now(),
                     } as Message);
                   }
                 }
@@ -562,12 +569,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                 setCallState(prev => ({ ...prev, state: 'ENDED' }));
                 setTimeout(() => {
                   setCallState({ state: 'IDLE' });
-                  setPermissionState('none');
-                  permissionTargetRef.current = null;
+                  if (destPhone) {
+                    setPermissionMap(prev => { const next = { ...prev }; delete next[destPhone]; return next; });
+                  }
                 }, 4000);
                 if (destPhone) {
                   addMessage(phoneId, destPhone, {
-                    type: 'call_event', event: 'declined', timestamp: Date.now(),
+                    type: 'call_event', event: 'declined', direction: 'outbound', timestamp: Date.now(),
                   } as Message);
                 }
               }
@@ -584,10 +592,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
             if (msgData?.type === 'interactive'
               && msgData?.interactive?.type === 'call_permission_reply') {
               const reply = msgData.interactive.call_permission_reply;
-              if (reply.response === 'accept') {
-                setPermissionState('granted');
-              } else if (reply.response === 'reject') {
-                setPermissionState('denied');
+              const replyFrom = msgData.from;
+              if (replyFrom) {
+                if (reply.response === 'accept') {
+                  setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'granted' } }));
+                } else if (reply.response === 'reject') {
+                  setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'denied' } }));
+                }
               }
               continue;
             }
@@ -770,13 +781,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                         : 'Phone disconnected — click status to reconnect'}
               </div>
 
-              {/* Call banner — shown for active calls or permission flow */}
+              {/* Call banner — shown for active calls or permission flow for current conversation */}
               {((callState.state !== 'IDLE' && callState.phoneNumberId === selectedPhone.id)
-                || permissionState !== 'none') && (
+                || (selectedChatId && permissionMap[selectedChatId]?.state && permissionMap[selectedChatId].state !== 'none')) && (
                 <CallBanner
                   callState={callState}
                   callingClient={callingClientRef.current}
-                  permissionState={permissionState}
+                  permissionState={selectedChatId ? (permissionMap[selectedChatId]?.state ?? 'none') : 'none'}
                   onAccept={handleAcceptCall}
                   onReject={handleRejectCall}
                   onHangUp={handleHangUp}
@@ -860,7 +871,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                       isAckBotEnabled={selectedPhone.isAckBotEnabled}
                       onToggleAckBot={() => {}}
                       onCallClick={() => handleCallClick(selectedChatId)}
-                      callActive={callState.state !== 'IDLE' || permissionState !== 'none'}
+                      callActive={callState.state !== 'IDLE' || !!(selectedChatId && permissionMap[selectedChatId]?.state && permissionMap[selectedChatId].state !== 'none')}
                     />
                   ) : (
                     <div

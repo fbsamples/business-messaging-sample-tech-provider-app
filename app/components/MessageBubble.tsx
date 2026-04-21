@@ -3,9 +3,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import { Phone } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { CallEventType } from '@/app/types/calling';
+import type { CallEventType, CallDirection } from '@/app/types/calling';
 
 export type TextMessage = {
   type: 'text';
@@ -17,6 +17,7 @@ export type TextMessage = {
 export type CallEventMessage = {
   type: 'call_event';
   event: CallEventType;
+  direction?: CallDirection;
   duration?: number;
   timestamp: number;
 };
@@ -29,13 +30,22 @@ function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const CALL_EVENT_LABELS: Record<CallEventType, string> = {
-  started: 'Voice call started',
-  ended: 'Voice call',
-  missed: 'Missed call',
-  declined: 'Call declined',
-  failed: 'Call failed',
-};
+function getCallLabel(event: CallEventType, direction?: CallDirection): string {
+  if (event === 'started') return direction === 'inbound' ? 'Incoming voice call' : 'Outgoing voice call';
+  if (event === 'ended') return direction === 'inbound' ? 'Incoming call' : 'Outgoing call';
+  if (event === 'missed') return 'Missed call';
+  if (event === 'declined') return 'Call declined';
+  return 'Call failed';
+}
+
+function CallIcon({ event, direction }: { event: CallEventType; direction?: CallDirection }) {
+  if (event === 'missed' || event === 'declined' || event === 'failed') {
+    return <Phone className="w-3 h-3" />;
+  }
+  if (direction === 'inbound') return <PhoneIncoming className="w-3 h-3" />;
+  if (direction === 'outbound') return <PhoneOutgoing className="w-3 h-3" />;
+  return <Phone className="w-3 h-3" />;
+}
 
 function isErrorEvent(event: CallEventType): boolean {
   return event === 'missed' || event === 'declined' || event === 'failed';
@@ -43,7 +53,7 @@ function isErrorEvent(event: CallEventType): boolean {
 
 export default function MessageBubble(props: Message) {
   if (props.type === 'call_event') {
-    const label = CALL_EVENT_LABELS[props.event];
+    const label = getCallLabel(props.event, props.direction);
     const durationStr = props.event === 'ended' && props.duration != null
       ? ` \u00B7 ${formatDuration(props.duration)}`
       : '';
@@ -61,7 +71,7 @@ export default function MessageBubble(props: Message) {
             ? 'bg-red-50 text-red-600'
             : 'bg-gray-100 text-gray-500',
         )}>
-          <Phone className="w-3 h-3" />
+          <CallIcon event={props.event} direction={props.direction} />
           <span className="font-medium">{label}{durationStr}</span>
           <span className="text-[10px] opacity-70">{formattedTime}</span>
         </div>
