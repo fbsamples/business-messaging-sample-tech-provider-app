@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 import Ably from 'ably';
+import { Phone as PhoneIcon } from 'lucide-react';
 
 import PhoneListSidebar from '@/app/components/PhoneListSidebar';
 import ConversationView, { type Message } from '@/app/components/ConversationView';
@@ -17,9 +18,10 @@ import AckBotStatus from '@/app/components/AckBotStatus';
 import CallingStatus from '@/app/components/CallingStatus';
 import type { PhoneDetails } from '@/app/types/api';
 import { CallingClient } from '@/app/components/CallingClient';
-import CallBanner from '@/app/components/CallBanner';
+import CallBanner, { stopRinging } from '@/app/components/CallBanner';
 import type { ActiveCallState, PermissionState } from '@/app/types/calling';
 import { cn } from '@/lib/utils';
+import { formatRemainingRequests } from '@/app/utils/calling';
 
 type ChatMeta = {
   displayName: string;
@@ -43,17 +45,39 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   // A chat is unread if an incoming message arrived while it was not the active view.
   const [unreadChats, setUnreadChats] = useState<Record<string, Set<string>>>({});
 
+  // Missed call tracking: { [phone_number_id]: Set<chat_id> }
+  const [missedCallChats, setMissedCallChats] = useState<Record<string, Set<string>>>({});
+  const markMissedCall = useCallback((phoneId: string, chatId: string) => {
+    setMissedCallChats(prev => {
+      const phoneSet = new Set(prev[phoneId] ?? []);
+      phoneSet.add(chatId);
+      return { ...prev, [phoneId]: phoneSet };
+    });
+  }, []);
+  const clearMissedCall = useCallback((phoneId: string, chatId: string) => {
+    setMissedCallChats(prev => {
+      const phoneSet = new Set(prev[phoneId] ?? []);
+      phoneSet.delete(chatId);
+      return { ...prev, [phoneId]: phoneSet };
+    });
+  }, []);
+
   // OTP modal state
   const [otpModalPhone, setOtpModalPhone] = useState<PhoneDetails | null>(null);
 
   // Call state
   const [callState, setCallState] = useState<ActiveCallState>({ state: 'IDLE' });
-  // Per-conversation permission state: Map<chatId, {state, expirationTime?}>
-  const [permissionMap, setPermissionMap] = useState<Record<string, { state: PermissionState; expirationTime?: number }>>({});
+  // Per-conversation permission state: Map<chatId, {state, expirationTime?, limits?}>
+  type PermissionEntry = { state: PermissionState; expirationTime?: number; remainingRequests?: string };
+  const [permissionMap, setPermissionMap] = useState<Record<string, PermissionEntry>>({});
+  const permissionMapRef = useRef(permissionMap);
   const callingClientRef = useRef<CallingClient | null>(null);
   const callStateRef = useRef(callState);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    permissionMapRef.current = permissionMap;
+  }, [permissionMap]);
   useEffect(() => {
     callStateRef.current = callState;
   }, [callState]);
@@ -120,12 +144,64 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   useEffect(() => {
     selectedChatIdRef.current = selectedChatId;
   }, [selectedChatId]);
-  // Auto-clear unread when a chat becomes visible (handles both manual click and auto-open)
+  // Auto-clear unread and missed calls when a chat becomes visible
   useEffect(() => {
     if (selectedPhone && selectedChatId) {
       markRead(selectedPhone.id, selectedChatId);
+      clearMissedCall(selectedPhone.id, selectedChatId);
     }
-  }, [selectedPhone, selectedChatId, markRead]);
+  }, [selectedPhone, selectedChatId, markRead, clearMissedCall]);
+
+  // Auto-check call permissions when a conversation is opened
+  useEffect(() => {
+    if (!selectedPhone || !selectedChatId) return undefined;
+    // Don't re-check if a permission request is in flight
+    const existing = permissionMap[selectedChatId]?.state;
+    if (existing === 'pending' || existing === 'checking') return undefined;
+    // Don't check during an active call
+    if (callState.state !== 'IDLE') return undefined;
+
+    let cancelled = false;
+    (async () => {
+      setPermissionMap(prev => ({ ...prev, [selectedChatId]: { state: 'checking' } }));
+      try {
+        const res = await fetch(
+          `/api/calls/permissions?phoneNumberId=${selectedPhone.id}&wabaId=${selectedPhone.wabaId}&userWaId=${selectedChatId}`,
+        );
+        if (cancelled) return;
+        const data = await res.json();
+        if (data.error) {
+          setPermissionMap(prev => { const next = { ...prev }; delete next[selectedChatId]; return next; });
+          return;
+        }
+        const permStatus = data.permission?.status;
+        const remaining = formatRemainingRequests(data.actions ?? []);
+        if (permStatus === 'permanent') {
+          setPermissionMap(prev => { const next = { ...prev }; delete next[selectedChatId]; return next; });
+        } else if (permStatus === 'temporary') {
+          const expTime = data.permission?.expiration_time
+            ? data.permission.expiration_time * 1000
+            : undefined;
+          setPermissionMap(prev => ({ ...prev, [selectedChatId]: { state: 'granted', expirationTime: expTime, remainingRequests: remaining } }));
+        } else {
+          const sendAction = data.actions?.find(
+            (a: { action_name: string }) => a.action_name === 'send_call_permission_request',
+          );
+          if (sendAction && sendAction.can_perform_action === false) {
+            setPermissionMap(prev => ({ ...prev, [selectedChatId]: { state: 'rate_limited' } }));
+          } else {
+            setPermissionMap(prev => ({ ...prev, [selectedChatId]: { state: 'requesting', remainingRequests: remaining } }));
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setPermissionMap(prev => { const next = { ...prev }; delete next[selectedChatId]; return next; });
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check when conversation changes
+  }, [selectedPhone?.id, selectedChatId]);
 
   // State management functions
   const addMessage = useCallback((phoneId: string, chatId: string, message: Message) => {
@@ -192,6 +268,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
           };
           const msg = eventMap[meta.endReason];
           if (msg) addMessage(meta.phoneNumberId, chatId, msg);
+          if (meta.endReason === 'missed') markMissedCall(meta.phoneNumberId, chatId);
         }
       }
     });
@@ -206,7 +283,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       }
       callingClientRef.current?.cleanup();
     };
-  }, [addMessage]);
+  }, [addMessage, markMissedCall]);
 
   const addChat = useCallback((phoneId: string, chatId: string, displayName: string, lastMessage?: string) => {
     setAllChats((prev) => {
@@ -263,6 +340,23 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     console.log('[Calling] handleAcceptCall called, state:', cs.state, 'hasOffer:', !!cs.offerSdp, 'phoneNumberId:', cs.phoneNumberId, 'callId:', cs.callId);
     if (!cs.offerSdp || !cs.phoneNumberId || !cs.wabaId || !cs.callId) return;
     if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
+    stopRinging();
+    // Navigate to the caller's conversation
+    if (cs.callerNumber) {
+      const phone = phonesRef.current.find(p => p.id === cs.phoneNumberId);
+      if (phone) {
+        setSelectedPhone(phone);
+        setSelectedChatId(cs.callerNumber);
+        // Create chat if it doesn't exist, or update name if we have one from the webhook
+        const displayName = cs.callerName || cs.callerNumber;
+        setAllChats(prev => {
+          const phoneChats = prev[cs.phoneNumberId!] ?? {};
+          const existing = phoneChats[cs.callerNumber!];
+          if (existing && existing.displayName !== cs.callerNumber) return prev; // keep existing name
+          return { ...prev, [cs.phoneNumberId!]: { ...phoneChats, [cs.callerNumber!]: { ...existing, displayName, lastTimestamp: existing?.lastTimestamp ?? Date.now() } } };
+        });
+      }
+    }
     try {
       await callingClientRef.current?.acceptCall(
         cs.offerSdp,
@@ -283,6 +377,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     const cs = callStateRef.current;
     if (!cs.phoneNumberId || !cs.wabaId || !cs.callId) return;
     if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
+    stopRinging();
     await callingClientRef.current?.rejectCall(
       cs.phoneNumberId,
       cs.wabaId,
@@ -350,6 +445,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       // Response shape: { permission: { status: "permanent"|"temporary"|... }, actions: [...] }
       const permStatus = data.permission?.status;
       const hasPermission = permStatus === 'permanent' || permStatus === 'temporary';
+      const remaining = formatRemainingRequests(data.actions ?? []);
 
       if (hasPermission) {
         // Permission granted — start call immediately
@@ -363,7 +459,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
         if (sendAction && sendAction.can_perform_action === false) {
           setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'rate_limited' } }));
         } else {
-          setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting' } }));
+          setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting', remainingRequests: remaining } }));
         }
       }
     } catch (err) {
@@ -378,6 +474,9 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     if (!phone || !chatId) return;
 
     setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'pending' } }));
+    addMessage(phone.id, chatId, {
+      type: 'permission_event', event: 'requested', timestamp: Date.now(),
+    } as Message);
 
     try {
       const res = await fetch('/api/calls/request-permission', {
@@ -402,13 +501,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       console.error('[Calling] Permission request error:', err);
       setPermissionMap(prev => ({ ...prev, [chatId]: { state: 'requesting' } }));
     }
-  }, []);
+  }, [addMessage]);
 
-  const handleCallNow = useCallback(async () => {
-    const phone = selectedPhoneRef.current;
-    const chatId = selectedChatIdRef.current;
-    if (!phone || !chatId) return;
-    await startOutboundCall(phone.id, phone.wabaId, chatId);
+  const handleRetryCall = useCallback(async () => {
+    const cs = callStateRef.current;
+    if (!cs.phoneNumberId || !cs.wabaId || !cs.destPhone) return;
+    setCallState({ state: 'IDLE' });
+    await startOutboundCall(cs.phoneNumberId, cs.wabaId, cs.destPhone);
   }, [startOutboundCall]);
 
   // Ably connection — single connection for ALL phones
@@ -473,6 +572,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
                 if (currentState === 'IDLE' && sdpType === 'offer') {
                   // INBOUND: new incoming call with offer SDP
+                  const contactName = value?.contacts?.[0]?.profile?.name;
                   setCallState({
                     state: 'RINGING',
                     direction: 'inbound',
@@ -480,6 +580,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                     phoneNumberId: phoneId,
                     wabaId: entry.id,
                     callerNumber: call.from,
+                    callerName: contactName,
                     offerSdp: call.session.sdp,
                   });
 
@@ -492,6 +593,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                       addMessage(phoneId, call.from, {
                         type: 'call_event', event: 'missed', direction: 'inbound', timestamp: Date.now(),
                       } as Message);
+                      markMissedCall(phoneId, call.from);
                     }
                   }, 30000);
 
@@ -528,6 +630,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                   addMessage(phoneId, chatThreadId, {
                     type: 'call_event', event: 'missed', direction: 'inbound', timestamp: Date.now(),
                   } as Message);
+                  markMissedCall(phoneId, chatThreadId);
                 } else if (callStateRef.current.state === 'ACTIVE' || callStateRef.current.state === 'CONNECTING' || callStateRef.current.state === 'RINGING') {
                   callingClientRef.current?.onRemoteEnd(call.id, phoneId, entry.id, 'remote_hangup');
                   addMessage(phoneId, chatThreadId, {
@@ -595,9 +698,39 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
               const replyFrom = msgData.from;
               if (replyFrom) {
                 if (reply.response === 'accept') {
+                  // Only show bubble if we were actively requesting permission
+                  // (avoids spurious bubbles from implicit grants after inbound calls)
+                  const wasRequesting = permissionMapRef.current[replyFrom]?.state === 'pending';
                   setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'granted' } }));
+                  if (wasRequesting) {
+                    addMessage(phoneId, replyFrom, {
+                      type: 'permission_event', event: 'granted', timestamp: Date.now(),
+                    } as Message);
+                  }
+                  // Re-fetch to get actual status (permanent vs temporary) and expiration
+                  const phone = phonesRef.current.find(p => p.id === phoneId);
+                  if (phone) {
+                    fetch(`/api/calls/permissions?phoneNumberId=${phoneId}&wabaId=${phone.wabaId}&userWaId=${replyFrom}`)
+                      .then(r => r.json())
+                      .then(data => {
+                        const permStatus = data.permission?.status;
+                        const remaining = formatRemainingRequests(data.actions ?? []);
+                        if (permStatus === 'permanent') {
+                          setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'granted', remainingRequests: remaining } }));
+                        } else if (permStatus === 'temporary') {
+                          const expTime = data.permission?.expiration_time
+                            ? data.permission.expiration_time * 1000
+                            : undefined;
+                          setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'granted', expirationTime: expTime, remainingRequests: remaining } }));
+                        }
+                      })
+                      .catch(() => {});
+                  }
                 } else if (reply.response === 'reject') {
                   setPermissionMap(prev => ({ ...prev, [replyFrom]: { state: 'denied' } }));
+                  addMessage(phoneId, replyFrom, {
+                    type: 'permission_event', event: 'declined', timestamp: Date.now(),
+                  } as Message);
                 }
               }
               continue;
@@ -643,7 +776,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       channel.unsubscribe();
       ablyClient.close();
     };
-  }, [addMessage, addChat, markUnread]);
+  }, [addMessage, addChat, markUnread, markMissedCall]);
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-gray-50">
@@ -781,18 +914,15 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                         : 'Phone disconnected — click status to reconnect'}
               </div>
 
-              {/* Call banner — shown for active calls or permission flow for current conversation */}
-              {((callState.state !== 'IDLE' && callState.phoneNumberId === selectedPhone.id)
-                || (selectedChatId && permissionMap[selectedChatId]?.state && permissionMap[selectedChatId].state !== 'none')) && (
+              {/* Call banner — shown only for active calls (permission UI moved to inline ribbon) */}
+              {callState.state !== 'IDLE' && callState.phoneNumberId === selectedPhone.id && (
                 <CallBanner
                   callState={callState}
                   callingClient={callingClientRef.current}
-                  permissionState={selectedChatId ? (permissionMap[selectedChatId]?.state ?? 'none') : 'none'}
                   onAccept={handleAcceptCall}
                   onReject={handleRejectCall}
                   onHangUp={handleHangUp}
-                  onRequestPermission={handleRequestPermission}
-                  onCallNow={handleCallNow}
+                  onRetry={handleRetryCall}
                 />
               )}
 
@@ -808,6 +938,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                       .sort(([, a], [, b]) => (b.lastTimestamp ?? 0) - (a.lastTimestamp ?? 0))
                       .map(([chatId, chat]) => {
                         const isUnread = unreadChats[selectedPhone.id]?.has(chatId) ?? false;
+                        const hasMissedCall = missedCallChats[selectedPhone.id]?.has(chatId) ?? false;
                         return (
                           <button
                             key={chatId}
@@ -829,7 +960,10 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                               >
                                 {chat.displayName.slice(0, 2).toUpperCase()}
                               </div>
-                              {isUnread && (
+                              {hasMissedCall && (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                              )}
+                              {isUnread && !hasMissedCall && (
                                 <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-2 ring-white" />
                               )}
                             </div>
@@ -850,9 +984,18 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                                 )}>{chat.lastMessage}</div>
                               )}
                             </div>
-                            {isUnread && (
-                              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500" />
-                            )}
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              {(() => {
+                                const perm = permissionMap[chatId]?.state;
+                                if (perm === 'granted') return <PhoneIcon className="w-3 h-3 text-green-500" />;
+                                if (perm === 'pending') return <PhoneIcon className="w-3 h-3 text-blue-400 animate-pulse" />;
+                                if (perm === 'requesting' || perm === 'rate_limited' || perm === 'denied') return <PhoneIcon className="w-3 h-3 text-gray-300" />;
+                                return null;
+                              })()}
+                              {isUnread && (
+                                <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                              )}
+                            </div>
                           </button>
                         );
                       })}
@@ -871,7 +1014,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                       isAckBotEnabled={selectedPhone.isAckBotEnabled}
                       onToggleAckBot={() => {}}
                       onCallClick={() => handleCallClick(selectedChatId)}
-                      callActive={callState.state !== 'IDLE' || !!(selectedChatId && permissionMap[selectedChatId]?.state && permissionMap[selectedChatId].state !== 'none')}
+                      callActive={callState.state !== 'IDLE'}
+                      permissionState={permissionMap[selectedChatId]?.state}
+                      permissionExpirationTime={permissionMap[selectedChatId]?.expirationTime}
+                      permissionRemainingRequests={permissionMap[selectedChatId]?.remainingRequests}
+                      onRequestPermission={handleRequestPermission}
+                      hasMissedCall={missedCallChats[selectedPhone.id]?.has(selectedChatId) ?? false}
+                      onCallBack={() => handleCallClick(selectedChatId)}
                     />
                   ) : (
                     <div

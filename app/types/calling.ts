@@ -34,6 +34,7 @@ export interface ActiveCallState {
   phoneNumberId?: string;
   wabaId?: string;
   callerNumber?: string;
+  callerName?: string;
   destPhone?: string;
   direction?: CallDirection;
   offerSdp?: string;

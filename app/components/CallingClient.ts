@@ -101,13 +101,11 @@ export class CallingClient {
       ],
     });
 
-    // Play remote audio when the track arrives
+    // Capture remote audio track — play only when connection is established
     this.pc.ontrack = (event) => {
       console.log('[CallingClient] Remote track received:', event.track.kind);
       this.remoteAudio = new Audio();
       this.remoteAudio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
-      this.remoteAudio.autoplay = true;
-      this.remoteAudio.play().catch(err => console.warn('[CallingClient] Audio play failed:', err));
     };
 
     try {
@@ -166,6 +164,11 @@ export class CallingClient {
     this.pc.onconnectionstatechange = () => {
       console.log('[CallingClient] Connection state:', this.pc?.connectionState);
       if (this.pc?.connectionState === 'connected') {
+        // Start playing remote audio now that the call is established
+        if (this.remoteAudio) {
+          console.log('[CallingClient] Playing remote audio (inbound connected)');
+          this.remoteAudio.play().catch(err => console.warn('[CallingClient] Audio play failed:', err));
+        }
         fetch('/api/calls/accept', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -203,12 +206,12 @@ export class CallingClient {
       ],
     });
 
+    // Capture remote audio track — don't play until answer SDP is received
+    // and connection is established (avoids playing signaling tones)
     this.pc.ontrack = (event) => {
-      console.log('[CallingClient] Remote track received:', event.track.kind);
+      console.log('[CallingClient] Remote track received:', event.track.kind, '— NOT playing yet (waiting for connected)');
       this.remoteAudio = new Audio();
       this.remoteAudio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
-      this.remoteAudio.autoplay = true;
-      this.remoteAudio.play().catch(err => console.warn('[CallingClient] Audio play failed:', err));
     };
 
     try {
@@ -262,6 +265,13 @@ export class CallingClient {
     // processed, but the user may not have picked up yet.
     this.pc.onconnectionstatechange = () => {
       console.log('[CallingClient] Connection state:', this.pc?.connectionState);
+      if (this.pc?.connectionState === 'connected') {
+        // Start playing remote audio now that media path is established
+        if (this.remoteAudio) {
+          console.log('[CallingClient] Playing remote audio (outbound connected)');
+          this.remoteAudio.play().catch(err => console.warn('[CallingClient] Audio play failed:', err));
+        }
+      }
       if (this.pc?.connectionState === 'failed') {
         this.cleanup();
         this.setState('ENDED', { callId, phoneNumberId, wabaId, destPhone, direction: 'outbound', endReason: 'failed' });

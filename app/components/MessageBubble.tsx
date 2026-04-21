@@ -3,9 +3,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import { Phone, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CallEventType, CallDirection } from '@/app/types/calling';
+import { formatDuration } from '@/app/utils/calling';
 
 export type TextMessage = {
   type: 'text';
@@ -22,13 +23,14 @@ export type CallEventMessage = {
   timestamp: number;
 };
 
-export type Message = TextMessage | CallEventMessage;
+export type PermissionEventMessage = {
+  type: 'permission_event';
+  event: 'requested' | 'granted' | 'declined';
+  timestamp: number;
+};
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+export type Message = TextMessage | CallEventMessage | PermissionEventMessage;
+
 
 function getCallLabel(event: CallEventType, direction?: CallDirection): string {
   if (event === 'started') return direction === 'inbound' ? 'Incoming voice call' : 'Outgoing voice call';
@@ -73,6 +75,33 @@ export default function MessageBubble(props: Message) {
         )}>
           <CallIcon event={props.event} direction={props.direction} />
           <span className="font-medium">{label}{durationStr}</span>
+          <span className="text-[10px] opacity-70">{formattedTime}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (props.type === 'permission_event') {
+    const permLabels = {
+      requested: 'Call permission requested',
+      granted: 'Call permission granted',
+      declined: 'Call permission declined',
+    };
+    const formattedTime = new Date(props.timestamp).toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    return (
+      <div className="flex justify-center my-2">
+        <div className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs',
+          props.event === 'granted' ? 'bg-green-50 text-green-600' :
+          props.event === 'declined' ? 'bg-red-50 text-red-600' :
+          'bg-blue-50 text-blue-500',
+        )}>
+          <ShieldCheck className="w-3 h-3" />
+          <span className="font-medium">{permLabels[props.event]}</span>
           <span className="text-[10px] opacity-70">{formattedTime}</span>
         </div>
       </div>

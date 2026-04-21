@@ -7,115 +7,79 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-import { Phone, PhoneOff, PhoneOutgoing, Mic, MicOff, Loader2, ShieldCheck, ShieldX } from 'lucide-react';
-import type { ActiveCallState, PermissionState } from '@/app/types/calling';
+import { Phone, PhoneOff, PhoneOutgoing, Mic, MicOff, Loader2 } from 'lucide-react';
+import type { ActiveCallState } from '@/app/types/calling';
 import type { CallingClient } from '@/app/components/CallingClient';
 import { cn } from '@/lib/utils';
+import { formatDuration, generateRingToneBlob } from '@/app/utils/calling';
 
 interface CallBannerProps {
   callState: ActiveCallState;
   callingClient: CallingClient | null;
-  permissionState: PermissionState;
   onAccept: () => void;
   onReject: () => void;
   onHangUp: () => void;
-  onRequestPermission: () => void;
-  onCallNow: () => void;
+  onRetry?: () => void;
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+let _ringAudio: HTMLAudioElement | null = null;
+let _inboundUrl: string | null = null;
+let _outboundUrl: string | null = null;
+
+export function stopRinging() {
+  if (_ringAudio) {
+    _ringAudio.pause();
+    _ringAudio.removeAttribute('src');
+    _ringAudio.load();
+    _ringAudio = null;
+  }
+}
+
+function startRinging(type: 'inbound' | 'outbound') {
+  stopRinging();
+  if (type === 'inbound') {
+    if (!_inboundUrl) _inboundUrl = URL.createObjectURL(generateRingToneBlob('inbound'));
+    _ringAudio = new Audio(_inboundUrl);
+  } else {
+    if (!_outboundUrl) _outboundUrl = URL.createObjectURL(generateRingToneBlob('outbound'));
+    _ringAudio = new Audio(_outboundUrl);
+  }
+  _ringAudio.loop = true;
+  _ringAudio.play().catch(() => {});
 }
 
 export default function CallBanner({
   callState,
   callingClient,
-  permissionState,
   onAccept,
   onReject,
   onHangUp,
-  onRequestPermission,
-  onCallNow,
+  onRetry,
 }: CallBannerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [visible, setVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const ringIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const isInbound = callState.direction === 'inbound';
   const isOutbound = callState.direction === 'outbound';
 
-  // Ringing sound — inbound: two-tone alert ring; outbound: softer ringback tone
+  // Ringing sound — start/stop based on call state
   useEffect(() => {
     const shouldPlayInbound = callState.state === 'RINGING' && isInbound;
     const shouldPlayOutbound = isOutbound && (callState.state === 'CONNECTING' || callState.state === 'RINGING');
 
-    if (shouldPlayInbound || shouldPlayOutbound) {
-      // If outbound ringback is already playing, don't restart (avoids gap on CONNECTING→RINGING)
-      if (shouldPlayOutbound && ringIntervalRef.current) return undefined;
-
-      const ctx = new AudioContext();
-      audioCtxRef.current = ctx;
-
-      if (shouldPlayInbound) {
-        // Inbound: two-tone ring (440Hz + 480Hz)
-        const playRingBurst = () => {
-          const now = ctx.currentTime;
-          for (const [freq, start, end] of [[440, 0, 0.4], [480, 0.5, 0.9]] as const) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.15, now + start);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + end);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(now + start);
-            osc.stop(now + end);
-          }
-        };
-        playRingBurst();
-        ringIntervalRef.current = setInterval(playRingBurst, 2000);
-      } else {
-        // Outbound: gentle ringback tone (440Hz, 2s on / 4s off)
-        const playRingback = () => {
-          const now = ctx.currentTime;
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 440;
-          gain.gain.setValueAtTime(0.08, now);
-          gain.gain.setValueAtTime(0.08, now + 1.8);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
-          osc.connect(gain).connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 2);
-        };
-        playRingback();
-        ringIntervalRef.current = setInterval(playRingback, 4000);
-      }
-
-      return () => {
-        if (ringIntervalRef.current) clearInterval(ringIntervalRef.current);
-        ringIntervalRef.current = null;
-        ctx.close();
-        audioCtxRef.current = null;
-      };
+    if (shouldPlayInbound) {
+      startRinging('inbound');
+    } else if (shouldPlayOutbound) {
+      // Only start if not already playing (avoids gap on CONNECTING→RINGING)
+      if (!_ringAudio) startRinging('outbound');
+    } else {
+      stopRinging();
     }
 
-    // State left ringing — clean up
-    if (ringIntervalRef.current) {
-      clearInterval(ringIntervalRef.current);
-      ringIntervalRef.current = null;
-    }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close();
-      audioCtxRef.current = null;
-    }
-    return undefined;
+    return () => stopRinging();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- isInbound/isOutbound already derive from direction
   }, [callState.state, isInbound, isOutbound]);
 
   // Duration timer
@@ -136,26 +100,23 @@ export default function CallBanner({
     };
   }, [callState.state]);
 
-  // Fade out on ENDED or DENIED
+  // Fade out on ENDED
   useEffect(() => {
-    if (callState.state === 'ENDED' || permissionState === 'denied') {
+    if (callState.state === 'ENDED') {
       const timeout = setTimeout(() => setVisible(false), 3000);
       return () => clearTimeout(timeout);
     }
     setVisible(true);
     return undefined;
-  }, [callState.state, permissionState]);
+  }, [callState.state]);
 
   // Reset mute when call ends
   useEffect(() => {
     if (callState.state !== 'ACTIVE') setIsMuted(false);
   }, [callState.state]);
 
-  // Show banner for permission states or active call states
-  const showForPermission = permissionState !== 'none';
-  const showForCall = callState.state !== 'IDLE';
-
-  if (!showForPermission && !showForCall) return null;
+  // Only show banner for active call states (permission UI moved to CallPermissionRibbon)
+  if (callState.state === 'IDLE') return null;
   if (!visible) return null;
 
   const handleMuteToggle = () => {
@@ -164,88 +125,6 @@ export default function CallBanner({
       setIsMuted(muted);
     }
   };
-
-  // Permission states UI
-  if (showForPermission && callState.state === 'IDLE') {
-    return (
-      <div
-        className={cn(
-          'px-4 py-3 flex items-center justify-between border-b transition-all',
-          permissionState === 'checking' && 'bg-blue-50 border-blue-200',
-          permissionState === 'requesting' && 'bg-amber-50 border-amber-200',
-          permissionState === 'pending' && 'bg-blue-50 border-blue-200',
-          permissionState === 'granted' && 'bg-green-50 border-green-200',
-          permissionState === 'denied' && 'bg-red-50 border-red-200 opacity-60',
-          permissionState === 'rate_limited' && 'bg-orange-50 border-orange-200',
-        )}
-      >
-        <div className="flex items-center gap-3">
-          {permissionState === 'checking' ? (
-            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-          ) : permissionState === 'granted' ? (
-            <ShieldCheck className="w-4 h-4 text-green-600" />
-          ) : permissionState === 'denied' ? (
-            <ShieldX className="w-4 h-4 text-red-500" />
-          ) : (
-            <PhoneOutgoing className="w-4 h-4 text-amber-600" />
-          )}
-          <div>
-            {permissionState === 'checking' && (
-              <span className="text-sm font-medium text-blue-800 flex items-center gap-2">
-                Checking call permissions...
-              </span>
-            )}
-            {permissionState === 'requesting' && (
-              <span className="text-sm font-medium text-amber-800">
-                Call permission required
-              </span>
-            )}
-            {permissionState === 'pending' && (
-              <span className="text-sm font-medium text-blue-800 flex items-center gap-2">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                Permission request sent — waiting for response
-              </span>
-            )}
-            {permissionState === 'granted' && (
-              <span className="text-sm font-medium text-green-800">
-                Permission granted!
-              </span>
-            )}
-            {permissionState === 'denied' && (
-              <span className="text-sm text-red-600">
-                Permission declined
-              </span>
-            )}
-            {permissionState === 'rate_limited' && (
-              <span className="text-sm text-orange-700">
-                Request limit reached — try again later
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {permissionState === 'requesting' && (
-            <button
-              onClick={onRequestPermission}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-            >
-              Request Permission
-            </button>
-          )}
-          {permissionState === 'granted' && (
-            <button
-              onClick={onCallNow}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors"
-            >
-              <Phone className="w-3 h-3" />
-              Call Now
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   // Call states UI
   return (
@@ -279,7 +158,7 @@ export default function CallBanner({
         <div>
           {callState.state === 'RINGING' && isInbound && (
             <span className="text-sm font-medium text-green-800">
-              Incoming call from {callState.callerNumber ?? 'unknown'}
+              Incoming call from {callState.callerName ?? callState.callerNumber ?? 'unknown'}
             </span>
           )}
           {callState.state === 'CONNECTING' && isOutbound && (
@@ -366,6 +245,16 @@ export default function CallBanner({
               Hang up
             </button>
           </>
+        )}
+
+        {callState.state === 'ENDED' && callState.error && onRetry && isOutbound && (
+          <button
+            onClick={onRetry}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          >
+            <Phone className="w-3 h-3" />
+            Retry call
+          </button>
         )}
       </div>
     </div>
