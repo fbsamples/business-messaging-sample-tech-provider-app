@@ -73,7 +73,7 @@ export default function ConversationView({
                 ? 'text-green-600 hover:bg-green-50'
                 : 'text-gray-400 hover:bg-gray-50',
             )}
-            title={
+            aria-label={
               callActive ? 'Call in progress' :
               permissionState === 'granted' && permissionExpirationTime
                 ? 'Temporary permission — click to call'
@@ -84,9 +84,9 @@ export default function ConversationView({
                     : 'Start call'
             }
           >
-            <Phone className="w-5 h-5" />
+            <Phone className="w-5 h-5" aria-hidden="true" />
             {permissionState === 'granted' && permissionExpirationTime && (
-              <Clock className="w-2.5 h-2.5 absolute -top-0.5 -right-0.5 text-amber-500" />
+              <Clock className="w-2.5 h-2.5 absolute -top-0.5 -right-0.5 text-amber-500" aria-hidden="true" />
             )}
           </button>
         )}
@@ -104,7 +104,7 @@ export default function ConversationView({
 
       {/* Missed call — call back suggestion */}
       {hasMissedCall && onCallBack && !callActive && (
-        <div className="px-4 py-2 flex items-center justify-between border-b bg-red-50 border-red-200 text-xs">
+        <div role="alert" className="px-4 py-2 flex items-center justify-between border-b bg-red-50 border-red-200 text-xs">
           <div className="flex items-center gap-2">
             <PhoneMissed className="w-3.5 h-3.5 text-red-500" />
             <span className="font-medium text-red-700">Missed call from {displayName}</span>

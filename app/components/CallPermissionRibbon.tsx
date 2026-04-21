@@ -43,6 +43,7 @@ export default function CallPermissionRibbon({
 
   return (
     <div
+      aria-live="polite"
       className={cn(
         'px-4 py-2 flex items-center justify-between border-b text-xs transition-all',
         permissionState === 'checking' && 'bg-blue-50 border-blue-200',

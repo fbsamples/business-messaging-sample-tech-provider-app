@@ -74,6 +74,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   const callingClientRef = useRef<CallingClient | null>(null);
   const callStateRef = useRef(callState);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const endedResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     permissionMapRef.current = permissionMap;
@@ -233,7 +234,9 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
       // Reset to IDLE after ENDED so the next call can come through
       if (state === 'ENDED') {
         const endedChatId = meta?.callerNumber ?? meta?.destPhone;
-        setTimeout(() => {
+        if (endedResetTimeoutRef.current) clearTimeout(endedResetTimeoutRef.current);
+        endedResetTimeoutRef.current = setTimeout(() => {
+          endedResetTimeoutRef.current = null;
           setCallState({ state: 'IDLE' });
           if (endedChatId) {
             setPermissionMap(prev => {
@@ -396,6 +399,11 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
   }, []);
 
   const startOutboundCall = useCallback(async (phoneNumberId: string, wabaId: string, destPhone: string) => {
+    // Clear any pending ENDED→IDLE reset so it doesn't fire during the new call
+    if (endedResetTimeoutRef.current) {
+      clearTimeout(endedResetTimeoutRef.current);
+      endedResetTimeoutRef.current = null;
+    }
     setCallState({
       state: 'CONNECTING',
       direction: 'outbound',
@@ -607,6 +615,25 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
                   console.log('[Calling] Outbound answer SDP received');
                   callingClientRef.current?.handleAnswerSdp(call.session.sdp);
                   // ACTIVE state is set by onconnectionstatechange
+                } else if (currentState !== 'IDLE' && sdpType === 'offer') {
+                  // Another inbound call while already on a call — reject and log as missed
+                  const callerName = value?.contacts?.[0]?.profile?.name;
+                  console.log('[Calling] Incoming call while busy, rejecting:', call.from, callerName);
+                  fetch('/api/calls/reject', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumberId: phoneId, wabaId: entry.id, callId: call.id }),
+                  }).catch(err => console.error('[Calling] Reject busy call failed:', err));
+                  addMessage(phoneId, call.from, {
+                    type: 'call_event', event: 'missed', direction: 'inbound', timestamp: Date.now(),
+                  } as Message);
+                  markMissedCall(phoneId, call.from);
+                  // Add to chat list if not already present (don't overwrite existing data)
+                  setAllChats(prev => {
+                    if (prev[phoneId]?.[call.from]) return prev;
+                    const phoneChats = prev[phoneId] ?? {};
+                    return { ...prev, [phoneId]: { ...phoneChats, [call.from]: { displayName: callerName ?? call.from, lastMessage: 'Missed call', lastTimestamp: Date.now() } } };
+                  });
                 } else {
                   console.warn('[Calling] Ignoring connect webhook: state=', currentState,
                     'sdpType=', sdpType, 'callId=', call.id);
@@ -773,6 +800,7 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
 
     return () => {
       if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
+      if (endedResetTimeoutRef.current) clearTimeout(endedResetTimeoutRef.current);
       channel.unsubscribe();
       ablyClient.close();
     };
