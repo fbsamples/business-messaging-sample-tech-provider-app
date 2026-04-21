@@ -189,6 +189,13 @@ export default function InboxLayout({ phones }: { phones: PhoneDetails[] }) {
     });
 
     return () => {
+      const cs = callStateRef.current;
+      if (cs.state === 'ACTIVE' || cs.state === 'CONNECTING' || cs.state === 'RINGING') {
+        if (cs.phoneNumberId && cs.wabaId && cs.callId) {
+          callingClientRef.current?.hangUp(cs.phoneNumberId, cs.wabaId, cs.callId);
+          return;
+        }
+      }
       callingClientRef.current?.cleanup();
     };
   }, [addMessage]);
