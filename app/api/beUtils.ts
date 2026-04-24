@@ -506,11 +506,12 @@ export async function sendTemplateMessage(
   to: string,
   templateName: string,
   templateLanguage: string,
-  components: TemplateComponentParam[]
+  components: TemplateComponentParam[],
+  bizOpaqueCallbackData?: string
 ): Promise<SendMessageResponse> {
   console.log('sendTemplateMessage:', 'phoneNumberId', phoneNumberId, 'to', to, 'templateName', templateName);
   const url = `/${phoneNumberId}/messages`;
-  const data = await graphApiWrapperPost(url, accessToken, {
+  const payload: Record<string, unknown> = {
     messaging_product: 'whatsapp',
     to,
     type: 'template',
@@ -519,7 +520,11 @@ export async function sendTemplateMessage(
       language: { code: templateLanguage },
       components,
     },
-  });
+  };
+  if (bizOpaqueCallbackData) {
+    payload.biz_opaque_callback_data = bizOpaqueCallbackData;
+  }
+  const data = await graphApiWrapperPost(url, accessToken, payload);
 
   // graphApiWrapperPost does NOT throw on Graph API errors — it returns
   // the error object as data. We must explicitly check and throw.

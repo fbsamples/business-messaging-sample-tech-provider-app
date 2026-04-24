@@ -31,9 +31,9 @@ export default async function PaidMessaging() {
     <SidebarLayout userId={userId} logoUrl={appDetails.logo_url} appName={appDetails.name}>
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-900">Send Template Message</h1>
+          <h1 className="text-xl font-bold text-gray-900">Send Paid Messages</h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
-            Send paid template messages via WhatsApp Business API
+            Send paid template messages and Marketing Messages Lite via the WhatsApp Business API
           </p>
         </div>
         {wabas.length === 0 ? (

@@ -453,6 +453,7 @@ export type SendTemplateRequest = {
   template_language: string;
   recipient: string;
   component_params: TemplateComponentParam[];
+  biz_opaque_callback_data?: string;
 };
 
 export type SendTemplateResponse = SendMessageResponse;

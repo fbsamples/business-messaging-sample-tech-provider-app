@@ -22,6 +22,7 @@ export const POST = withAuth(async function sendTemplateRoute(request: NextReque
       template_language: templateLanguage,
       recipient,
       component_params: componentParams,
+      biz_opaque_callback_data: bizOpaqueCallbackData,
     } = body;
 
     // Validate required fields
@@ -66,7 +67,10 @@ export const POST = withAuth(async function sendTemplateRoute(request: NextReque
       recipient,
       templateName,
       templateLanguage,
-      componentParams || []
+      componentParams || [],
+      typeof bizOpaqueCallbackData === 'string' && bizOpaqueCallbackData.length > 0
+        ? bizOpaqueCallbackData
+        : undefined
     );
     return NextResponse.json(result);
   } catch (error: unknown) {
