@@ -4,8 +4,30 @@
 // LICENSE file in the root directory of this source tree.
 
 import Link from 'next/link';
+import {redirect} from 'next/navigation';
+
+function isHttpUrl(value: string | undefined): value is string {
+  if (!value) {
+    return false;
+  }
+  try {
+    const {protocol} = new URL(value);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 export default function PrivacyPage() {
+  // Vercel's deploy button makes every listed env var required and rejects a
+  // blank value, so operators without a policy URL enter a sentinel like "none".
+  // Only redirect when the value is a real http(s) URL; anything else falls
+  // through to the placeholder page below.
+  const privacyPolicyUrl = process.env.PRIVACY_POLICY_URL?.trim();
+  if (isHttpUrl(privacyPolicyUrl)) {
+    redirect(privacyPolicyUrl);
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-lg w-full bg-white border border-gray-200 rounded-2xl shadow-sm p-10 text-center">
@@ -31,13 +53,23 @@ export default function PrivacyPage() {
         </p>
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-left mb-6">
           <p className="text-[13px] font-semibold text-amber-800 mb-1">Action required</p>
-          <p className="text-[12px] text-amber-700 leading-relaxed">
-            Replace the content of{' '}
-            <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">app/privacy/page.tsx</code> with your own
-            Privacy Policy before deploying to production. This URL (
-            <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">/privacy</code>) can be referenced in your
-            Meta app configuration and Embedded Signup setup.
+          <p className="text-[12px] text-amber-700 leading-relaxed mb-3">
+            Before deploying to production, do one of the following so{' '}
+            <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">/privacy</code> serves your own Privacy
+            Policy. This URL can then be referenced in your Meta app configuration and Embedded Signup setup.
           </p>
+          <ul className="text-[12px] text-amber-700 leading-relaxed list-disc pl-4 space-y-1">
+            <li>
+              Set the{' '}
+              <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">PRIVACY_POLICY_URL</code> environment
+              variable to redirect this route to a policy you host elsewhere, or
+            </li>
+            <li>
+              Replace the content of{' '}
+              <code className="bg-amber-100 px-1 rounded font-mono text-[11px]">app/privacy/page.tsx</code> with your own
+              Privacy Policy.
+            </li>
+          </ul>
         </div>
         <Link
           href="/"

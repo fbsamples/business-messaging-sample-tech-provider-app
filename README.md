@@ -78,7 +78,7 @@ Choose one of the two paths below:
 
 Click the button below to deploy to a new Vercel project. The flow will prompt you to fork the repo, connect a Neon Postgres database, and set environment variables.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app&env=ABLY_KEY,APP_BASE_URL,AUTH0_DOMAIN,AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_VERIFY_TOKEN,TP_CONTACT_EMAIL&envDescription=Variables%20to%20configure%20the%20app&envLink=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app%23environment-variables&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app&env=ABLY_KEY,APP_BASE_URL,AUTH0_DOMAIN,AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_VERIFY_TOKEN,TP_CONTACT_EMAIL,PRIVACY_POLICY_URL&envDescription=PRIVACY_POLICY_URL%20is%20optional%2C%20enter%20None%20if%20you%20don%27t%20have.%20See%20the%20README%20for%20detailed%20descriptions%20of%20the%20variables%20to%20configure%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
 
 **Step 2 — Set up the database**
 
@@ -309,6 +309,11 @@ ABLY_KEY='your-ably-api-key'
 # Contact
 TP_CONTACT_EMAIL='your-contact-email@example.com'
 
+# Privacy Policy (optional)
+# If set, the /privacy route redirects to this URL. Leave unset to serve the
+# built-in placeholder page at /privacy instead.
+# PRIVACY_POLICY_URL='https://example.com/privacy'
+
 # Database (auto-configured when using Vercel + Neon integration)
 # POSTGRES_URL='postgres://...'
 ```
@@ -327,13 +332,14 @@ TP_CONTACT_EMAIL='your-contact-email@example.com'
 | `FB_VERIFY_TOKEN` | A secret string you choose — Meta sends it during webhook verification to prove it's you. |
 | `ABLY_KEY` | API key from your [Ably dashboard](https://ably.com/accounts). |
 | `TP_CONTACT_EMAIL` | Contact email displayed in the app. |
+| `PRIVACY_POLICY_URL` | _Optional._ If set to an `http(s)://` URL, the `/privacy` route redirects there; otherwise the built-in placeholder page is served. It is prompted during Deploy to Vercel — enter the URL of a privacy policy you host, or, if you don't have one yet, enter `none` (Vercel requires a value and rejects blanks; any non-URL value like `none` is treated as unset, so the placeholder is served). For local development, simply leave it unset. |
 | `POSTGRES_URL` | PostgreSQL connection string. Auto-set when you connect Neon via Vercel. |
 
 ## Going to Production
 
 The steps above are sufficient for development and testing with app admins and testers. To make your app available to external businesses, complete the following checklist:
 
-- [ ] **Replace the privacy policy** — The app includes a placeholder at `/privacy`. Replace it with your own and set the URL in **App Settings > Basic > Privacy Policy URL**.
+- [ ] **Replace the privacy policy** — The app includes a placeholder at `/privacy`. Either set the `PRIVACY_POLICY_URL` env var to redirect `/privacy` to a policy you host elsewhere, or replace the content of `app/privacy/page.tsx` with your own. Then set the URL in **App Settings > Basic > Privacy Policy URL**.
 - [ ] **Create a Tech Provider Configuration** — In the Meta Developer Dashboard, create at least one Tech Provider Configuration (config ID). The app fetches these dynamically and uses them to launch Embedded Signup.
 - [ ] **Complete Business Verification** — Your business must be verified before your app can access production data from other businesses. See [Business Verification](https://developers.facebook.com/docs/development/release/business-verification).
 - [ ] **Submit for App Review** — Request the permissions your app needs. See [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/app-review). At minimum, request:
