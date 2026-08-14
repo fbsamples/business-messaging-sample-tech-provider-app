@@ -78,7 +78,8 @@ Choose one of the two paths below:
 
 Click the button below to deploy to a new Vercel project. The flow will prompt you to fork the repo, connect a Neon Postgres database, and set environment variables.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app&env=ABLY_KEY,APP_BASE_URL,AUTH0_DOMAIN,AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_VERIFY_TOKEN,TP_CONTACT_EMAIL,PRIVACY_POLICY_URL&envDescription=PRIVACY_POLICY_URL%20is%20optional%2C%20enter%20None%20if%20you%20don%27t%20have.%20See%20the%20README%20for%20detailed%20descriptions%20of%20the%20variables%20to%20configure%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app%23environment-variables&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app&env=ABLY_KEY,APP_BASE_URL,AUTH0_DOMAIN,AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRET,AUTH0_SECRET,FB_APP_ID,FB_APP_SECRET,FB_GRAPH_API_VERSION,FB_REG_PIN,FB_VERIFY_TOKEN,TP_CONTACT_EMAIL,PRIVACY_POLICY_URL,PRIVACY_POLICY_HTML&envDescription=PRIVACY_POLICY_URL%20and%20PRIVACY_POLICY_HTML%20are%20optional.%20Enter%20None%20for%20both%20if%20you%20don%27t%20have%20a%20privacy%20policy%20URL%20or%20HTML.%20See%20the%20README%20for%20detailed%20descriptions%20of%20the%20variables%20to%20configure%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Ffbsamples%2Fbusiness-messaging-sample-tech-provider-app%23environment-variables&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%2C%22group%22%3A%22postgres%22%7D%5D)
+
 **Step 2 — Set up the database**
 
 Once deployed, open the Neon dashboard for your project and run the SQL in the [Database Schema](#database-schema) section below.
@@ -312,6 +313,8 @@ TP_CONTACT_EMAIL='your-contact-email@example.com'
 # If set, the /privacy route redirects to this URL. Leave unset to serve the
 # built-in placeholder page at /privacy instead.
 # PRIVACY_POLICY_URL='https://example.com/privacy'
+# Alternatively, if no valid URL is set, provide the policy as inline HTML.
+# PRIVACY_POLICY_HTML='<h1>Privacy Policy</h1><p>Last updated: ...</p>'
 
 # Database (auto-configured when using Vercel + Neon integration)
 # POSTGRES_URL='postgres://...'
@@ -331,7 +334,8 @@ TP_CONTACT_EMAIL='your-contact-email@example.com'
 | `FB_VERIFY_TOKEN` | A secret string you choose — Meta sends it during webhook verification to prove it's you. |
 | `ABLY_KEY` | API key from your [Ably dashboard](https://ably.com/accounts). |
 | `TP_CONTACT_EMAIL` | Contact email displayed in the app. |
-| `PRIVACY_POLICY_URL` | _Optional._ If set to an `http(s)://` URL, the `/privacy` route redirects there; otherwise the built-in placeholder page is served. It is prompted during Deploy to Vercel — enter the URL of a privacy policy you host, or, if you don't have one yet, enter `none` (Vercel requires a value and rejects blanks; any non-URL value like `none` is treated as unset, so the placeholder is served). For local development, simply leave it unset. |
+| `PRIVACY_POLICY_URL` | _Optional._ URL of a privacy policy hosted elsewhere. If it is a valid `http(s)://` URL, `/privacy` redirects there. During Deploy to Vercel, enter `None` if you do not have one. |
+| `PRIVACY_POLICY_HTML` | _Optional._ Inline privacy policy HTML, used only when `PRIVACY_POLICY_URL` is not a valid URL. During Deploy to Vercel, enter `None` if you do not have one. If neither option is provided, `/privacy` shows the built-in placeholder page. For local development, leave both variables unset. |
 | `POSTGRES_URL` | PostgreSQL connection string. Auto-set when you connect Neon via Vercel. |
 
 ## Going to Production

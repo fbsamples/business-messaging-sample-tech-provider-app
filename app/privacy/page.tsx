@@ -22,10 +22,24 @@ export default function PrivacyPage() {
   // Vercel's deploy button makes every listed env var required and rejects a
   // blank value, so operators without a policy URL enter a sentinel like "none".
   // Only redirect when the value is a real http(s) URL; anything else falls
-  // through to the placeholder page below.
+  // through to the inline HTML content or the placeholder page below.
   const privacyPolicyUrl = process.env.PRIVACY_POLICY_URL?.trim();
   if (isHttpUrl(privacyPolicyUrl)) {
     redirect(privacyPolicyUrl);
+  }
+
+  // Vercel requires every env var listed by the deploy button to have a value,
+  // so treat the documented "None" sentinel as unset.
+  const privacyPolicyHtml = process.env.PRIVACY_POLICY_HTML?.trim();
+  if (privacyPolicyHtml && privacyPolicyHtml.toLowerCase() !== 'none') {
+    return (
+      <main className="min-h-screen bg-white px-4 py-10">
+        <div
+          className="max-w-3xl mx-auto prose prose-slate"
+          dangerouslySetInnerHTML={{__html: privacyPolicyHtml}}
+        />
+      </main>
+    );
   }
 
   return (
