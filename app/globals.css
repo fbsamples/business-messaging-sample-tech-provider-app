@@ -27,6 +27,7 @@
 
 
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @theme {
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
